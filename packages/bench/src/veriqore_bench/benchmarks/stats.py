@@ -8,10 +8,23 @@ QPRs (same seed + params => same content hash).
 from __future__ import annotations
 
 from collections.abc import Callable, Sequence
+from statistics import NormalDist
 
 import numpy as np
 
 BOOTSTRAP_SEED = 271828
+
+
+def wilson_interval(successes: int, trials: int, confidence: float = 0.95) -> tuple[float, float]:
+    """Wilson score interval for a binomial proportion."""
+    if trials <= 0:
+        raise ValueError("trials must be positive")
+    z = NormalDist().inv_cdf(1.0 - (1.0 - confidence) / 2.0)
+    p = successes / trials
+    denominator = 1.0 + z**2 / trials
+    center = (p + z**2 / (2 * trials)) / denominator
+    half_width = z * ((p * (1.0 - p) / trials + z**2 / (4 * trials**2)) ** 0.5) / denominator
+    return max(0.0, center - half_width), min(1.0, center + half_width)
 
 
 def bootstrap_rng() -> np.random.Generator:

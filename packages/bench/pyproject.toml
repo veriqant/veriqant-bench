@@ -27,6 +27,8 @@ ibm = ["qiskit>=1.4", "qiskit-ibm-runtime>=0.34"]
 # amazon-braket-sdk ships both LocalSimulator and the live client, so one
 # extra covers braket_local now and the live adapter in Module 8.
 braket = ["amazon-braket-sdk>=1.87"]
+# QEC diagnostics: PyMatching decoding + Stim as validation oracle.
+qec = ["pymatching>=2.2", "stim>=1.13"]
 # Ed25519 signing/verification of QPRs.
 signing = ["cryptography>=43"]
 
@@ -42,6 +44,11 @@ rb = "veriqore_bench.benchmarks.rb:RandomizedBenchmarking"
 mirror = "veriqore_bench.benchmarks.mirror:MirrorCircuits"
 qv = "veriqore_bench.benchmarks.qv:QuantumVolume"
 throughput = "veriqore_bench.benchmarks.throughput:Throughput"
+qec_repetition = "veriqore_bench.benchmarks.qec.memory:RepetitionMemory"
+qec_surface = "veriqore_bench.benchmarks.qec.memory:SurfaceMemory"
+
+[project.entry-points."veriqore_bench.criteria_profiles"]
+ab-lq-2026 = "veriqore_bench.benchmarks.qec.criteria.ab_lq_2026:AbLq2026Profile"
 
 [dependency-groups]
 dev = [
@@ -50,12 +57,14 @@ dev = [
     "datamodel-code-generator>=0.26",
     "hypothesis>=6.112",
     "mypy>=1.13",
+    "pymatching>=2.2",
     "pytest>=8.3",
     "pytest-asyncio>=0.24",
     "pytest-cov>=5.0",
     "pytest-timeout>=2.3",
     "pytest-xdist>=3.6",
     "qiskit>=1.4",
+    "stim>=1.13",
     "qiskit-aer>=0.15",
     "qiskit-qasm3-import>=0.5",
     "ruff>=0.8",
@@ -102,5 +111,13 @@ disallow_any_explicit = false
 disable_error_code = ["valid-type"]
 
 [[tool.mypy.overrides]]
-module = ["qiskit.*", "qiskit_aer.*", "qiskit_qasm3_import.*", "braket.*", "scipy.*"]
+module = [
+    "qiskit.*",
+    "qiskit_aer.*",
+    "qiskit_qasm3_import.*",
+    "braket.*",
+    "scipy.*",
+    "pymatching.*",
+    "stim.*",
+]
 ignore_missing_imports = true

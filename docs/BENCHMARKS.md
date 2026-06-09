@@ -99,3 +99,78 @@ Numbers from the two protocols are not comparable.
   `timing.simulator_not_comparable_to_hardware`, so no dashboard can rank a
   laptop against a QPU. The intended consumer is the live adapters
   (Module 8).
+
+## `qec_repetition` / `qec_surface` — QEC memory diagnostics (suite 0.1.0)
+
+Requires `pip install veriqore-bench[local,qec]` (PyMatching for decoding;
+Stim as the validation oracle — Stim is our calculator for checking
+ourselves, never an execution target).
+
+- **Codes.** Bit-flip repetition code (distances 3,5,7 by default —
+  corrects **one error species only**; its scorecard demonstrates the
+  machinery, a bit-flip code is not a full logical qubit) and the rotated
+  distance-3 surface code (17 qubits, memory in both |0⟩ and |+⟩ bases).
+  Surface d=5 (49 qubits) is **out of the Aer product path** and exists
+  only in Stim-based validation tests; the parameter validator refuses it.
+- **Circuits.** OpenQASM 3 with mid-circuit measurement + reset through the
+  standard adapter path, deterministic from `(params, seed)`. Configs with
+  `rounds < distance` are refused at parameter validation (criterion 3
+  below), not silently analyzed.
+- **Decoder in the loop.** MWPM (PyMatching) over a phenomenological
+  matching graph with uniform weights; circuit-level correlated faults
+  (hook errors) are not modeled, and the CX order is not hook-optimized.
+  **A logical error rate is a property of (device × decoder)**: the decoder
+  name, version, and graph construction are recorded verbatim in every QEC
+  QPR (`analysis.decoder`), because longitudinal comparability breaks if
+  the decoder changes invisibly.
+- **Metrics.** Per-distance (or per-basis) logical error per round with
+  Wilson CIs; Λ suppression per distance step with parametric-bootstrap CIs
+  (zero errors at both adjacent distances → the step is marked
+  `resolved=false` and Λ is reported as unresolved, never as 0 or ∞);
+  `post_selection_fraction` with explicit accounting (shots submitted ==
+  shots analyzed — discarding is impossible by construction in our
+  pipeline).
+- **Physical baseline (breakeven comparator).** On simulators, derived
+  analytically from the NoiseSpec: Aer's 2Q depolarizing channel
+  marginalizes to a 1Q depolarizing channel (bit-flip probability λ₂/2 per
+  CX), so the best data qubit's per-round error is
+  `1 − (1 − λ₂/2)^c_min`. Hardware will substitute a measured idle-decay
+  baseline (interface stubbed); evidence records which baseline type was
+  used. Ideal simulation → no baseline → breakeven `not_evaluable`.
+- **Closed-loop validation.** A Stim mirror of the *same schedule IR*
+  (exact Pauli-mixture noise conversion: `p_stim = 3λ₁/4` for 1Q,
+  `15λ₂/16` for 2Q) is sampled and decoded through the same pipeline; Aer
+  and Stim rates must agree statistically. Suppression is asserted in both
+  directions (sub-threshold Λ>1 passes, super-threshold fails).
+- **Shot counts.** CI-grade defaults (2000 shots) keep runs in seconds and
+  resolve Λ only for moderate noise. Publication-grade QEC claims need
+  orders of magnitude more shots.
+
+## Criteria profiles
+
+A criteria profile is a named, versioned, **cited** set of logical-qubit
+criteria evaluated over QEC evidence — Veriqore executes others' published
+norms, it does not define its own. Profiles register through the
+`veriqore_bench.criteria_profiles` entry-point group. Verdicts are
+`pass` / `fail` / `not_evaluable`; `not_evaluable` is a first-class outcome
+with a reason and evidence — an honest "this experiment cannot answer that"
+beats a forced verdict.
+
+### Profile `ab-lq-2026` v1.0.0
+
+Citation: Alice & Bob, *"Defining the Logical Qubit: Five Criteria to
+Benchmark Logical Qubit Claims"*, June 2026.
+
+| # | Criterion | Rule |
+| --- | --- | --- |
+| 1 | `breakeven` | `ci_upper(logical error/round)` at the largest distance < best physical qubit baseline |
+| 2 | `scalable_parameters` | every Λ step `ci_lower > 1`; unresolved steps → `not_evaluable` |
+| 3 | `sufficient_cycles` | syndrome rounds ≥ code distance; failure makes 1, 2, and 5 `not_evaluable` (their evidence is invalid) |
+| 4 | `all_runs_counted` | `post_selection_fraction == 0.0` with explicit shot accounting |
+| 5 | `utility_timescales` | ≥ 10⁶ sustained rounds at error budget 10⁻⁹; memory experiments at current scales report `not_evaluable` |
+
+**Simulator-vs-hardware distinction (non-negotiable):** verdicts derived
+from a simulated noise model always carry the machine-readable issue
+`simulated_noise_model_not_hardware` and `quality.reliable=false`, and the
+HTML report watermarks the scorecard. A NoiseSpec scorecard demonstrates
+the machinery; it is never confusable with a hardware claim.

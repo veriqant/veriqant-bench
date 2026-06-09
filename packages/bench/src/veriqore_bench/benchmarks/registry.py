@@ -20,6 +20,8 @@ _INSTALL_HINTS = {
     "mirror": "pip install 'veriqore-bench[local]'",
     "qv": "pip install 'veriqore-bench[local]'",
     "throughput": "pip install 'veriqore-bench[local]'",
+    "qec_repetition": "pip install 'veriqore-bench[local,qec]'",
+    "qec_surface": "pip install 'veriqore-bench[local,qec]'",
 }
 
 

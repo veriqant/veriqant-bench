@@ -346,6 +346,79 @@ def run_throughput(
     )
 
 
+@run.command("qec")
+@click.option("--adapter", "adapter_name", default="aer_simulator", show_default=True)
+@click.option(
+    "--code",
+    type=click.Choice(["repetition", "surface"]),
+    default="repetition",
+    show_default=True,
+)
+@click.option(
+    "--distances",
+    default="3,5,7",
+    callback=_int_list,
+    show_default=True,
+    help="Repetition-code distances (odd, >=3).",
+)
+@click.option(
+    "--distance",
+    default=3,
+    show_default=True,
+    help="Surface-code distance (product path supports 3).",
+)
+@click.option(
+    "--rounds",
+    default=7,
+    show_default=True,
+    help="Syndrome-extraction rounds; must be >= the largest distance.",
+)
+@click.option(
+    "--criteria",
+    "criteria_profile",
+    default=None,
+    help="Criteria profile id (e.g. ab-lq-2026); omitted -> metrics only.",
+)
+@click.option("--shots", default=2000, show_default=True)
+@click.option(
+    "--seed", type=int, default=None, help="Master seed; generated and printed when omitted."
+)
+@click.option(
+    "--noise",
+    "noise_file",
+    default=None,
+    type=click.Path(exists=True, dir_okay=False, path_type=Path),
+    help="NoiseSpec JSON file (aer_simulator only).",
+)
+@click.option(
+    "--out", default="results", show_default=True, type=click.Path(file_okay=False, path_type=Path)
+)
+def run_qec(
+    adapter_name: str,
+    code: str,
+    distances: list[int],
+    distance: int,
+    rounds: int,
+    criteria_profile: str | None,
+    shots: int,
+    seed: int | None,
+    noise_file: Path | None,
+    out: Path,
+) -> None:
+    """QEC memory experiments (repetition / rotated d=3 surface code) with
+    MWPM decoding and an optional logical-qubit criteria scorecard."""
+    adapter = _build_adapter(adapter_name, noise_file)
+    if code == "repetition":
+        params: dict[str, Any] = {
+            "distances": distances,
+            "rounds": rounds,
+            "criteria": criteria_profile,
+        }
+    else:
+        params = {"distance": distance, "rounds": rounds, "criteria": criteria_profile}
+    _execute_benchmark(f"qec_{code}", params, adapter, _resolve_seed(seed), shots, out)
+
+
 @main.command("report")
 @click.argument("inputs", nargs=-1, required=True, type=click.Path(exists=True, path_type=Path))
 @click.option(

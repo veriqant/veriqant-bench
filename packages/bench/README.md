@@ -11,6 +11,7 @@ pip install veriqore-bench            # core (QPR schema + verification)
 pip install veriqore-bench[local]     # + Qiskit Aer simulation (no account needed)
 pip install veriqore-bench[braket]    # + Amazon Braket (local simulator + live)
 pip install veriqore-bench[ibm]       # + IBM Quantum runtime
+pip install veriqore-bench[qec]       # + QEC decoding (PyMatching) + Stim oracle
 pip install veriqore-bench[signing]   # + Ed25519 QPR signing
 ```
 
@@ -24,6 +25,9 @@ veriqore-bench run rb --adapter aer --qubits 0,1 --out results/        # 2Q RB
 veriqore-bench run mirror --qubits 0,1,2 --depths 2,4,8 --out results/
 veriqore-bench run qv --widths 2,3,4 --circuits 50 --out results/
 veriqore-bench run throughput --batches 5 --out results/
+veriqore-bench run qec --code repetition --distances 3,5,7 --rounds 7 \
+    --criteria ab-lq-2026 --noise noise.json --out results/
+veriqore-bench run qec --code surface --distance 3 --rounds 3 --out results/
 veriqore-bench run rb --noise noise.json --seed 42 --out results/     # noisy Aer
 
 # Static, self-contained HTML report (inputs verified first):

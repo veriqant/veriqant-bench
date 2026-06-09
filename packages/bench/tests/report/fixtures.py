@@ -17,6 +17,7 @@ from conftest import StaticAdapter
 
 from veriqore_bench.benchmarks import run_benchmark
 from veriqore_bench.benchmarks.mirror import MirrorCircuits, MirrorParams
+from veriqore_bench.benchmarks.qec.memory import RepetitionMemory, RepetitionParams
 from veriqore_bench.benchmarks.qv import QuantumVolume, QVParams
 from veriqore_bench.benchmarks.rb import RandomizedBenchmarking, RBParams
 from veriqore_bench.benchmarks.throughput import SIMULATOR_TIMING_ISSUE
@@ -99,6 +100,20 @@ async def qv_record() -> QuantumPerformanceRecord:
         shots=64,
     )
     return normalize(record, 3)
+
+
+async def qec_record() -> QuantumPerformanceRecord:
+    """StaticAdapter returns all-zeros: zero logical errors everywhere,
+    unresolved Lambda, not_evaluable breakeven — a deterministic scorecard
+    exercising the grey/na rendering paths plus the simulator watermark."""
+    record = await run_benchmark(
+        RepetitionMemory(),
+        StaticAdapter(),
+        RepetitionParams(distances=[3, 5], rounds=5, criteria="ab-lq-2026"),
+        seed=7,
+        shots=200,
+    )
+    return normalize(record, 5)
 
 
 def throughput_record() -> QuantumPerformanceRecord:

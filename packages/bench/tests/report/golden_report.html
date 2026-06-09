@@ -17,19 +17,22 @@ code { font-family: ui-monospace, Menlo, monospace; font-size: 0.8rem; }
 .badge.ok { background: #e2f5e8; color: #176635; }
 .badge.warn { background: #fdf3d7; color: #7a5d0c; }
 .badge.bad { background: #fde2e2; color: #8f1d1d; }
+.badge.na { background: #ececf1; color: #555; }
 .issues { color: #8f1d1d; font-size: 0.75rem; }
+.watermark { color: #7a5d0c; font-size: 0.78rem; font-weight: 600; }
 svg { background: #fbfbfd; border: 1px solid #e5e5ee; margin-top: 0.6rem; }
 </style>
 </head>
 <body>
 <h1>Veriqore benchmark report</h1>
 <p class="meta">generated 2026-01-01 12:00:00 UTC · veriqore-bench 0.1.0
- · 4 record(s) · all records verified</p>
+ · 5 record(s) · all records verified</p>
 <table>
 <thead><tr><th>benchmark</th><th>adapter / device</th><th>key metric</th>
 <th>value (95% CI)</th><th>quality</th><th>record</th></tr></thead>
 <tbody>
 <tr><td>mirror_circuits</td><td>static_test / static_device (simulator)</td><td>success_probability.depth_1</td><td>0.5 [0, 1]</td><td><span class="badge ok">no diagnostics</span></td><td><code>402a5b43f05c</code></td></tr>
+<tr><td>qec_repetition_memory</td><td>static_test / static_device (simulator)</td><td>logical_error_per_round.distance_3</td><td>0 [0, 0.003827]</td><td><span class="badge ok">reliable</span></td><td><code>e37ccab498f3</code></td></tr>
 <tr><td>quantum_volume</td><td>static_test / static_device (simulator)</td><td>quantum_volume</td><td>1 [1, 1]</td><td><span class="badge bad">UNRELIABLE</span> <span class="issues">qv.insufficient_circuits_for_confidence, qv.no_width_passed</span></td><td><code>bff0d3a7a9c8</code></td></tr>
 <tr><td>rb_1q</td><td>static_test / static_device (simulator)</td><td>error_per_clifford</td><td>2.968e-06 [2.968e-06, 2.968e-06]</td><td><span class="badge ok">reliable</span></td><td><code>cd72a63c5ffb</code></td></tr>
 <tr><td>throughput</td><td>static_test / static_device (simulator)</td><td>job_round_trip_seconds</td><td>0.0421 [0.03789, 0.04631]</td><td><span class="badge bad">UNRELIABLE</span> <span class="issues">timing.simulator_not_comparable_to_hardware</span></td><td><code>407267d3dcf6</code></td></tr>
@@ -50,6 +53,7 @@ svg { background: #fbfbfd; border: 1px solid #e5e5ee; margin-top: 0.6rem; }
 <tr><td>mirror_polarization.depth_2</td><td>-0.3333 probability</td><td>[-0.3333, -0.3333]</td><td>128</td><td><span class="badge ok">no diagnostics</span></td></tr>
 </tbody>
 </table>
+
 <svg width="480" height="220" role="img"
  aria-label="polarization vs depth">
 <line x1="40" y1="180" x2="440"
@@ -75,6 +79,66 @@ svg { background: #fbfbfd; border: 1px solid #e5e5ee; margin-top: 0.6rem; }
 </svg>
 
 
+<h2>repetition-code memory (d=3,5, 5 rounds)</h2>
+<p class="meta">adapter static_test · device
+ static_device · seed 7 · shots 200
+ · suite 0.1.0
+ · <code>e37ccab498f315c961d2f4970b380d4888a4663c722b13c76cb86b93f34f3b8e</code></p>
+<table>
+<thead><tr><th>metric</th><th>value</th><th>95% CI</th><th>samples</th><th>quality</th></tr></thead>
+<tbody>
+<tr><td>logical_error_per_round.distance_3</td><td>0 probability</td><td>[0, 0.003827]</td><td>200</td><td><span class="badge ok">reliable</span></td></tr>
+<tr><td>logical_error_per_round.distance_5</td><td>0 probability</td><td>[0, 0.003827]</td><td>200</td><td><span class="badge ok">reliable</span></td></tr>
+<tr><td>lambda.d3_to_d5</td><td>1</td><td>[0, 400]</td><td>200</td><td><span class="badge bad">UNRELIABLE</span> <span class="issues">lambda.unresolved_zero_errors</span></td></tr>
+<tr><td>post_selection_fraction</td><td>0 probability</td><td>[0, 0]</td><td>400</td><td><span class="badge ok">reliable</span></td></tr>
+<tr><td>criteria.ab-lq-2026.sufficient_cycles</td><td>1</td><td>[1, 1]</td><td>1</td><td><span class="badge bad">UNRELIABLE</span> <span class="issues">simulated_noise_model_not_hardware</span></td></tr>
+<tr><td>criteria.ab-lq-2026.all_runs_counted</td><td>1</td><td>[1, 1]</td><td>1</td><td><span class="badge bad">UNRELIABLE</span> <span class="issues">simulated_noise_model_not_hardware</span></td></tr>
+<tr><td>criteria.ab-lq-2026.breakeven</td><td>0</td><td>[0, 0]</td><td>1</td><td><span class="badge bad">UNRELIABLE</span> <span class="issues">verdict.not_evaluable, simulated_noise_model_not_hardware</span></td></tr>
+<tr><td>criteria.ab-lq-2026.scalable_parameters</td><td>0</td><td>[0, 0]</td><td>1</td><td><span class="badge bad">UNRELIABLE</span> <span class="issues">verdict.not_evaluable, simulated_noise_model_not_hardware</span></td></tr>
+<tr><td>criteria.ab-lq-2026.utility_timescales</td><td>0</td><td>[0, 0]</td><td>1</td><td><span class="badge bad">UNRELIABLE</span> <span class="issues">verdict.not_evaluable, simulated_noise_model_not_hardware</span></td></tr>
+</tbody>
+</table>
+
+<h3>criteria scorecard: ab-lq-2026
+ v1.0.0</h3>
+<p class="meta">Alice &amp; Bob, &quot;Defining the Logical Qubit: Five Criteria to Benchmark Logical Qubit Claims&quot;, June 2026.</p>
+<p class="watermark">⚠ verdicts derived from a simulated noise model — this is a demonstration of the criteria machinery, not a hardware claim</p>
+<table>
+<thead><tr><th>criterion</th><th>verdict</th><th>reason</th></tr></thead>
+<tbody>
+<tr><td>sufficient_cycles</td><td><span class="badge ok">pass</span></td><td></td></tr>
+<tr><td>all_runs_counted</td><td><span class="badge ok">pass</span></td><td></td></tr>
+<tr><td>breakeven</td><td><span class="badge na">not evaluable</span></td><td>no physical baseline available (ideal simulation has no meaningful physical comparator)</td></tr>
+<tr><td>scalable_parameters</td><td><span class="badge na">not evaluable</span></td><td>zero logical errors observed at adjacent distances (d3-&gt;d5): suppression is unresolved at this shot count, not demonstrated</td></tr>
+<tr><td>utility_timescales</td><td><span class="badge na">not evaluable</span></td><td>memory experiment ran 5 rounds, far below the utility threshold of 1000000 rounds; this experiment cannot speak to application timescales</td></tr>
+</tbody>
+</table>
+<svg width="480" height="220" role="img"
+ aria-label="log10(logical error / round) vs code distance">
+<line x1="40" y1="180" x2="440"
+ y2="180" stroke="#888"/>
+<line x1="40" y1="40" x2="40" y2="180"
+ stroke="#888"/>
+<text x="240" y="212" text-anchor="middle"
+ font-size="11" fill="#444">code distance</text>
+<text x="12" y="110" text-anchor="middle" font-size="11" fill="#444"
+ transform="rotate(-90 12 110)">log10(logical error / round)</text>
+<text x="34" y="184.0" text-anchor="end" font-size="10"
+ fill="#666">-12</text>
+<text x="34" y="44.0" text-anchor="end" font-size="10"
+ fill="#666">-13.2</text>
+<text x="40.0" y="194" text-anchor="middle"
+ font-size="10" fill="#666">3</text>
+<text x="440.0" y="194" text-anchor="middle"
+ font-size="10" fill="#666">5</text>
+
+<polyline points="40.0,180.0 440.0,180.0" fill="none" stroke="#3b4cc0" stroke-width="1.5"/>
+<circle cx="40.0" cy="180.0" r="3" fill="#3b4cc0"/>
+<circle cx="440.0" cy="180.0" r="3" fill="#3b4cc0"/>
+</svg>
+<p class="meta">Λ(d3→d5) = 1</p>
+
+
 <h2>quantum volume (widths 2)</h2>
 <p class="meta">adapter static_test · device
  static_device · seed 7 · shots 64
@@ -88,6 +152,7 @@ svg { background: #fbfbfd; border: 1px solid #e5e5ee; margin-top: 0.6rem; }
 <tr><td>qv_pass.width_2</td><td>0</td><td>[0, 0]</td><td>320</td><td><span class="badge bad">UNRELIABLE</span> <span class="issues">qv.insufficient_circuits_for_confidence</span></td></tr>
 </tbody>
 </table>
+
 <svg width="480" height="220" role="img"
  aria-label="heavy-output probability vs width">
 <line x1="40" y1="180" x2="440"
@@ -124,6 +189,7 @@ svg { background: #fbfbfd; border: 1px solid #e5e5ee; margin-top: 0.6rem; }
 <tr><td>rb_decay_rate</td><td>1 probability</td><td>[1, 1]</td><td>384</td><td><span class="badge ok">reliable</span></td></tr>
 </tbody>
 </table>
+
 <svg width="480" height="220" role="img"
  aria-label="survival probability vs sequence length">
 <line x1="40" y1="180" x2="440"
@@ -163,6 +229,7 @@ svg { background: #fbfbfd; border: 1px solid #e5e5ee; margin-top: 0.6rem; }
 <tr><td>sequential_layers_per_second</td><td>356 layers/s</td><td>[320.4, 391.6]</td><td>4</td><td><span class="badge bad">UNRELIABLE</span> <span class="issues">timing.simulator_not_comparable_to_hardware</span></td></tr>
 </tbody>
 </table>
+
 <svg width="480" height="220" role="img"
  aria-label="round trip (s) vs batch">
 <line x1="40" y1="180" x2="440"

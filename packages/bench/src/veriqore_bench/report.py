@@ -13,6 +13,7 @@ fixed generated-at timestamp. Unreliable metrics are visibly badged.
 from __future__ import annotations
 
 import html
+import math
 from datetime import UTC, datetime
 from pathlib import Path
 
@@ -93,7 +94,9 @@ code {{ font-family: ui-monospace, Menlo, monospace; font-size: 0.8rem; }}
 .badge.ok {{ background: #e2f5e8; color: #176635; }}
 .badge.warn {{ background: #fdf3d7; color: #7a5d0c; }}
 .badge.bad {{ background: #fde2e2; color: #8f1d1d; }}
+.badge.na {{ background: #ececf1; color: #555; }}
 .issues {{ color: #8f1d1d; font-size: 0.75rem; }}
+.watermark {{ color: #7a5d0c; font-size: 0.78rem; font-weight: 600; }}
 svg {{ background: #fbfbfd; border: 1px solid #e5e5ee; margin-top: 0.6rem; }}
 </style>
 </head>
@@ -184,6 +187,7 @@ def _record_section(record: QuantumPerformanceRecord) -> str:
         for metric in record.results.metrics
     )
     chart = _chart_for(record)
+    scorecard = _criteria_scorecard(record)
     seed = record.execution.seed
     return f"""
 <h2>{html.escape(record.benchmark.display_name or record.benchmark.id)}</h2>
@@ -197,8 +201,48 @@ def _record_section(record: QuantumPerformanceRecord) -> str:
 {metric_rows}
 </tbody>
 </table>
+{scorecard}
 {chart}
 """
+
+
+_VERDICT_BADGE = {
+    "pass": '<span class="badge ok">pass</span>',
+    "fail": '<span class="badge bad">fail</span>',
+    "not_evaluable": '<span class="badge na">not evaluable</span>',
+}
+
+
+def _criteria_scorecard(record: QuantumPerformanceRecord) -> str:
+    analysis = record.results.analysis or {}
+    criteria = analysis.get("criteria")
+    if not isinstance(criteria, dict):
+        return ""
+    rows = "\n".join(
+        "<tr>"
+        f"<td>{html.escape(str(verdict.get('criterion', '')))}</td>"
+        f"<td>{_VERDICT_BADGE.get(str(verdict.get('status')), '')}</td>"
+        f"<td>{html.escape(str(verdict.get('reason') or ''))}</td>"
+        "</tr>"
+        for verdict in criteria.get("verdicts", [])
+    )
+    watermark = (
+        '<p class="watermark">⚠ verdicts derived from a simulated noise model — '
+        "this is a demonstration of the criteria machinery, not a hardware claim</p>"
+        if criteria.get("simulated")
+        else ""
+    )
+    return f"""
+<h3>criteria scorecard: {html.escape(str(criteria.get("profile", "")))}
+ v{html.escape(str(criteria.get("version", "")))}</h3>
+<p class="meta">{html.escape(str(criteria.get("citation", "")))}</p>
+{watermark}
+<table>
+<thead><tr><th>criterion</th><th>verdict</th><th>reason</th></tr></thead>
+<tbody>
+{rows}
+</tbody>
+</table>"""
 
 
 def _chart_for(record: QuantumPerformanceRecord) -> str:
@@ -234,6 +278,22 @@ def _chart_for(record: QuantumPerformanceRecord) -> str:
             for batch in analysis["batches"]
         ]
         return _line_chart(points, "batch", "round trip (s)")
+    if benchmark_id == "qec_repetition_memory" and "per_distance" in analysis:
+        points = sorted(
+            (
+                float(distance),
+                math.log10(max(float(detail["eps"]["value"]), 1e-12)),
+            )
+            for distance, detail in analysis["per_distance"].items()
+        )
+        lambda_note = ", ".join(
+            f"Λ(d{step['from_distance']}→d{step['to_distance']}) = {_fmt(step['value'])}"
+            for step in analysis.get("lambda_steps", [])
+        )
+        chart = _line_chart(points, "code distance", "log10(logical error / round)")
+        if lambda_note:
+            chart += f'\n<p class="meta">{html.escape(lambda_note)}</p>'
+        return chart
     return ""
 
 

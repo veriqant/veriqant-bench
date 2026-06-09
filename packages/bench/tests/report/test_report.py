@@ -10,7 +10,14 @@ from pathlib import Path
 
 import pytest
 from click.testing import CliRunner
-from fixtures import FIXED_AT, mirror_record, qv_record, rb_record, throughput_record
+from fixtures import (
+    FIXED_AT,
+    mirror_record,
+    qec_record,
+    qv_record,
+    rb_record,
+    throughput_record,
+)
 
 from veriqore_bench.cli import main
 from veriqore_bench.qpr import QuantumPerformanceRecord, dump_qpr
@@ -26,7 +33,13 @@ GOLDEN_PATH = Path(__file__).parent / "golden_report.html"
 
 @pytest.fixture
 async def fixture_records() -> list[QuantumPerformanceRecord]:
-    return [await rb_record(), await mirror_record(), await qv_record(), throughput_record()]
+    return [
+        await rb_record(),
+        await mirror_record(),
+        await qv_record(),
+        await qec_record(),
+        throughput_record(),
+    ]
 
 
 @pytest.fixture
@@ -64,7 +77,13 @@ def test_rendering_is_deterministic(
 def test_report_content(fixture_records: list[QuantumPerformanceRecord], qpr_dir: Path) -> None:
     document = render(fixture_records, qpr_dir)
     # All benchmarks present, charts inline, zero external requests.
-    for benchmark_id in ("rb_1q", "mirror_circuits", "quantum_volume", "throughput"):
+    for benchmark_id in (
+        "rb_1q",
+        "mirror_circuits",
+        "quantum_volume",
+        "qec_repetition_memory",
+        "throughput",
+    ):
         assert benchmark_id in document
     assert "<svg" in document
     assert "http://" not in document and "https://" not in document
@@ -72,6 +91,12 @@ def test_report_content(fixture_records: list[QuantumPerformanceRecord], qpr_dir
     # The throughput fixture's honesty flag is visibly badged.
     assert "UNRELIABLE" in document
     assert "timing.simulator_not_comparable_to_hardware" in document
+    # The QEC criteria scorecard renders with the simulator watermark and
+    # grey not-evaluable badges.
+    assert "criteria scorecard: ab-lq-2026" in document
+    assert "simulated noise model" in document
+    assert "not evaluable" in document
+    assert "Alice &amp; Bob" in document
     # Content hashes are shown for auditability.
     for record in fixture_records:
         assert record.integrity.content_sha256[:12] in document
