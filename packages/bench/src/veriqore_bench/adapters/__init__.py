@@ -12,6 +12,7 @@ from .errors import (
     SubmissionError,
     TimeoutError,
     UnknownJobError,
+    UnsupportedCircuitError,
 )
 from .lifecycle import AwaitResultMixin, await_result
 from .local import LocalAdapterBase
@@ -50,6 +51,7 @@ __all__ = [
     "SubmissionError",
     "TimeoutError",
     "UnknownJobError",
+    "UnsupportedCircuitError",
     "await_result",
     "get",
     "list_adapters",

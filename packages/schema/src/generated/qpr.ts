@@ -1,11 +1,11 @@
 /* eslint-disable */
 /**
- * AUTO-GENERATED from schema/qpr-0.1.0.schema.json — do not edit by hand.
+ * AUTO-GENERATED from schema/qpr-0.2.0.schema.json — do not edit by hand.
  * Regenerate with: pnpm --filter @veriqore/schema generate
  */
 
 /**
- * QPR v0.1.0 — a self-contained, reproducible record of one benchmark execution against one quantum device or simulator. A QPR carries everything needed to re-run the benchmark bit-for-bit and to independently verify the reported metrics.
+ * QPR v0.2.0 — a self-contained, reproducible record of one benchmark execution against one quantum device or simulator. A QPR carries everything needed to re-run the benchmark bit-for-bit and to independently verify the reported metrics.
  */
 export interface QuantumPerformanceRecord {
   /**
@@ -264,6 +264,7 @@ export interface Metric {
    */
   qubits?: number[];
   statistics: MetricStatistics;
+  quality?: MetricQuality;
 }
 /**
  * Mandatory uncertainty quantification for a metric.
@@ -293,6 +294,19 @@ export interface MetricStatistics {
    * How the estimate and interval were obtained, e.g. 'exponential_fit_bootstrap', 'binomial_wilson', 'mean_normal'.
    */
   estimator: string;
+}
+/**
+ * Estimator self-assessment. Present whenever the producing benchmark runs quality diagnostics; a metric whose fit or estimator failed its quality thresholds MUST be published with reliable=false and the reasons listed, never as a clean-looking number.
+ */
+export interface MetricQuality {
+  /**
+   * False when the estimate failed the benchmark's quality thresholds.
+   */
+  reliable: boolean;
+  /**
+   * Machine-readable reasons, e.g. 'fit.r_squared_below_threshold'.
+   */
+  issues?: string[];
 }
 /**
  * Software environment that produced this record, pinned to exact versions.

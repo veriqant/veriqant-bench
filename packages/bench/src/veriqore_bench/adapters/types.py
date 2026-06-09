@@ -48,6 +48,9 @@ class DeviceCapabilities(BaseModel):
 
     device_name: str
     device_version: str | None = None
+    provider_name: str = Field(default="local", pattern="^[a-z0-9][a-z0-9_.-]*$")
+    """QPR provider.name this device is reached through ('local' for
+    simulators, 'ibm', 'aws-braket', ... for live paths)."""
     num_qubits: int = Field(ge=1)
     native_gates: list[str]
     coupling_map: list[tuple[int, int]] | None = None

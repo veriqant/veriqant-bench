@@ -10,7 +10,7 @@ import type { QuantumPerformanceRecord } from './generated/qpr.js';
 export type * from './generated/qpr.js';
 
 /** Current QPR schema version shipped by this package. */
-export const QPR_VERSION = '0.1.0';
+export const QPR_VERSION = '0.2.0';
 
 /** QPR major versions this package can validate. */
 export const SUPPORTED_QPR_MAJOR_VERSIONS = [0] as const;

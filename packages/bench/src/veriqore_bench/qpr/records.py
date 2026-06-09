@@ -9,7 +9,7 @@ from typing import Any
 from ._generated import Integrity, QuantumPerformanceRecord
 from .canonical import content_sha256
 
-QPR_VERSION = "0.1.0"
+QPR_VERSION = "0.2.0"
 SUPPORTED_QPR_MAJOR_VERSIONS = frozenset({0})
 
 

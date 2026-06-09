@@ -26,7 +26,7 @@ jobs:
       - name: Type check (strict)
         run: uv run mypy
       - name: Tests (coverage gate ≥90%)
-        run: uv run pytest
+        run: uv run pytest -n auto --cov=veriqore_bench --cov-report=term-missing --cov-fail-under=90
 
   typescript:
     name: TypeScript (schema, api, web)

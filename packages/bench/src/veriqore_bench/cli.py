@@ -4,19 +4,28 @@ from __future__ import annotations
 
 import asyncio
 import json
+import secrets
 import sys
 import time
 from importlib.resources import files
 from pathlib import Path
+from typing import Any
 
 import click
+import pydantic
 
 from . import __version__
-from .adapters import AdapterUnavailableError, JobSpec, QPUAdapter, list_adapters
+from .adapters import AdapterUnavailableError, JobSpec, NoiseSpec, QPUAdapter, list_adapters
 from .adapters import get as get_adapter
+from .benchmarks import (
+    BenchmarkUnavailableError,
+    run_benchmark,
+    write_verified_qpr,
+)
+from .benchmarks import get as get_benchmark
 from .qpr import QPR_VERSION, verify_qpr_file
 
-SCHEMA_RESOURCE = "qpr-0.1.0.schema.json"
+SCHEMA_RESOURCE = "qpr.schema.json"
 
 SMOKE_CIRCUIT = (
     "OPENQASM 3.0;\n"
@@ -85,6 +94,167 @@ async def _smoke_run(adapter: QPUAdapter, shots: int) -> dict[str, int]:
     handle = await adapter.submit(spec)
     result = await adapter.await_result(handle)
     return result.counts[0]
+
+
+ADAPTER_ALIASES = {"aer": "aer_simulator", "braket": "braket_local"}
+
+
+def _int_list(_ctx: click.Context, _param: click.Parameter, value: str) -> list[int]:
+    try:
+        return [int(item) for item in value.split(",") if item.strip()]
+    except ValueError as exc:
+        raise click.BadParameter(f"expected comma-separated integers, got {value!r}") from exc
+
+
+def _build_adapter(name: str, noise_file: Path | None) -> QPUAdapter:
+    resolved = ADAPTER_ALIASES.get(name, name)
+    kwargs: dict[str, Any] = {}
+    if noise_file is not None:
+        if resolved != "aer_simulator":
+            raise click.ClickException(
+                f"--noise is only supported by the aer_simulator adapter, not '{resolved}'"
+            )
+        try:
+            kwargs["noise"] = NoiseSpec.model_validate_json(noise_file.read_text(encoding="utf-8"))
+        except pydantic.ValidationError as exc:
+            raise click.ClickException(f"invalid noise spec {noise_file}: {exc}") from exc
+    try:
+        return get_adapter(resolved, **kwargs)
+    except AdapterUnavailableError as exc:
+        raise click.ClickException(str(exc)) from exc
+
+
+def _resolve_seed(seed: int | None) -> int:
+    if seed is None:
+        seed = secrets.randbelow(2**31)
+        click.echo(f"seed: {seed} (generated; pass --seed {seed} to reproduce)")
+    return seed
+
+
+def _execute_benchmark(
+    benchmark_name: str,
+    params: dict[str, Any],
+    adapter: QPUAdapter,
+    seed: int,
+    shots: int,
+    out: Path,
+) -> None:
+    try:
+        benchmark = get_benchmark(benchmark_name)
+    except BenchmarkUnavailableError as exc:
+        raise click.ClickException(str(exc)) from exc
+    try:
+        validated = benchmark.params_model.model_validate(params)
+    except pydantic.ValidationError as exc:
+        raise click.ClickException(f"invalid parameters: {exc}") from exc
+    record = asyncio.run(run_benchmark(benchmark, adapter, validated, seed=seed, shots=shots))
+    path = write_verified_qpr(record, out)
+    click.echo(f"{path} {record.integrity.content_sha256}")
+
+
+@main.group()
+def run() -> None:
+    """Run benchmarks and emit sealed, self-verified QPRs."""
+
+
+@run.command("rb")
+@click.option("--adapter", "adapter_name", default="aer_simulator", show_default=True)
+@click.option(
+    "--qubits",
+    default="0",
+    callback=_int_list,
+    show_default=True,
+    help="Comma-separated target qubits (1 for 1Q RB, 2 for 2Q RB).",
+)
+@click.option(
+    "--lengths",
+    default="1,2,4,8,16,32",
+    callback=_int_list,
+    show_default=True,
+    help="Comma-separated Clifford sequence lengths.",
+)
+@click.option("--samples", default=10, show_default=True, help="Random sequences per length.")
+@click.option("--shots", default=256, show_default=True)
+@click.option(
+    "--seed", type=int, default=None, help="Master seed; generated and printed when omitted."
+)
+@click.option(
+    "--noise",
+    "noise_file",
+    default=None,
+    type=click.Path(exists=True, dir_okay=False, path_type=Path),
+    help="NoiseSpec JSON file (aer_simulator only).",
+)
+@click.option(
+    "--out", default="results", show_default=True, type=click.Path(file_okay=False, path_type=Path)
+)
+def run_rb(
+    adapter_name: str,
+    qubits: list[int],
+    lengths: list[int],
+    samples: int,
+    shots: int,
+    seed: int | None,
+    noise_file: Path | None,
+    out: Path,
+) -> None:
+    """Randomized benchmarking (1Q/2Q): error per Clifford with bootstrap CIs."""
+    adapter = _build_adapter(adapter_name, noise_file)
+    _execute_benchmark(
+        "rb",
+        {"qubits": qubits, "lengths": lengths, "samples_per_length": samples},
+        adapter,
+        _resolve_seed(seed),
+        shots,
+        out,
+    )
+
+
+@run.command("mirror")
+@click.option("--adapter", "adapter_name", default="aer_simulator", show_default=True)
+@click.option("--qubits", default="0,1,2", callback=_int_list, show_default=True)
+@click.option(
+    "--depths",
+    default="2,4,8,16",
+    callback=_int_list,
+    show_default=True,
+    help="Comma-separated half-circuit depths (layers).",
+)
+@click.option("--samples", default=10, show_default=True, help="Random circuits per depth.")
+@click.option("--shots", default=256, show_default=True)
+@click.option(
+    "--seed", type=int, default=None, help="Master seed; generated and printed when omitted."
+)
+@click.option(
+    "--noise",
+    "noise_file",
+    default=None,
+    type=click.Path(exists=True, dir_okay=False, path_type=Path),
+    help="NoiseSpec JSON file (aer_simulator only).",
+)
+@click.option(
+    "--out", default="results", show_default=True, type=click.Path(file_okay=False, path_type=Path)
+)
+def run_mirror(
+    adapter_name: str,
+    qubits: list[int],
+    depths: list[int],
+    samples: int,
+    shots: int,
+    seed: int | None,
+    noise_file: Path | None,
+    out: Path,
+) -> None:
+    """Randomized mirror circuits: success probability and polarization vs. depth."""
+    adapter = _build_adapter(adapter_name, noise_file)
+    _execute_benchmark(
+        "mirror",
+        {"qubits": qubits, "depths": depths, "samples_per_depth": samples},
+        adapter,
+        _resolve_seed(seed),
+        shots,
+        out,
+    )
 
 
 @adapters.command("probe")

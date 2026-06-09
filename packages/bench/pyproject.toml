@@ -21,7 +21,8 @@ dependencies = [
 # Provider SDKs are optional so the core install stays lean:
 #   pip install veriqore-bench[local,braket]
 # Local ideal/noisy simulation via Qiskit Aer — needs no provider account.
-local = ["qiskit>=1.4", "qiskit-aer>=0.15", "qiskit-qasm3-import>=0.5"]
+# Also required by benchmark circuit generation (Clifford utilities, fitting).
+local = ["qiskit>=1.4", "qiskit-aer>=0.15", "qiskit-qasm3-import>=0.5", "scipy>=1.11"]
 ibm = ["qiskit>=1.4", "qiskit-ibm-runtime>=0.34"]
 # amazon-braket-sdk ships both LocalSimulator and the live client, so one
 # extra covers braket_local now and the live adapter in Module 8.
@@ -36,6 +37,10 @@ veriqore-bench = "veriqore_bench.cli:main"
 aer_simulator = "veriqore_bench.adapters.aer:AerSimulatorAdapter"
 braket_local = "veriqore_bench.adapters.braket_local:BraketLocalAdapter"
 
+[project.entry-points."veriqore_bench.benchmarks"]
+rb = "veriqore_bench.benchmarks.rb:RandomizedBenchmarking"
+mirror = "veriqore_bench.benchmarks.mirror:MirrorCircuits"
+
 [dependency-groups]
 dev = [
     "amazon-braket-sdk>=1.87",
@@ -46,15 +51,24 @@ dev = [
     "pytest>=8.3",
     "pytest-asyncio>=0.24",
     "pytest-cov>=5.0",
+    "pytest-timeout>=2.3",
+    "pytest-xdist>=3.6",
     "qiskit>=1.4",
     "qiskit-aer>=0.15",
     "qiskit-qasm3-import>=0.5",
     "ruff>=0.8",
+    "scipy>=1.11",
 ]
 
 [tool.pytest.ini_options]
 testpaths = ["tests"]
-addopts = "--cov=veriqore_bench --cov-report=term-missing --cov-fail-under=90"
+# Coverage flags live in CI / the documented full-suite command, NOT here:
+# targeted single-file runs must not fail on package-wide coverage.
+# Full gate:  uv run pytest -n auto --cov=veriqore_bench --cov-fail-under=90
+timeout = 60
+markers = [
+    "slow: multi-second simulator executions",
+]
 asyncio_mode = "auto"
 asyncio_default_fixture_loop_scope = "function"
 
@@ -86,5 +100,5 @@ disallow_any_explicit = false
 disable_error_code = ["valid-type"]
 
 [[tool.mypy.overrides]]
-module = ["qiskit.*", "qiskit_aer.*", "qiskit_qasm3_import.*", "braket.*"]
+module = ["qiskit.*", "qiskit_aer.*", "qiskit_qasm3_import.*", "braket.*", "scipy.*"]
 ignore_missing_imports = true

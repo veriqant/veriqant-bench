@@ -36,3 +36,10 @@ class TimeoutError(AdapterError, builtins.TimeoutError):
 
 class UnknownJobError(SubmissionError):
     """The job handle does not belong to this adapter instance."""
+
+
+class UnsupportedCircuitError(SubmissionError):
+    """The circuit uses constructs this adapter cannot execute faithfully
+    (e.g. mid-circuit measurement or dynamic control flow on a backend that
+    samples final-state distributions). Raised instead of returning a
+    silently wrong answer."""

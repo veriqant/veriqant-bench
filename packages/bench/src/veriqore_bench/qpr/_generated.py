@@ -1,4 +1,4 @@
-# AUTO-GENERATED from packages/schema/schema/qpr-0.1.0.schema.json — do not edit.
+# AUTO-GENERATED from packages/schema/schema/qpr-0.2.0.schema.json — do not edit.
 # Regenerate with: packages/schema/scripts/generate-pydantic.sh
 
 from __future__ import annotations
@@ -279,6 +279,24 @@ class Signature(BaseModel):
     """
 
 
+class MetricQuality(BaseModel):
+    """
+    Estimator self-assessment. Present whenever the producing benchmark runs quality diagnostics; a metric whose fit or estimator failed its quality thresholds MUST be published with reliable=false and the reasons listed, never as a clean-looking number.
+    """
+
+    model_config = ConfigDict(
+        extra="forbid",
+    )
+    reliable: bool
+    """
+    False when the estimate failed the benchmark's quality thresholds.
+    """
+    issues: list[str] | None = None
+    """
+    Machine-readable reasons, e.g. 'fit.r_squared_below_threshold'.
+    """
+
+
 class Execution(BaseModel):
     """
     Everything about how the circuits were executed: seed, shots, transpilation, timing. Together with benchmark.parameters this makes the run reproducible.
@@ -339,6 +357,7 @@ class Metric(BaseModel):
     Physical qubit indices this metric pertains to, when qubit-scoped.
     """
     statistics: MetricStatistics
+    quality: MetricQuality | None = None
 
 
 class Integrity(BaseModel):
@@ -380,7 +399,7 @@ class Results(BaseModel):
 
 class QuantumPerformanceRecord(BaseModel):
     """
-    QPR v0.1.0 — a self-contained, reproducible record of one benchmark execution against one quantum device or simulator. A QPR carries everything needed to re-run the benchmark bit-for-bit and to independently verify the reported metrics.
+    QPR v0.2.0 — a self-contained, reproducible record of one benchmark execution against one quantum device or simulator. A QPR carries everything needed to re-run the benchmark bit-for-bit and to independently verify the reported metrics.
     """
 
     model_config = ConfigDict(

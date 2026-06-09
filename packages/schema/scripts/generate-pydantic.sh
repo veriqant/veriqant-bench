@@ -1,11 +1,12 @@
 #!/usr/bin/env bash
 # Generates Pydantic v2 models for veriqore-bench from the canonical QPR JSON
-# Schema, and bundles a copy of the schema as package data.
+# Schema, and bundles a copy of the schema as package data (stable filename
+# qpr.schema.json regardless of schema version).
 # The output is committed; CI fails if it drifts from the schema.
 set -euo pipefail
 
 ROOT="$(cd "$(dirname "$0")/../../.." && pwd)"
-SCHEMA="$ROOT/packages/schema/schema/qpr-0.1.0.schema.json"
+SCHEMA="$ROOT/packages/schema/schema/qpr-0.2.0.schema.json"
 BENCH="$ROOT/packages/bench"
 OUT="$BENCH/src/veriqore_bench/qpr/_generated.py"
 
@@ -26,12 +27,12 @@ uv run datamodel-codegen \
   --use-double-quotes \
   --enum-field-as-literal all \
   --disable-timestamp \
-  --custom-file-header "# AUTO-GENERATED from packages/schema/schema/qpr-0.1.0.schema.json — do not edit.
+  --custom-file-header "# AUTO-GENERATED from packages/schema/schema/$(basename "$SCHEMA") — do not edit.
 # Regenerate with: packages/schema/scripts/generate-pydantic.sh"
 
 uv run ruff format "$OUT" >/dev/null
 uv run ruff check --fix --quiet "$OUT" || true
 
-cp "$SCHEMA" "$BENCH/src/veriqore_bench/qpr/qpr-0.1.0.schema.json"
+cp "$SCHEMA" "$BENCH/src/veriqore_bench/qpr/qpr.schema.json"
 echo "wrote $OUT"
-echo "wrote $BENCH/src/veriqore_bench/qpr/qpr-0.1.0.schema.json"
+echo "wrote $BENCH/src/veriqore_bench/qpr/qpr.schema.json"

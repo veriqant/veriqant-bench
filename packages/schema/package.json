@@ -12,7 +12,7 @@
       "types": "./dist/index.d.ts",
       "default": "./dist/index.js"
     },
-    "./schema/qpr-0.1.0.schema.json": "./schema/qpr-0.1.0.schema.json"
+    "./schema/qpr-0.2.0.schema.json": "./schema/qpr-0.2.0.schema.json"
   },
   "files": [
     "dist",

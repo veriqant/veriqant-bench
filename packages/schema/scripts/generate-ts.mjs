@@ -11,13 +11,13 @@ import { dirname, join } from 'node:path';
 import { fileURLToPath } from 'node:url';
 
 const pkgRoot = join(dirname(fileURLToPath(import.meta.url)), '..');
-const schemaPath = join(pkgRoot, 'schema', 'qpr-0.1.0.schema.json');
+const schemaPath = join(pkgRoot, 'schema', 'qpr-0.2.0.schema.json');
 const outPath = join(pkgRoot, 'src', 'generated', 'qpr.ts');
 const schemaCopyPath = join(pkgRoot, 'src', 'generated', 'qpr.schema.json');
 
 const banner = `/* eslint-disable */
 /**
- * AUTO-GENERATED from schema/qpr-0.1.0.schema.json — do not edit by hand.
+ * AUTO-GENERATED from schema/qpr-0.2.0.schema.json — do not edit by hand.
  * Regenerate with: pnpm --filter @veriqore/schema generate
  */`;
 

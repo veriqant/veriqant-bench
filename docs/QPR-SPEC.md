@@ -1,7 +1,15 @@
 # QPR — Quantum Performance Record
 
-**Schema version: 0.1.0** (semver; canonical schema:
-[`packages/schema/schema/qpr-0.1.0.schema.json`](../packages/schema/schema/qpr-0.1.0.schema.json))
+**Schema version: 0.2.0** (semver; canonical schema:
+[`packages/schema/schema/qpr-0.2.0.schema.json`](../packages/schema/schema/qpr-0.2.0.schema.json))
+
+Version history:
+
+- **0.2.0** — adds optional `results.metrics[].quality`
+  (`{reliable, issues[]}`): estimator self-assessment. A benchmark whose fit
+  fails its quality thresholds publishes the metric with `reliable=false`
+  and machine-readable reasons instead of a clean-looking number.
+- **0.1.0** — initial record structure.
 
 A QPR is a self-contained, tamper-evident JSON document describing one
 benchmark execution against one quantum device or simulator. Design goals, in
@@ -35,7 +43,7 @@ hashing is a major bump.
 | `execution` | `seed` (required — no seed, no reproducibility), `shots`, `live` flag, full `transpilation` block (SDK, exact version, optimization level, verbatim settings), submission/completion timestamps, provider `job_ids`. |
 | `circuits[]` | Every executed circuit in submission order: OpenQASM 3 source (`qasm3`) with `qasm3_sha256`, plus the post-transpilation form (`transpiled_qasm3` / `transpiled_qasm3_sha256` — both or neither). `index` must equal the array position. |
 | `results.raw[]` | Per-circuit measurement `counts` (bitstring → occurrences, MSB-first) with `shots`; counts must sum to shots. Raw counts are always retained so metrics can be re-derived. |
-| `results.metrics[]` | Derived metrics. Each carries `value` plus mandatory `statistics`: `sample_size`, `confidence_level`, `ci_lower`, `ci_upper`, `estimator` (and optional `std_error`). |
+| `results.metrics[]` | Derived metrics. Each carries `value` plus mandatory `statistics`: `sample_size`, `confidence_level`, `ci_lower`, `ci_upper`, `estimator` (and optional `std_error`), plus optional `quality` (`reliable` flag + `issues[]`) — present whenever the producing benchmark runs fit/estimator diagnostics. |
 | `results.analysis` | Optional benchmark-specific intermediate artifacts (fit curves, residuals). |
 | `provenance` | Exact `veriqore_bench_version`, `python_version`, `platform`, and per-SDK versions. |
 | `integrity` | `content_sha256` seal and optional Ed25519 `signature` (see below). |

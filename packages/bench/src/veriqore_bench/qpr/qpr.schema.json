@@ -1,8 +1,8 @@
 {
   "$schema": "https://json-schema.org/draft/2020-12/schema",
-  "$id": "https://schema.veriqore.dev/qpr/0.1.0/qpr.schema.json",
+  "$id": "https://schema.veriqore.dev/qpr/0.2.0/qpr.schema.json",
   "title": "QuantumPerformanceRecord",
-  "description": "QPR v0.1.0 \u2014 a self-contained, reproducible record of one benchmark execution against one quantum device or simulator. A QPR carries everything needed to re-run the benchmark bit-for-bit and to independently verify the reported metrics.",
+  "description": "QPR v0.2.0 \u2014 a self-contained, reproducible record of one benchmark execution against one quantum device or simulator. A QPR carries everything needed to re-run the benchmark bit-for-bit and to independently verify the reported metrics.",
   "type": "object",
   "additionalProperties": false,
   "required": [
@@ -411,6 +411,9 @@
         },
         "statistics": {
           "$ref": "#/$defs/MetricStatistics"
+        },
+        "quality": {
+          "$ref": "#/$defs/MetricQuality"
         }
       }
     },
@@ -531,6 +534,27 @@
         "value": {
           "description": "Base64-encoded signature over the ASCII hex content_sha256.",
           "type": "string"
+        }
+      }
+    },
+    "MetricQuality": {
+      "description": "Estimator self-assessment. Present whenever the producing benchmark runs quality diagnostics; a metric whose fit or estimator failed its quality thresholds MUST be published with reliable=false and the reasons listed, never as a clean-looking number.",
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "reliable"
+      ],
+      "properties": {
+        "reliable": {
+          "description": "False when the estimate failed the benchmark's quality thresholds.",
+          "type": "boolean"
+        },
+        "issues": {
+          "description": "Machine-readable reasons, e.g. 'fit.r_squared_below_threshold'.",
+          "type": "array",
+          "items": {
+            "type": "string"
+          }
         }
       }
     }

@@ -11,6 +11,11 @@ Two boundary conversions, both recorded in the job's transpilation metadata:
    counts. The adapter therefore requests exact output probabilities
    (shots=0) and draws the counts itself from a seeded multinomial —
    statistically identical to backend sampling, and reproducible.
+
+Consequence of (2): this path samples the *final-state* distribution, so it
+cannot represent mid-circuit measurement or dynamic circuits (classical
+control flow, reset). Such circuits raise UnsupportedCircuitError at submit
+rather than producing a silently wrong answer.
 """
 
 from __future__ import annotations
@@ -25,7 +30,7 @@ from braket.devices import LocalSimulator
 from braket.ir.openqasm import Program
 
 from .. import __version__
-from .errors import SubmissionError
+from .errors import SubmissionError, UnsupportedCircuitError
 from .local import LocalAdapterBase
 from .types import (
     CalibrationSnapshot,
@@ -41,6 +46,7 @@ GATE_RENAMES = {
     "cp": "cphaseshift",
     "sdg": "si",
     "tdg": "ti",
+    "sxdg": "vi",
     "sx": "v",
 }
 
@@ -49,6 +55,7 @@ _BIT_DECL_RE = re.compile(r"^\s*bit(\[\d+\])?\s+\w+\s*;\s*$")
 _QUBIT_DECL_RE = re.compile(r"^\s*qubit\[(\d+)\]\s+(\w+)\s*;\s*$")
 _MEASURE_ALL_RE = re.compile(r"^\s*\w+\s*=\s*measure\s+(\w+)\s*;\s*$")
 _MEASURE_ONE_RE = re.compile(r"^\s*\w+\[(\d+)\]\s*=\s*measure\s+(\w+)\[(\d+)\]\s*;\s*$")
+_DYNAMIC_RE = re.compile(r"^\s*(if|while|for|reset|def|return)\b")
 
 
 def convert_qasm3_to_braket(source: str) -> tuple[str, int]:
@@ -89,6 +96,16 @@ def convert_qasm3_to_braket(source: str) -> tuple[str, int]:
                     )
                 measured.add(qubit)
             continue
+        if _DYNAMIC_RE.match(line):
+            raise UnsupportedCircuitError(
+                "braket_local samples the final-state distribution and cannot "
+                f"execute dynamic-circuit constructs: {line.strip()!r}"
+            )
+        if measured or measured_all:
+            raise UnsupportedCircuitError(
+                "braket_local samples the final-state distribution and cannot "
+                f"execute mid-circuit measurement (operation after measure: {line.strip()!r})"
+            )
         for old, new in GATE_RENAMES.items():
             line = re.sub(rf"\b{old}\b", new, line)
         out_lines.append(line)
