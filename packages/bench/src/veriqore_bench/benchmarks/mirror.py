@@ -16,6 +16,8 @@ Methodology (suite_version 0.1.0):
 
 from __future__ import annotations
 
+from typing import Any
+
 import numpy as np
 from pydantic import BaseModel, ConfigDict, Field, field_validator
 from qiskit import QuantumCircuit, qasm3
@@ -145,6 +147,7 @@ class MirrorCircuits(Benchmark[MirrorParams]):
         counts: list[dict[str, int]],
         shots: int,
         params: MirrorParams,
+        execution_metadata: dict[str, Any] | None = None,
     ) -> AnalysisResult:
         n = len(params.qubits)
         successes: dict[int, list[float]] = {depth: [] for depth in params.depths}

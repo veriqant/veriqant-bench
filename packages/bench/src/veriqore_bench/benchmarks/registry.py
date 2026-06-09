@@ -18,6 +18,8 @@ ENTRY_POINT_GROUP = "veriqore_bench.benchmarks"
 _INSTALL_HINTS = {
     "rb": "pip install 'veriqore-bench[local]'",
     "mirror": "pip install 'veriqore-bench[local]'",
+    "qv": "pip install 'veriqore-bench[local]'",
+    "throughput": "pip install 'veriqore-bench[local]'",
 }
 
 

@@ -9,15 +9,9 @@ from pathlib import Path
 from typing import Any
 
 import pytest
+from conftest import StaticAdapter
 from pydantic import BaseModel, ConfigDict
 
-from veriqore_bench.adapters import (
-    CalibrationSnapshot,
-    CostEstimate,
-    DeviceCapabilities,
-    JobSpec,
-    LocalAdapterBase,
-)
 from veriqore_bench.benchmarks import (
     AnalysisResult,
     Benchmark,
@@ -33,31 +27,6 @@ from veriqore_bench.benchmarks import registry as registry_module
 from veriqore_bench.benchmarks.rb import RandomizedBenchmarking
 from veriqore_bench.qpr import verify_qpr_document, verify_qpr_file
 from veriqore_bench.qpr._generated import Metric, MetricStatistics
-
-
-class StaticAdapter(LocalAdapterBase):
-    name = "static_test"
-    adapter_version = "1.2.3"
-
-    def capabilities(self) -> DeviceCapabilities:
-        return DeviceCapabilities(
-            device_name="static_device",
-            num_qubits=4,
-            native_gates=["h", "cx"],
-            is_simulator=True,
-        )
-
-    def calibration_snapshot(self) -> CalibrationSnapshot | None:
-        return None
-
-    def estimate_cost(self, spec: JobSpec) -> CostEstimate:
-        return CostEstimate.free()
-
-    def _prepare(self, spec: JobSpec) -> Any:
-        return spec.circuits
-
-    def _execute(self, prepared: Any, spec: JobSpec) -> tuple[list[dict[str, int]], dict[str, Any]]:
-        return [{"0": spec.shots} for _ in prepared], {"sdk_versions": {"static": "1.2.3"}}
 
 
 class TinyParams(BaseModel):
@@ -87,6 +56,7 @@ class TinyBenchmark(Benchmark[TinyParams]):
         counts: list[dict[str, int]],
         shots: int,
         params: TinyParams,
+        execution_metadata: dict[str, Any] | None = None,
     ) -> AnalysisResult:
         value = counts[0].get("0", 0) / shots
         return AnalysisResult(

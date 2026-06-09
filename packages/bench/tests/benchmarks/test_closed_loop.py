@@ -24,6 +24,7 @@ from veriqore_bench.adapters import NoiseSpec
 from veriqore_bench.adapters.aer import _NOISY_1Q_GATES, NOISE_BASIS, AerSimulatorAdapter
 from veriqore_bench.benchmarks import run_benchmark
 from veriqore_bench.benchmarks.mirror import MirrorCircuits, MirrorParams
+from veriqore_bench.benchmarks.qv import QuantumVolume, QVParams
 from veriqore_bench.benchmarks.rb import RandomizedBenchmarking, RBParams
 from veriqore_bench.qpr import QuantumPerformanceRecord, verify_qpr_document
 
@@ -113,6 +114,32 @@ async def test_mirror_ideal_vs_noisy_polarization() -> None:
     ]
     assert float(np.mean(noisy_pols)) < 0.97
     assert float(np.mean(noisy_pols)) < float(np.mean(ideal_pols))
+
+
+@pytest.mark.timeout(300)
+async def test_qv_ideal_passes_and_strong_noise_fails_honestly() -> None:
+    params = QVParams(widths=[2, 3], circuits_per_width=30)
+    benchmark = QuantumVolume()
+
+    ideal = await run_benchmark(benchmark, AerSimulatorAdapter(), params, seed=SEED, shots=256)
+    assert_record_verifies(ideal)
+    ideal_by_name = {metric.name: metric for metric in ideal.results.metrics}
+    assert ideal_by_name["qv_pass.width_2"].value == 1.0
+    assert ideal_by_name["qv_pass.width_3"].value == 1.0
+    assert ideal_by_name["quantum_volume"].value == 8.0
+
+    noisy_adapter = AerSimulatorAdapter(
+        noise=NoiseSpec(depolarizing_1q=0.05, depolarizing_2q=0.20, readout_error_0to1=0.03)
+    )
+    noisy = await run_benchmark(benchmark, noisy_adapter, params, seed=SEED, shots=256)
+    assert_record_verifies(noisy)
+    noisy_by_name = {metric.name: metric for metric in noisy.results.metrics}
+    failed = [width for width in (2, 3) if noisy_by_name[f"qv_pass.width_{width}"].value == 0.0]
+    # Strong noise must fail at least one width, reported, never omitted.
+    assert failed, noisy.results.analysis
+    for width in failed:
+        assert f"heavy_output_probability.width_{width}" in noisy_by_name
+    assert noisy_by_name["quantum_volume"].value < ideal_by_name["quantum_volume"].value
 
 
 @pytest.mark.timeout(300)

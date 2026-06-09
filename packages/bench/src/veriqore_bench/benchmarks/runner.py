@@ -11,7 +11,7 @@ from uuid import uuid4
 from pydantic import BaseModel
 
 from veriqore_bench import __version__
-from veriqore_bench.adapters import JobSpec, QPUAdapter
+from veriqore_bench.adapters import QPUAdapter
 from veriqore_bench.qpr import (
     QPR_VERSION,
     Circuit,
@@ -58,11 +58,17 @@ async def run_benchmark(
     capabilities = adapter.capabilities()
     calibration = adapter.calibration_snapshot()
 
-    spec = JobSpec(circuits=[circuit.qasm3 for circuit in generated], shots=shots, seed=seed)
-    handle = await adapter.submit(spec)
-    job_result = await adapter.await_result(handle, timeout=timeout)
+    outcome = await benchmark.execute(
+        adapter, generated, validated_params, seed=seed, shots=shots, timeout=timeout
+    )
 
-    analysis = benchmark.analyze(generated, job_result.counts, shots, validated_params)
+    analysis = benchmark.analyze(
+        generated,
+        [executed.counts for executed in outcome.results],
+        shots,
+        validated_params,
+        outcome.metadata,
+    )
 
     record = QuantumPerformanceRecord(
         qpr_version=QPR_VERSION,
@@ -80,15 +86,19 @@ async def run_benchmark(
             seed=seed,
             shots=shots,
             live=not capabilities.is_simulator,
-            transpilation=_transpilation(adapter, job_result.metadata),
-            submitted_at=handle.submitted_at,
-            completed_at=job_result.completed_at,
+            transpilation=_transpilation(adapter, outcome.metadata),
+            submitted_at=outcome.submitted_at,
+            completed_at=outcome.completed_at,
         ),
         circuits=_qpr_circuits(generated),
         results=Results(
             raw=[
-                RawResult(circuit_index=index, shots=sum(counts.values()), counts=counts)
-                for index, counts in enumerate(job_result.counts)
+                RawResult(
+                    circuit_index=executed.circuit_index,
+                    shots=sum(executed.counts.values()),
+                    counts=executed.counts,
+                )
+                for executed in outcome.results
             ],
             metrics=analysis.metrics,
             analysis=analysis.analysis or None,
@@ -98,7 +108,7 @@ async def run_benchmark(
             python_version=platform.python_version(),
             platform=platform.platform(),
             sdk_versions={
-                **job_result.metadata.get("sdk_versions", {}),
+                **outcome.metadata.get("sdk_versions", {}),
                 "veriqore-bench": __version__,
             },
         ),

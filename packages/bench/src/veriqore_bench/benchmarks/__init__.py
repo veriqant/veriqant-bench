@@ -5,7 +5,13 @@ generation needs the [local] extra (qiskit). Reach them through the registry
 (`get`, `list_benchmarks`) or import their modules directly.
 """
 
-from .base import AnalysisResult, Benchmark, GeneratedCircuit
+from .base import (
+    AnalysisResult,
+    Benchmark,
+    ExecutedCircuitCounts,
+    ExecutionOutcome,
+    GeneratedCircuit,
+)
 from .registry import (
     ENTRY_POINT_GROUP,
     BenchmarkInfo,
@@ -23,6 +29,8 @@ __all__ = [
     "Benchmark",
     "BenchmarkInfo",
     "BenchmarkUnavailableError",
+    "ExecutedCircuitCounts",
+    "ExecutionOutcome",
     "GeneratedCircuit",
     "QprVerificationError",
     "bootstrap_mean_ci",

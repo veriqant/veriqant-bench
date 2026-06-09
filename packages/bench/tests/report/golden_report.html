@@ -1,0 +1,193 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<title>Veriqore benchmark report</title>
+<style>
+body { font-family: -apple-system, "Segoe UI", Helvetica, Arial, sans-serif;
+       margin: 2rem auto; max-width: 60rem; color: #1a1a2e; }
+h1 { font-size: 1.5rem; } h2 { font-size: 1.15rem; margin-top: 2.5rem; }
+table { border-collapse: collapse; width: 100%; font-size: 0.85rem; }
+th, td { text-align: left; padding: 0.4rem 0.6rem; border-bottom: 1px solid #ddd; }
+th { background: #f4f4f8; }
+code { font-family: ui-monospace, Menlo, monospace; font-size: 0.8rem; }
+.meta { color: #666; font-size: 0.8rem; }
+.badge { display: inline-block; padding: 0.1rem 0.45rem; border-radius: 0.6rem;
+         font-size: 0.72rem; font-weight: 600; }
+.badge.ok { background: #e2f5e8; color: #176635; }
+.badge.warn { background: #fdf3d7; color: #7a5d0c; }
+.badge.bad { background: #fde2e2; color: #8f1d1d; }
+.issues { color: #8f1d1d; font-size: 0.75rem; }
+svg { background: #fbfbfd; border: 1px solid #e5e5ee; margin-top: 0.6rem; }
+</style>
+</head>
+<body>
+<h1>Veriqore benchmark report</h1>
+<p class="meta">generated 2026-01-01 12:00:00 UTC · veriqore-bench 0.1.0
+ · 4 record(s) · all records verified</p>
+<table>
+<thead><tr><th>benchmark</th><th>adapter / device</th><th>key metric</th>
+<th>value (95% CI)</th><th>quality</th><th>record</th></tr></thead>
+<tbody>
+<tr><td>mirror_circuits</td><td>static_test / static_device (simulator)</td><td>success_probability.depth_1</td><td>0.5 [0, 1]</td><td><span class="badge ok">no diagnostics</span></td><td><code>402a5b43f05c</code></td></tr>
+<tr><td>quantum_volume</td><td>static_test / static_device (simulator)</td><td>quantum_volume</td><td>1 [1, 1]</td><td><span class="badge bad">UNRELIABLE</span> <span class="issues">qv.insufficient_circuits_for_confidence, qv.no_width_passed</span></td><td><code>bff0d3a7a9c8</code></td></tr>
+<tr><td>rb_1q</td><td>static_test / static_device (simulator)</td><td>error_per_clifford</td><td>2.968e-06 [2.968e-06, 2.968e-06]</td><td><span class="badge ok">reliable</span></td><td><code>cd72a63c5ffb</code></td></tr>
+<tr><td>throughput</td><td>static_test / static_device (simulator)</td><td>job_round_trip_seconds</td><td>0.0421 [0.03789, 0.04631]</td><td><span class="badge bad">UNRELIABLE</span> <span class="issues">timing.simulator_not_comparable_to_hardware</span></td><td><code>407267d3dcf6</code></td></tr>
+</tbody>
+</table>
+
+<h2>2-qubit randomized mirror circuits</h2>
+<p class="meta">adapter static_test · device
+ static_device · seed 7 · shots 64
+ · suite 0.1.0
+ · <code>402a5b43f05cb1f9bf738e001945d3ab492f37da6c3eec78708dc2d790765c89</code></p>
+<table>
+<thead><tr><th>metric</th><th>value</th><th>95% CI</th><th>samples</th><th>quality</th></tr></thead>
+<tbody>
+<tr><td>success_probability.depth_1</td><td>0.5 probability</td><td>[0, 1]</td><td>128</td><td><span class="badge ok">no diagnostics</span></td></tr>
+<tr><td>mirror_polarization.depth_1</td><td>0.3333 probability</td><td>[-0.3333, 1]</td><td>128</td><td><span class="badge ok">no diagnostics</span></td></tr>
+<tr><td>success_probability.depth_2</td><td>0 probability</td><td>[0, 0]</td><td>128</td><td><span class="badge ok">no diagnostics</span></td></tr>
+<tr><td>mirror_polarization.depth_2</td><td>-0.3333 probability</td><td>[-0.3333, -0.3333]</td><td>128</td><td><span class="badge ok">no diagnostics</span></td></tr>
+</tbody>
+</table>
+<svg width="480" height="220" role="img"
+ aria-label="polarization vs depth">
+<line x1="40" y1="180" x2="440"
+ y2="180" stroke="#888"/>
+<line x1="40" y1="40" x2="40" y2="180"
+ stroke="#888"/>
+<text x="240" y="212" text-anchor="middle"
+ font-size="11" fill="#444">depth</text>
+<text x="12" y="110" text-anchor="middle" font-size="11" fill="#444"
+ transform="rotate(-90 12 110)">polarization</text>
+<text x="34" y="184.0" text-anchor="end" font-size="10"
+ fill="#666">-0.3333</text>
+<text x="34" y="44.0" text-anchor="end" font-size="10"
+ fill="#666">1</text>
+<text x="40.0" y="194" text-anchor="middle"
+ font-size="10" fill="#666">1</text>
+<text x="440.0" y="194" text-anchor="middle"
+ font-size="10" fill="#666">2</text>
+
+<polyline points="40.0,110.0 440.0,180.0" fill="none" stroke="#3b4cc0" stroke-width="1.5"/>
+<circle cx="40.0" cy="110.0" r="3" fill="#3b4cc0"/>
+<circle cx="440.0" cy="180.0" r="3" fill="#3b4cc0"/>
+</svg>
+
+
+<h2>quantum volume (widths 2)</h2>
+<p class="meta">adapter static_test · device
+ static_device · seed 7 · shots 64
+ · suite 0.1.0
+ · <code>bff0d3a7a9c8ab8c703a6ae3e6c315d228550ea52febdc4088518e6a5015498d</code></p>
+<table>
+<thead><tr><th>metric</th><th>value</th><th>95% CI</th><th>samples</th><th>quality</th></tr></thead>
+<tbody>
+<tr><td>quantum_volume</td><td>1</td><td>[1, 1]</td><td>320</td><td><span class="badge bad">UNRELIABLE</span> <span class="issues">qv.insufficient_circuits_for_confidence, qv.no_width_passed</span></td></tr>
+<tr><td>heavy_output_probability.width_2</td><td>0.6 probability</td><td>[0.2, 1]</td><td>320</td><td><span class="badge bad">UNRELIABLE</span> <span class="issues">qv.insufficient_circuits_for_confidence</span></td></tr>
+<tr><td>qv_pass.width_2</td><td>0</td><td>[0, 0]</td><td>320</td><td><span class="badge bad">UNRELIABLE</span> <span class="issues">qv.insufficient_circuits_for_confidence</span></td></tr>
+</tbody>
+</table>
+<svg width="480" height="220" role="img"
+ aria-label="heavy-output probability vs width">
+<line x1="40" y1="180" x2="440"
+ y2="180" stroke="#888"/>
+<line x1="40" y1="40" x2="40" y2="180"
+ stroke="#888"/>
+<text x="240" y="212" text-anchor="middle"
+ font-size="11" fill="#444">width</text>
+<text x="12" y="110" text-anchor="middle" font-size="11" fill="#444"
+ transform="rotate(-90 12 110)">heavy-output probability</text>
+<text x="34" y="184.0" text-anchor="end" font-size="10"
+ fill="#666">0</text>
+<text x="34" y="44.0" text-anchor="end" font-size="10"
+ fill="#666">1</text>
+<text x="40.0" y="194" text-anchor="middle"
+ font-size="10" fill="#666">2</text>
+<text x="440.0" y="194" text-anchor="middle"
+ font-size="10" fill="#666">3</text>
+<line x1="40" y1="86.7" x2="440" y2="86.7" stroke="#c03b3b" stroke-dasharray="5,4"/><text x="440" y="81.7" text-anchor="end" font-size="10" fill="#c03b3b">2/3 pass threshold</text>
+<polyline points="40.0,96.0" fill="none" stroke="#3b4cc0" stroke-width="1.5"/>
+<circle cx="40.0" cy="96.0" r="3" fill="#3b4cc0"/>
+</svg>
+
+
+<h2>1-qubit Clifford randomized benchmarking</h2>
+<p class="meta">adapter static_test · device
+ static_device · seed 7 · shots 64
+ · suite 0.1.0
+ · <code>cd72a63c5ffb7846564d0272af9f7bf2299d38315b4d10186e227db27c13df26</code></p>
+<table>
+<thead><tr><th>metric</th><th>value</th><th>95% CI</th><th>samples</th><th>quality</th></tr></thead>
+<tbody>
+<tr><td>error_per_clifford</td><td>2.968e-06 probability</td><td>[2.968e-06, 2.968e-06]</td><td>384</td><td><span class="badge ok">reliable</span></td></tr>
+<tr><td>rb_decay_rate</td><td>1 probability</td><td>[1, 1]</td><td>384</td><td><span class="badge ok">reliable</span></td></tr>
+</tbody>
+</table>
+<svg width="480" height="220" role="img"
+ aria-label="survival probability vs sequence length">
+<line x1="40" y1="180" x2="440"
+ y2="180" stroke="#888"/>
+<line x1="40" y1="40" x2="40" y2="180"
+ stroke="#888"/>
+<text x="240" y="212" text-anchor="middle"
+ font-size="11" fill="#444">sequence length</text>
+<text x="12" y="110" text-anchor="middle" font-size="11" fill="#444"
+ transform="rotate(-90 12 110)">survival probability</text>
+<text x="34" y="184.0" text-anchor="end" font-size="10"
+ fill="#666">0</text>
+<text x="34" y="44.0" text-anchor="end" font-size="10"
+ fill="#666">1</text>
+<text x="40.0" y="194" text-anchor="middle"
+ font-size="10" fill="#666">1</text>
+<text x="440.0" y="194" text-anchor="middle"
+ font-size="10" fill="#666">4</text>
+
+<polyline points="40.0,40.0 173.3,40.0 440.0,40.0" fill="none" stroke="#3b4cc0" stroke-width="1.5"/>
+<circle cx="40.0" cy="40.0" r="3" fill="#3b4cc0"/>
+<circle cx="173.3" cy="40.0" r="3" fill="#3b4cc0"/>
+<circle cx="440.0" cy="40.0" r="3" fill="#3b4cc0"/>
+</svg>
+
+
+<h2>sequential batch throughput (fixture)</h2>
+<p class="meta">adapter static_test · device
+ static_device · seed 7 · shots 64
+ · suite 0.1.0
+ · <code>407267d3dcf606aafc4ac7d9fb4aae2c24d8b35c1ce019ee415c194b11245228</code></p>
+<table>
+<thead><tr><th>metric</th><th>value</th><th>95% CI</th><th>samples</th><th>quality</th></tr></thead>
+<tbody>
+<tr><td>job_round_trip_seconds</td><td>0.0421 seconds</td><td>[0.03789, 0.04631]</td><td>4</td><td><span class="badge bad">UNRELIABLE</span> <span class="issues">timing.simulator_not_comparable_to_hardware</span></td></tr>
+<tr><td>sustained_shots_per_second</td><td>4561 shots/s</td><td>[4105, 5017]</td><td>4</td><td><span class="badge bad">UNRELIABLE</span> <span class="issues">timing.simulator_not_comparable_to_hardware</span></td></tr>
+<tr><td>sequential_layers_per_second</td><td>356 layers/s</td><td>[320.4, 391.6]</td><td>4</td><td><span class="badge bad">UNRELIABLE</span> <span class="issues">timing.simulator_not_comparable_to_hardware</span></td></tr>
+</tbody>
+</table>
+<svg width="480" height="220" role="img"
+ aria-label="round trip (s) vs batch">
+<line x1="40" y1="180" x2="440"
+ y2="180" stroke="#888"/>
+<line x1="40" y1="40" x2="40" y2="180"
+ stroke="#888"/>
+<text x="240" y="212" text-anchor="middle"
+ font-size="11" fill="#444">batch</text>
+<text x="12" y="110" text-anchor="middle" font-size="11" fill="#444"
+ transform="rotate(-90 12 110)">round trip (s)</text>
+<text x="34" y="184.0" text-anchor="end" font-size="10"
+ fill="#666">0</text>
+<text x="34" y="44.0" text-anchor="end" font-size="10"
+ fill="#666">0.04796</text>
+<text x="40.0" y="194" text-anchor="middle"
+ font-size="10" fill="#666">0</text>
+<text x="440.0" y="194" text-anchor="middle"
+ font-size="10" fill="#666">3</text>
+
+<polyline points="40.0,58.0 173.3,57.1 306.7,52.7 440.0,57.7" fill="none" stroke="#3b4cc0" stroke-width="1.5"/>
+<circle cx="40.0" cy="58.0" r="3" fill="#3b4cc0"/>
+<circle cx="173.3" cy="57.1" r="3" fill="#3b4cc0"/>
+<circle cx="306.7" cy="52.7" r="3" fill="#3b4cc0"/>
+<circle cx="440.0" cy="57.7" r="3" fill="#3b4cc0"/>
+</svg>
+
+</body>
+</html>

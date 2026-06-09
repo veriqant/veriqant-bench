@@ -107,6 +107,57 @@ def test_run_mirror_emits_verified_qpr(tmp_path: Path) -> None:
     assert document["benchmark"]["id"] == "mirror_circuits"
 
 
+def test_run_qv_emits_verified_qpr(tmp_path: Path) -> None:
+    code, output = run_cli(
+        [
+            "run",
+            "qv",
+            "--widths",
+            "2",
+            "--circuits",
+            "5",
+            "--shots",
+            "64",
+            "--seed",
+            "7",
+            "--out",
+            str(tmp_path),
+        ]
+    )
+    assert code == 0, output
+    path = check_emitted_qpr(output)
+    document = json.loads(path.read_text(encoding="utf-8"))
+    assert document["benchmark"]["id"] == "quantum_volume"
+
+
+def test_run_throughput_emits_verified_qpr(tmp_path: Path) -> None:
+    code, output = run_cli(
+        [
+            "run",
+            "throughput",
+            "--batches",
+            "3",
+            "--batch-size",
+            "2",
+            "--depth",
+            "2",
+            "--shots",
+            "32",
+            "--seed",
+            "7",
+            "--out",
+            str(tmp_path),
+        ]
+    )
+    assert code == 0, output
+    path = check_emitted_qpr(output)
+    document = json.loads(path.read_text(encoding="utf-8"))
+    assert document["benchmark"]["id"] == "throughput"
+    quality = document["results"]["metrics"][0]["quality"]
+    assert quality["reliable"] is False
+    assert "timing.simulator_not_comparable_to_hardware" in quality["issues"]
+
+
 def test_run_rb_with_noise_file_records_calibration(tmp_path: Path) -> None:
     noise_file = tmp_path / "noise.json"
     noise_file.write_text(json.dumps({"depolarizing_1q": 0.05}), encoding="utf-8")

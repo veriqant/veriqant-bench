@@ -24,6 +24,7 @@ from .benchmarks import (
 )
 from .benchmarks import get as get_benchmark
 from .qpr import QPR_VERSION, verify_qpr_file
+from .report import ReportInputError, write_report
 
 SCHEMA_RESOURCE = "qpr.schema.json"
 
@@ -255,6 +256,129 @@ def run_mirror(
         shots,
         out,
     )
+
+
+@run.command("qv")
+@click.option("--adapter", "adapter_name", default="aer_simulator", show_default=True)
+@click.option(
+    "--widths",
+    default="2,3,4",
+    callback=_int_list,
+    show_default=True,
+    help="Comma-separated circuit widths (qubits = depth = width).",
+)
+@click.option(
+    "--circuits",
+    default=50,
+    show_default=True,
+    help="Random circuits per width (>=100 for publication-grade claims).",
+)
+@click.option("--shots", default=256, show_default=True)
+@click.option(
+    "--seed", type=int, default=None, help="Master seed; generated and printed when omitted."
+)
+@click.option(
+    "--noise",
+    "noise_file",
+    default=None,
+    type=click.Path(exists=True, dir_okay=False, path_type=Path),
+    help="NoiseSpec JSON file (aer_simulator only).",
+)
+@click.option(
+    "--out", default="results", show_default=True, type=click.Path(file_okay=False, path_type=Path)
+)
+def run_qv(
+    adapter_name: str,
+    widths: list[int],
+    circuits: int,
+    shots: int,
+    seed: int | None,
+    noise_file: Path | None,
+    out: Path,
+) -> None:
+    """Quantum volume: heavy-output probability per width, 2-sigma pass rule."""
+    adapter = _build_adapter(adapter_name, noise_file)
+    _execute_benchmark(
+        "qv",
+        {"widths": widths, "circuits_per_width": circuits},
+        adapter,
+        _resolve_seed(seed),
+        shots,
+        out,
+    )
+
+
+@run.command("throughput")
+@click.option("--adapter", "adapter_name", default="aer_simulator", show_default=True)
+@click.option("--batches", default=5, show_default=True, help="Sequential timed batches (R).")
+@click.option("--batch-size", default=10, show_default=True, help="Circuits per batch (B).")
+@click.option("--width", default=2, show_default=True, help="Template circuit width.")
+@click.option("--depth", default=4, show_default=True, help="Template mirror half-depth.")
+@click.option("--shots", default=256, show_default=True)
+@click.option(
+    "--seed", type=int, default=None, help="Master seed; generated and printed when omitted."
+)
+@click.option(
+    "--out", default="results", show_default=True, type=click.Path(file_okay=False, path_type=Path)
+)
+def run_throughput(
+    adapter_name: str,
+    batches: int,
+    batch_size: int,
+    width: int,
+    depth: int,
+    shots: int,
+    seed: int | None,
+    out: Path,
+) -> None:
+    """Sequential batch throughput (NOT CLOPS — see docs/BENCHMARKS.md).
+
+    On simulators the result measures the harness + host machine and is
+    flagged accordingly."""
+    adapter = _build_adapter(adapter_name, None)
+    _execute_benchmark(
+        "throughput",
+        {"batches": batches, "batch_size": batch_size, "width": width, "depth": depth},
+        adapter,
+        _resolve_seed(seed),
+        shots,
+        out,
+    )
+
+
+@main.command("report")
+@click.argument("inputs", nargs=-1, required=True, type=click.Path(exists=True, path_type=Path))
+@click.option(
+    "-o",
+    "--output",
+    default="report.html",
+    show_default=True,
+    type=click.Path(dir_okay=False, path_type=Path),
+)
+@click.option(
+    "--generated-at",
+    default=None,
+    help="RFC 3339 timestamp override for reproducible output (golden-file testing).",
+)
+def report(inputs: tuple[Path, ...], output: Path, generated_at: str | None) -> None:
+    """Generate a self-contained static HTML report from QPR files/directories.
+
+    Every input is verified first; unverifiable records are refused."""
+    from datetime import datetime
+
+    timestamp = None
+    if generated_at is not None:
+        try:
+            timestamp = datetime.fromisoformat(generated_at)
+        except ValueError as exc:
+            raise click.BadParameter(f"--generated-at must be RFC 3339: {exc}") from exc
+        if timestamp.tzinfo is None:
+            raise click.BadParameter("--generated-at must carry a timezone offset")
+    try:
+        path = write_report(list(inputs), output, generated_at=timestamp)
+    except ReportInputError as exc:
+        raise click.ClickException(str(exc)) from exc
+    click.echo(f"wrote {path}")
 
 
 @adapters.command("probe")

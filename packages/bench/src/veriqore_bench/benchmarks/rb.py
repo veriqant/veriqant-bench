@@ -18,6 +18,8 @@ leak out of generate().
 
 from __future__ import annotations
 
+from typing import Any
+
 import numpy as np
 from pydantic import BaseModel, ConfigDict, Field, field_validator
 from qiskit import QuantumCircuit, qasm3
@@ -185,6 +187,7 @@ class RandomizedBenchmarking(Benchmark[RBParams]):
         counts: list[dict[str, int]],
         shots: int,
         params: RBParams,
+        execution_metadata: dict[str, Any] | None = None,
     ) -> AnalysisResult:
         n = len(params.qubits)
         dim = 2**n

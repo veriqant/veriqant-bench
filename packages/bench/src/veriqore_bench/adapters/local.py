@@ -126,10 +126,19 @@ class LocalAdapterBase(AwaitResultMixin, ABC):
             self._transition(job, JobStatus.FAILED)
             raise ExecutionError(f"backend execution failed: {exc}") from exc
         self._transition(job, JobStatus.COMPLETED)
+        completed_at = datetime.now(tz=UTC)
+        metadata.setdefault(
+            "timing",
+            {
+                "queue_seconds": (started_at - job.handle.submitted_at).total_seconds(),
+                "execution_seconds": (completed_at - started_at).total_seconds(),
+                "source": "local_state_transitions",
+            },
+        )
         return JobResult(
             counts=counts,
             shots=spec.shots,
             started_at=started_at,
-            completed_at=datetime.now(tz=UTC),
+            completed_at=completed_at,
             metadata=metadata,
         )

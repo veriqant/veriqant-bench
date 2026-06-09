@@ -40,6 +40,8 @@ braket_local = "veriqore_bench.adapters.braket_local:BraketLocalAdapter"
 [project.entry-points."veriqore_bench.benchmarks"]
 rb = "veriqore_bench.benchmarks.rb:RandomizedBenchmarking"
 mirror = "veriqore_bench.benchmarks.mirror:MirrorCircuits"
+qv = "veriqore_bench.benchmarks.qv:QuantumVolume"
+throughput = "veriqore_bench.benchmarks.throughput:Throughput"
 
 [dependency-groups]
 dev = [

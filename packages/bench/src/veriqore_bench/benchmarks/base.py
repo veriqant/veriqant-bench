@@ -15,8 +15,9 @@ from __future__ import annotations
 from abc import ABC, abstractmethod
 from typing import Any, ClassVar
 
-from pydantic import BaseModel, ConfigDict, Field
+from pydantic import AwareDatetime, BaseModel, ConfigDict, Field
 
+from veriqore_bench.adapters import JobSpec, QPUAdapter
 from veriqore_bench.qpr._generated import Metric
 
 
@@ -38,6 +39,28 @@ class AnalysisResult(BaseModel):
 
     metrics: list[Metric] = Field(min_length=1)
     analysis: dict[str, Any] = Field(default_factory=dict)
+
+
+class ExecutedCircuitCounts(BaseModel):
+    """Counts of one execution of one circuit. circuit_index references the
+    generated-circuit list; the same circuit may be executed repeatedly
+    (e.g. the throughput benchmark re-runs a template batch)."""
+
+    model_config = ConfigDict(extra="forbid")
+
+    circuit_index: int = Field(ge=0)
+    counts: dict[str, int]
+
+
+class ExecutionOutcome(BaseModel):
+    """Everything execute() hands back to the runner."""
+
+    model_config = ConfigDict(extra="forbid")
+
+    results: list[ExecutedCircuitCounts] = Field(min_length=1)
+    submitted_at: AwareDatetime
+    completed_at: AwareDatetime
+    metadata: dict[str, Any] = Field(default_factory=dict)
 
 
 class Benchmark[ParamsT: BaseModel](ABC):
@@ -63,6 +86,35 @@ class Benchmark[ParamsT: BaseModel](ABC):
     def generate(self, params: ParamsT, seed: int) -> list[GeneratedCircuit]:
         """Deterministically generate the circuit batch from (params, seed)."""
 
+    async def execute(
+        self,
+        adapter: QPUAdapter,
+        circuits: list[GeneratedCircuit],
+        params: ParamsT,
+        *,
+        seed: int,
+        shots: int,
+        timeout: float = 600.0,
+    ) -> ExecutionOutcome:
+        """Execute the generated circuits on *adapter*.
+
+        Default: one job with every circuit, results aligned with the
+        generated list. Benchmarks with a non-trivial execution protocol
+        (e.g. timed repeated batches) override this.
+        """
+        spec = JobSpec(circuits=[circuit.qasm3 for circuit in circuits], shots=shots, seed=seed)
+        handle = await adapter.submit(spec)
+        result = await adapter.await_result(handle, timeout=timeout)
+        return ExecutionOutcome(
+            results=[
+                ExecutedCircuitCounts(circuit_index=index, counts=counts)
+                for index, counts in enumerate(result.counts)
+            ],
+            submitted_at=handle.submitted_at,
+            completed_at=result.completed_at,
+            metadata=result.metadata,
+        )
+
     @abstractmethod
     def analyze(
         self,
@@ -70,6 +122,8 @@ class Benchmark[ParamsT: BaseModel](ABC):
         counts: list[dict[str, int]],
         shots: int,
         params: ParamsT,
+        execution_metadata: dict[str, Any] | None = None,
     ) -> AnalysisResult:
-        """Pure function from measured counts to metrics. Must not execute
-        anything; unit-testable on synthetic counts."""
+        """Pure function from measured counts (plus optional execution
+        metadata, e.g. timing recorded by execute()) to metrics. Must not
+        execute anything; unit-testable on synthetic inputs."""
