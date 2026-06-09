@@ -1,0 +1,71 @@
+[build-system]
+requires = ["hatchling"]
+build-backend = "hatchling.build"
+
+[project]
+name = "veriqore-bench"
+version = "0.1.0"
+description = "Standardized, reproducible benchmark suites for quantum processors — produces signed Quantum Performance Records (QPRs)"
+readme = "README.md"
+license = "Apache-2.0"
+requires-python = ">=3.12"
+authors = [{ name = "Veriqore" }]
+keywords = ["quantum", "benchmarking", "qpu", "verification"]
+dependencies = [
+    "click>=8.1",
+    "numpy>=1.26",
+    "pydantic>=2.7",
+]
+
+[project.optional-dependencies]
+# Provider SDKs are optional so the core install stays lean:
+#   pip install veriqore-bench[ibm,braket]
+ibm = ["qiskit>=1.4", "qiskit-ibm-runtime>=0.34"]
+braket = ["amazon-braket-sdk>=1.87"]
+# Ed25519 signing/verification of QPRs.
+signing = ["cryptography>=43"]
+
+[project.scripts]
+veriqore-bench = "veriqore_bench.cli:main"
+
+[dependency-groups]
+dev = [
+    "cryptography>=43",
+    "datamodel-code-generator>=0.26",
+    "hypothesis>=6.112",
+    "mypy>=1.13",
+    "pytest>=8.3",
+    "pytest-cov>=5.0",
+    "ruff>=0.8",
+]
+
+[tool.pytest.ini_options]
+testpaths = ["tests"]
+addopts = "--cov=veriqore_bench --cov-report=term-missing --cov-fail-under=90"
+
+[tool.coverage.run]
+branch = true
+
+[tool.ruff]
+line-length = 100
+target-version = "py312"
+
+[tool.ruff.lint]
+select = ["E", "F", "I", "UP", "B", "SIM", "C4", "RET", "RUF"]
+
+[tool.ruff.lint.per-file-ignores]
+# Generated code is normalized by ruff format only.
+"src/veriqore_bench/qpr/_generated.py" = ["E501"]
+
+[tool.mypy]
+python_version = "3.12"
+strict = true
+files = ["src", "tests"]
+plugins = ["pydantic.mypy"]
+
+[[tool.mypy.overrides]]
+module = "veriqore_bench.qpr._generated"
+# Generated models: tolerate codegen artifacts (constr() in annotations is
+# valid for pydantic but rejected by mypy's type-annotation rules).
+disallow_any_explicit = false
+disable_error_code = ["valid-type"]

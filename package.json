@@ -1,0 +1,26 @@
+{
+  "name": "veriqore",
+  "version": "0.1.0",
+  "private": true,
+  "description": "Independent observability & verification platform for quantum compute",
+  "license": "Apache-2.0",
+  "packageManager": "pnpm@10.33.2",
+  "engines": {
+    "node": ">=22"
+  },
+  "scripts": {
+    "generate": "pnpm --filter @veriqore/schema generate",
+    "build": "pnpm -r build",
+    "lint": "eslint .",
+    "typecheck": "pnpm -r typecheck",
+    "test": "pnpm -r test"
+  },
+  "devDependencies": {
+    "@eslint/js": "^9.39.0",
+    "@types/node": "^22.10.0",
+    "eslint": "^9.39.0",
+    "globals": "^15.13.0",
+    "typescript": "^5.9.3",
+    "typescript-eslint": "^8.46.4"
+  }
+}

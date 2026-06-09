@@ -1,0 +1,538 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://schema.veriqore.dev/qpr/0.1.0/qpr.schema.json",
+  "title": "QuantumPerformanceRecord",
+  "description": "QPR v0.1.0 \u2014 a self-contained, reproducible record of one benchmark execution against one quantum device or simulator. A QPR carries everything needed to re-run the benchmark bit-for-bit and to independently verify the reported metrics.",
+  "type": "object",
+  "additionalProperties": false,
+  "required": [
+    "qpr_version",
+    "record_id",
+    "created_at",
+    "benchmark",
+    "provider",
+    "device",
+    "execution",
+    "circuits",
+    "results",
+    "provenance",
+    "integrity"
+  ],
+  "properties": {
+    "qpr_version": {
+      "description": "Semantic version of the QPR schema this record conforms to. Consumers MUST reject records whose major version they do not understand.",
+      "type": "string",
+      "pattern": "^(0|[1-9]\\d*)\\.(0|[1-9]\\d*)\\.(0|[1-9]\\d*)$"
+    },
+    "record_id": {
+      "description": "Globally unique identifier (UUID v4) of this record.",
+      "type": "string",
+      "format": "uuid"
+    },
+    "created_at": {
+      "description": "UTC timestamp at which this record was assembled (RFC 3339).",
+      "type": "string",
+      "format": "date-time"
+    },
+    "benchmark": {
+      "$ref": "#/$defs/Benchmark"
+    },
+    "provider": {
+      "$ref": "#/$defs/Provider"
+    },
+    "device": {
+      "$ref": "#/$defs/Device"
+    },
+    "execution": {
+      "$ref": "#/$defs/Execution"
+    },
+    "circuits": {
+      "description": "Every circuit executed for this benchmark, in submission order, with content hashes for verification.",
+      "type": "array",
+      "minItems": 1,
+      "items": {
+        "$ref": "#/$defs/Circuit"
+      }
+    },
+    "results": {
+      "$ref": "#/$defs/Results"
+    },
+    "provenance": {
+      "$ref": "#/$defs/Provenance"
+    },
+    "integrity": {
+      "$ref": "#/$defs/Integrity"
+    }
+  },
+  "$defs": {
+    "Benchmark": {
+      "description": "Identity and parameterization of the benchmark that produced this record.",
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "id",
+        "suite_version",
+        "parameters"
+      ],
+      "properties": {
+        "id": {
+          "description": "Machine-readable benchmark identifier, e.g. 'rb_1q', 'rb_2q', 'mirror_circuits', 'quantum_volume', 'clops', 'qec_repetition_memory'.",
+          "type": "string",
+          "pattern": "^[a-z0-9][a-z0-9_.-]*$"
+        },
+        "display_name": {
+          "description": "Human-readable benchmark name.",
+          "type": "string"
+        },
+        "suite_version": {
+          "description": "Semantic version of the benchmark implementation. Bumped whenever the circuit family, sampling procedure, or estimator changes.",
+          "type": "string",
+          "pattern": "^(0|[1-9]\\d*)\\.(0|[1-9]\\d*)\\.(0|[1-9]\\d*)$"
+        },
+        "parameters": {
+          "description": "Complete benchmark-specific parameter set (e.g. sequence lengths, qubit pairs, number of random circuits). Together with execution.seed this MUST fully determine the generated circuits.",
+          "type": "object",
+          "additionalProperties": true
+        }
+      }
+    },
+    "Provider": {
+      "description": "The cloud provider / SDK path through which the device was reached.",
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "name",
+        "adapter"
+      ],
+      "properties": {
+        "name": {
+          "description": "Provider identifier, e.g. 'local', 'ibm', 'aws-braket', 'azure-quantum'.",
+          "type": "string",
+          "pattern": "^[a-z0-9][a-z0-9_.-]*$"
+        },
+        "adapter": {
+          "description": "veriqore-bench adapter used, e.g. 'aer_simulator', 'braket_local', 'ibm_runtime', 'braket'.",
+          "type": "string",
+          "pattern": "^[a-z0-9][a-z0-9_.-]*$"
+        },
+        "region": {
+          "description": "Provider region or endpoint identifier, when applicable.",
+          "type": "string"
+        }
+      }
+    },
+    "Device": {
+      "description": "The target QPU or simulator, including the calibration snapshot in effect at execution time.",
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "name",
+        "num_qubits",
+        "simulator"
+      ],
+      "properties": {
+        "name": {
+          "description": "Provider-scoped device/backend name, e.g. 'aer_simulator', 'ibm_torino', 'Ankaa-3'.",
+          "type": "string"
+        },
+        "version": {
+          "description": "Device/backend version string as reported by the provider.",
+          "type": "string"
+        },
+        "num_qubits": {
+          "description": "Number of physical qubits available on the device.",
+          "type": "integer",
+          "minimum": 1
+        },
+        "simulator": {
+          "description": "True if the target is a classical simulator rather than physical hardware.",
+          "type": "boolean"
+        },
+        "basis_gates": {
+          "description": "Native gate set of the device, if reported.",
+          "type": "array",
+          "items": {
+            "type": "string"
+          }
+        },
+        "coupling_map": {
+          "description": "Directed qubit connectivity as [control, target] pairs, if reported.",
+          "type": "array",
+          "items": {
+            "type": "array",
+            "items": {
+              "type": "integer",
+              "minimum": 0
+            },
+            "minItems": 2,
+            "maxItems": 2
+          }
+        },
+        "calibration_snapshot_at": {
+          "description": "UTC timestamp of the provider calibration data captured below (RFC 3339).",
+          "type": "string",
+          "format": "date-time"
+        },
+        "calibration_snapshot": {
+          "description": "Raw provider calibration data (T1/T2, gate/readout errors, ...) as reported at execution time. Free-form because formats differ per provider; recorded verbatim for auditability.",
+          "type": "object",
+          "additionalProperties": true
+        }
+      }
+    },
+    "Execution": {
+      "description": "Everything about how the circuits were executed: seed, shots, transpilation, timing. Together with benchmark.parameters this makes the run reproducible.",
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "seed",
+        "shots",
+        "live",
+        "transpilation",
+        "submitted_at"
+      ],
+      "properties": {
+        "seed": {
+          "description": "Master PRNG seed used for circuit generation and sampling. Required: without it the run is not reproducible.",
+          "type": "integer",
+          "minimum": 0
+        },
+        "shots": {
+          "description": "Number of shots per circuit.",
+          "type": "integer",
+          "minimum": 1
+        },
+        "live": {
+          "description": "True if executed on paid/live hardware, false for local simulators.",
+          "type": "boolean"
+        },
+        "transpilation": {
+          "$ref": "#/$defs/Transpilation"
+        },
+        "submitted_at": {
+          "description": "UTC timestamp when the job batch was submitted (RFC 3339).",
+          "type": "string",
+          "format": "date-time"
+        },
+        "completed_at": {
+          "description": "UTC timestamp when all results were retrieved (RFC 3339).",
+          "type": "string",
+          "format": "date-time"
+        },
+        "job_ids": {
+          "description": "Provider job identifiers, for cross-referencing against provider records.",
+          "type": "array",
+          "items": {
+            "type": "string"
+          }
+        }
+      }
+    },
+    "Transpilation": {
+      "description": "Exact transpiler configuration. Identical circuit families are submitted to every provider; only this recorded transpilation step may differ, so it must be fully captured.",
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "sdk",
+        "sdk_version",
+        "settings"
+      ],
+      "properties": {
+        "sdk": {
+          "description": "Transpiling SDK, e.g. 'qiskit', 'braket'.",
+          "type": "string"
+        },
+        "sdk_version": {
+          "description": "Exact version of the transpiling SDK.",
+          "type": "string"
+        },
+        "optimization_level": {
+          "description": "SDK optimization level, when the SDK uses that concept.",
+          "type": "integer",
+          "minimum": 0
+        },
+        "settings": {
+          "description": "Complete transpiler settings (initial layout, routing method, scheduling, ...). Free-form per SDK, recorded verbatim.",
+          "type": "object",
+          "additionalProperties": true
+        }
+      }
+    },
+    "Circuit": {
+      "description": "One executed circuit: the abstract (pre-transpilation) definition, the transpiled form actually submitted, and SHA-256 hashes of both for verification.",
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "index",
+        "qasm3",
+        "qasm3_sha256"
+      ],
+      "properties": {
+        "index": {
+          "description": "Zero-based position of this circuit in the submission batch. Raw results refer to circuits by this index.",
+          "type": "integer",
+          "minimum": 0
+        },
+        "name": {
+          "description": "Benchmark-assigned circuit label, e.g. 'rb_q0_len16_sample3'.",
+          "type": "string"
+        },
+        "qasm3": {
+          "description": "OpenQASM 3 source of the abstract circuit, before transpilation.",
+          "type": "string",
+          "minLength": 1
+        },
+        "qasm3_sha256": {
+          "description": "Lowercase hex SHA-256 of the UTF-8 encoded qasm3 field.",
+          "type": "string",
+          "pattern": "^[0-9a-f]{64}$"
+        },
+        "transpiled_qasm3": {
+          "description": "OpenQASM 3 source of the circuit as actually submitted, after transpilation.",
+          "type": "string",
+          "minLength": 1
+        },
+        "transpiled_qasm3_sha256": {
+          "description": "Lowercase hex SHA-256 of the UTF-8 encoded transpiled_qasm3 field. Required whenever transpiled_qasm3 is present.",
+          "type": "string",
+          "pattern": "^[0-9a-f]{64}$"
+        },
+        "metadata": {
+          "description": "Benchmark-specific circuit metadata (e.g. sequence length, target qubits).",
+          "type": "object",
+          "additionalProperties": true
+        }
+      },
+      "dependentRequired": {
+        "transpiled_qasm3": [
+          "transpiled_qasm3_sha256"
+        ],
+        "transpiled_qasm3_sha256": [
+          "transpiled_qasm3"
+        ]
+      }
+    },
+    "Results": {
+      "description": "Raw measurement outcomes plus derived metrics. Raw counts are always retained so metrics can be independently re-derived.",
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "raw",
+        "metrics"
+      ],
+      "properties": {
+        "raw": {
+          "description": "Per-circuit raw measurement counts.",
+          "type": "array",
+          "minItems": 1,
+          "items": {
+            "$ref": "#/$defs/RawResult"
+          }
+        },
+        "metrics": {
+          "description": "Derived metrics. Every metric MUST carry sample size and a confidence interval \u2014 point estimates without error bars are not valid QPR metrics.",
+          "type": "array",
+          "minItems": 1,
+          "items": {
+            "$ref": "#/$defs/Metric"
+          }
+        },
+        "analysis": {
+          "description": "Benchmark-specific intermediate analysis artifacts (e.g. per-sequence-length survival probabilities, fit residuals).",
+          "type": "object",
+          "additionalProperties": true
+        }
+      }
+    },
+    "RawResult": {
+      "description": "Measurement counts for one circuit.",
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "circuit_index",
+        "shots",
+        "counts"
+      ],
+      "properties": {
+        "circuit_index": {
+          "description": "Index into the circuits array.",
+          "type": "integer",
+          "minimum": 0
+        },
+        "shots": {
+          "description": "Shots actually executed for this circuit.",
+          "type": "integer",
+          "minimum": 1
+        },
+        "counts": {
+          "description": "Map from measured bitstring (MSB-first, e.g. '0101') to occurrence count.",
+          "type": "object",
+          "propertyNames": {
+            "pattern": "^[01]+$"
+          },
+          "additionalProperties": {
+            "type": "integer",
+            "minimum": 0
+          },
+          "minProperties": 1
+        }
+      }
+    },
+    "Metric": {
+      "description": "One derived metric with mandatory uncertainty quantification.",
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "name",
+        "value",
+        "statistics"
+      ],
+      "properties": {
+        "name": {
+          "description": "Metric identifier, e.g. 'error_per_clifford', 'quantum_volume', 'logical_error_rate'.",
+          "type": "string",
+          "pattern": "^[a-z0-9][a-z0-9_.-]*$"
+        },
+        "value": {
+          "description": "Point estimate.",
+          "type": "number"
+        },
+        "unit": {
+          "description": "Unit of the value, when applicable, e.g. 'probability', 'circuits/s'.",
+          "type": "string"
+        },
+        "qubits": {
+          "description": "Physical qubit indices this metric pertains to, when qubit-scoped.",
+          "type": "array",
+          "items": {
+            "type": "integer",
+            "minimum": 0
+          }
+        },
+        "statistics": {
+          "$ref": "#/$defs/MetricStatistics"
+        }
+      }
+    },
+    "MetricStatistics": {
+      "description": "Mandatory uncertainty quantification for a metric.",
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "sample_size",
+        "confidence_level",
+        "ci_lower",
+        "ci_upper",
+        "estimator"
+      ],
+      "properties": {
+        "sample_size": {
+          "description": "Number of independent samples the estimate is based on.",
+          "type": "integer",
+          "minimum": 1
+        },
+        "confidence_level": {
+          "description": "Confidence level of the interval, e.g. 0.95.",
+          "type": "number",
+          "exclusiveMinimum": 0,
+          "exclusiveMaximum": 1
+        },
+        "ci_lower": {
+          "description": "Lower bound of the confidence interval.",
+          "type": "number"
+        },
+        "ci_upper": {
+          "description": "Upper bound of the confidence interval.",
+          "type": "number"
+        },
+        "std_error": {
+          "description": "Standard error of the estimate, when defined.",
+          "type": "number",
+          "minimum": 0
+        },
+        "estimator": {
+          "description": "How the estimate and interval were obtained, e.g. 'exponential_fit_bootstrap', 'binomial_wilson', 'mean_normal'.",
+          "type": "string"
+        }
+      }
+    },
+    "Provenance": {
+      "description": "Software environment that produced this record, pinned to exact versions.",
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "veriqore_bench_version",
+        "python_version",
+        "platform",
+        "sdk_versions"
+      ],
+      "properties": {
+        "veriqore_bench_version": {
+          "description": "Exact veriqore-bench version that produced this record.",
+          "type": "string"
+        },
+        "python_version": {
+          "description": "Python interpreter version, e.g. '3.12.13'.",
+          "type": "string"
+        },
+        "platform": {
+          "description": "OS / architecture string, e.g. 'macOS-15.5-arm64'.",
+          "type": "string"
+        },
+        "sdk_versions": {
+          "description": "Exact versions of every quantum SDK involved, e.g. {\"qiskit\": \"1.4.2\"}.",
+          "type": "object",
+          "additionalProperties": {
+            "type": "string"
+          },
+          "minProperties": 1
+        }
+      }
+    },
+    "Integrity": {
+      "description": "Tamper-evidence for the record. content_sha256 is the SHA-256 of the canonical JSON serialization of this record with the entire 'integrity' member removed (see QPR-SPEC \u00a7Canonicalization). The optional signature signs that hash.",
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "content_sha256"
+      ],
+      "properties": {
+        "content_sha256": {
+          "description": "Lowercase hex SHA-256 over the canonical JSON of the record without its 'integrity' member.",
+          "type": "string",
+          "pattern": "^[0-9a-f]{64}$"
+        },
+        "signature": {
+          "$ref": "#/$defs/Signature"
+        }
+      }
+    },
+    "Signature": {
+      "description": "Detached signature over integrity.content_sha256.",
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "algorithm",
+        "public_key",
+        "value"
+      ],
+      "properties": {
+        "algorithm": {
+          "description": "Signature algorithm.",
+          "type": "string",
+          "enum": [
+            "ed25519"
+          ]
+        },
+        "public_key": {
+          "description": "Base64-encoded public key of the signer.",
+          "type": "string"
+        },
+        "value": {
+          "description": "Base64-encoded signature over the ASCII hex content_sha256.",
+          "type": "string"
+        }
+      }
+    }
+  }
+}

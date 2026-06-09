@@ -1,0 +1,36 @@
+# Local-system hooks so pre-commit uses the exact tool versions pinned by
+# uv/pnpm rather than separately pinned mirrors.
+# Install with: uvx pre-commit install
+repos:
+  - repo: local
+    hooks:
+      - id: ruff-format
+        name: ruff format (veriqore-bench)
+        entry: bash -c 'cd packages/bench && uv run ruff format .'
+        language: system
+        files: ^packages/bench/.*\.py$
+        pass_filenames: false
+      - id: ruff-check
+        name: ruff check (veriqore-bench)
+        entry: bash -c 'cd packages/bench && uv run ruff check --fix .'
+        language: system
+        files: ^packages/bench/.*\.py$
+        pass_filenames: false
+      - id: mypy
+        name: mypy strict (veriqore-bench)
+        entry: bash -c 'cd packages/bench && uv run mypy'
+        language: system
+        files: ^packages/bench/.*\.py$
+        pass_filenames: false
+      - id: eslint
+        name: eslint
+        entry: pnpm lint
+        language: system
+        files: \.(ts|tsx|mjs|cjs|js)$
+        pass_filenames: false
+      - id: tsc
+        name: tsc typecheck
+        entry: pnpm -r typecheck
+        language: system
+        files: \.(ts|tsx|json)$
+        pass_filenames: false
