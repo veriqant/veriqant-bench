@@ -3,8 +3,9 @@ name: Release
 # Tag conventions:
 #   bench-v<semver>   -> publish veriqore-bench to PyPI (Trusted Publishing/OIDC)
 #   schema-v<semver>  -> publish @veriqore/schema to npm (OIDC + provenance)
-# Both publishers must be configured once in the respective registries; see
-# docs/SPLIT-RUNBOOK.md. No long-lived API tokens anywhere.
+# One-time setup: register this repo + workflow as a trusted publisher on
+# PyPI (environment 'pypi') and npm (environment 'npm'). No long-lived API
+# tokens anywhere.
 
 on:
   push:
