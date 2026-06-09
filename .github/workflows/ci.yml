@@ -6,6 +6,20 @@ on:
   pull_request:
 
 jobs:
+  dependency-direction:
+    name: packages/ must not depend on apps/
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - name: Enforce apps -> packages only
+        run: |
+          if grep -rnE "@veriqore/(api|web)|from ['\"](\.\./)*apps/|import .*apps/" packages \
+               --include="*.ts" --include="*.py" --include="*.json" \
+               --exclude-dir=node_modules --exclude-dir=.venv; then
+            echo "::error::packages/ must never import from apps/"
+            exit 1
+          fi
+
   python:
     name: Python (veriqore-bench)
     runs-on: ubuntu-latest

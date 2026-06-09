@@ -93,8 +93,8 @@ class CalibrationSnapshot(BaseModel):
 
 
 class CostEstimate(BaseModel):
-    """Estimated cost of executing a JobSpec. Module 8's cost-cap guardrail
-    refuses submission when amount exceeds the configured cap."""
+    """Estimated cost of executing a JobSpec. The live-adapter cost-cap
+    guardrail refuses submission when amount exceeds the configured cap."""
 
     model_config = ConfigDict(extra="forbid")
 
@@ -152,7 +152,7 @@ class JobResult(BaseModel):
 class NoiseSpec(BaseModel):
     """Compact, adapter-agnostic noise description for simulators.
 
-    Part of the public API: Module 5's QEC suite drives it, and it is
+    Part of the public API: the QEC diagnostics suite drives it, and it is
     recorded verbatim in the QPR calibration snapshot. Adapters translate it
     into their backend's native noise model.
     """

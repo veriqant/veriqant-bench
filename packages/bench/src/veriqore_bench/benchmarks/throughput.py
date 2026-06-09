@@ -24,7 +24,7 @@ Metrics (distributional: median over batches, bootstrap percentile CIs):
 Honesty rule: on simulators these numbers measure the harness and host
 machine, not a QPU. Every metric then carries quality.reliable=false with
 issue 'timing.simulator_not_comparable_to_hardware'. The real consumer of
-this benchmark is the Module 8 live adapters.
+this benchmark is the live-hardware adapters.
 """
 
 from __future__ import annotations

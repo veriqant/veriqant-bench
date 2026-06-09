@@ -97,8 +97,8 @@ Numbers from the two protocols are not comparable.
   host machine, not a QPU. Every metric is then published with
   `quality.reliable=false` and issue
   `timing.simulator_not_comparable_to_hardware`, so no dashboard can rank a
-  laptop against a QPU. The intended consumer is the live adapters
-  (Module 8).
+  laptop against a QPU. The intended consumer is the live-hardware
+  adapters.
 
 ## `qec_repetition` / `qec_surface` — QEC memory diagnostics (suite 0.1.0)
 

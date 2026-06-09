@@ -1,0 +1,115 @@
+name: Release
+
+# Tag conventions:
+#   bench-v<semver>   -> publish veriqore-bench to PyPI (Trusted Publishing/OIDC)
+#   schema-v<semver>  -> publish @veriqore/schema to npm (OIDC + provenance)
+# Both publishers must be configured once in the respective registries; see
+# docs/SPLIT-RUNBOOK.md. No long-lived API tokens anywhere.
+
+on:
+  push:
+    tags:
+      - "bench-v*"
+      - "schema-v*"
+
+jobs:
+  test:
+    name: Full test suite
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: astral-sh/setup-uv@v5
+        with:
+          python-version: "3.12"
+      - uses: pnpm/action-setup@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+          cache: pnpm
+      - name: Install
+        run: |
+          pnpm install --frozen-lockfile
+          uv sync --directory packages/bench
+      - name: Python gates
+        working-directory: packages/bench
+        run: |
+          uv run ruff format --check .
+          uv run ruff check .
+          uv run mypy
+          uv run pytest -n auto --cov=veriqore_bench --cov-fail-under=90
+      - name: TypeScript gates
+        run: |
+          pnpm -r build
+          pnpm -r typecheck
+          pnpm lint
+          pnpm -r test
+      - name: Codegen drift
+        run: |
+          pnpm --filter @veriqore/schema generate
+          packages/schema/scripts/generate-pydantic.sh
+          packages/schema/scripts/generate-example.sh
+          git diff --exit-code
+
+  publish-pypi:
+    name: Publish veriqore-bench to PyPI
+    if: startsWith(github.ref_name, 'bench-v')
+    needs: test
+    runs-on: ubuntu-latest
+    environment: pypi
+    permissions:
+      id-token: write  # PyPI Trusted Publishing
+    steps:
+      - uses: actions/checkout@v4
+      - uses: astral-sh/setup-uv@v5
+        with:
+          python-version: "3.12"
+      - name: Tag must match pyproject version
+        run: |
+          tag_version="${GITHUB_REF_NAME#bench-v}"
+          project_version=$(uv run --directory packages/bench python -c \
+            "import tomllib;print(tomllib.load(open('pyproject.toml','rb'))['project']['version'])")
+          if [ "$tag_version" != "$project_version" ]; then
+            echo "::error::tag $tag_version != pyproject $project_version"
+            exit 1
+          fi
+      - name: Build wheel + sdist
+        working-directory: packages/bench
+        run: uv build
+      - name: Publish (OIDC, no token)
+        uses: pypa/gh-action-pypi-publish@release/v1
+        with:
+          packages-dir: packages/bench/dist
+
+  publish-npm:
+    name: Publish @veriqore/schema to npm
+    if: startsWith(github.ref_name, 'schema-v')
+    needs: test
+    runs-on: ubuntu-latest
+    environment: npm
+    permissions:
+      id-token: write  # npm provenance + trusted publishing
+    steps:
+      - uses: actions/checkout@v4
+      - uses: pnpm/action-setup@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+          cache: pnpm
+          registry-url: "https://registry.npmjs.org"
+      - name: Install
+        run: pnpm install --frozen-lockfile
+      - name: Tag must match package version
+        run: |
+          tag_version="${GITHUB_REF_NAME#schema-v}"
+          package_version=$(node -p "require('./packages/schema/package.json').version")
+          if [ "$tag_version" != "$package_version" ]; then
+            echo "::error::tag $tag_version != package.json $package_version"
+            exit 1
+          fi
+      - name: Build and test
+        run: |
+          pnpm --filter @veriqore/schema build
+          pnpm --filter @veriqore/schema test
+      - name: Publish with provenance
+        working-directory: packages/schema
+        run: npm publish --provenance --access public

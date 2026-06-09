@@ -114,3 +114,10 @@ is generated deterministically by `veriqore_bench.qpr.example.example_record()`
 and validated by both the Python and TypeScript test suites. It is the
 canonical cross-language fixture; regenerate it with
 `packages/schema/scripts/generate-example.sh` after any schema change.
+
+---
+
+*This specification document is licensed under
+[CC BY 4.0](https://creativecommons.org/licenses/by/4.0/) (see
+[LICENSE-SPEC](../LICENSE-SPEC)). The machine-readable schema files and all
+code are licensed under Apache-2.0.*

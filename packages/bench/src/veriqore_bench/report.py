@@ -2,8 +2,8 @@
 
 One self-contained HTML document: inline CSS, inline SVG charts, zero
 external requests — it must open offline and survive being emailed. This is
-the seed of the public leaderboard (static hosting), deliberately primitive;
-the interactive dashboard is a separate product surface (Module 7).
+intended for static hosting of demonstration reports, deliberately
+primitive; richer interactive surfaces are a separate concern.
 
 Every input file is verified first; unverifiable records are refused with a
 per-file explanation. Output is deterministic given identical inputs and a

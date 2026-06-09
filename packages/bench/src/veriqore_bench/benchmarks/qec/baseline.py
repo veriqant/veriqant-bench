@@ -2,7 +2,7 @@
 
 Breakeven compares the logical error rate against the best constituent
 physical qubit. On simulators the baseline is derived analytically from the
-NoiseSpec; on hardware (Module 8+) it will come from a measured idle-decay
+NoiseSpec; on hardware it will come from a measured idle-decay
 circuit family. The evidence always records which baseline type was used.
 
 Analytic derivation (documented per ab-lq-2026 criterion 1):
@@ -40,7 +40,7 @@ class PhysicalBaseline(BaseModel):
 
 
 class BaselineProvider(Protocol):
-    """Hardware path hook (Module 8+): measured idle-decay baselines plug in
+    """Hardware path hook: measured idle-decay baselines plug in
     here without touching the criteria code."""
 
     def baseline(self, schedule: MemorySchedule) -> PhysicalBaseline | None: ...
@@ -74,5 +74,5 @@ class MeasuredIdleBaseline:
 
     def baseline(self, schedule: MemorySchedule) -> PhysicalBaseline | None:
         raise NotImplementedError(
-            "measured idle-decay baselines arrive with the live adapters (Module 8)"
+            "measured idle-decay baselines arrive with the live-hardware adapters"
         )
