@@ -47,3 +47,26 @@ def test_version_command() -> None:
     assert result.exit_code == 0
     assert f"veriqore-bench {__version__}" in result.output
     assert f"qpr-schema {QPR_VERSION}" in result.output
+
+
+def test_adapters_list() -> None:
+    result = CliRunner().invoke(main, ["adapters", "list"])
+    assert result.exit_code == 0
+    assert "aer_simulator" in result.output
+    assert "braket_local" in result.output
+    assert "available" in result.output
+
+
+def test_adapters_probe_runs_smoke_circuit() -> None:
+    result = CliRunner().invoke(main, ["adapters", "probe", "aer_simulator", "--shots", "50"])
+    assert result.exit_code == 0
+    assert "capabilities:" in result.output
+    assert "calibration_snapshot:" in result.output
+    assert "smoke circuit (50 shots)" in result.output
+    assert "round-trip time:" in result.output
+
+
+def test_adapters_probe_unknown_adapter_fails_cleanly() -> None:
+    result = CliRunner().invoke(main, ["adapters", "probe", "warp_drive"])
+    assert result.exit_code == 1
+    assert "unknown adapter" in result.output
