@@ -4,7 +4,7 @@ from __future__ import annotations
 
 import pytest
 
-from veriqore_bench.benchmarks.qec.criteria import (
+from veriqant_bench.benchmarks.qec.criteria import (
     DistanceEvidence,
     LambdaStep,
     PostSelectionAccounting,
@@ -14,7 +14,7 @@ from veriqore_bench.benchmarks.qec.criteria import (
     get_profile,
     list_profiles,
 )
-from veriqore_bench.benchmarks.qec.criteria.ab_lq_2026 import AbLq2026Profile
+from veriqant_bench.benchmarks.qec.criteria.ab_lq_2026 import AbLq2026Profile
 
 
 def rate(value: float, half_width: float = 0.0005) -> RateWithCI:

@@ -12,7 +12,7 @@ import pytest
 from conftest import StaticAdapter
 from pydantic import BaseModel, ConfigDict
 
-from veriqore_bench.benchmarks import (
+from veriqant_bench.benchmarks import (
     AnalysisResult,
     Benchmark,
     BenchmarkUnavailableError,
@@ -23,10 +23,10 @@ from veriqore_bench.benchmarks import (
     run_benchmark,
     write_verified_qpr,
 )
-from veriqore_bench.benchmarks import registry as registry_module
-from veriqore_bench.benchmarks.rb import RandomizedBenchmarking
-from veriqore_bench.qpr import verify_qpr_document, verify_qpr_file
-from veriqore_bench.qpr._generated import Metric, MetricStatistics
+from veriqant_bench.benchmarks import registry as registry_module
+from veriqant_bench.benchmarks.rb import RandomizedBenchmarking
+from veriqant_bench.qpr import verify_qpr_document, verify_qpr_file
+from veriqant_bench.qpr._generated import Metric, MetricStatistics
 
 
 class TinyParams(BaseModel):
@@ -128,7 +128,7 @@ def test_missing_dependency_reports_install_hint(monkeypatch: pytest.MonkeyPatch
     monkeypatch.setattr(registry_module, "_discover", lambda: [broken])
     info = registry_module.list_benchmarks()[0]
     assert not info.available
-    assert info.install_hint == "pip install 'veriqore-bench[local]'"
+    assert info.install_hint == "pip install 'veriqant-bench[local]'"
     with pytest.raises(BenchmarkUnavailableError, match="not installed"):
         get("rb")
 

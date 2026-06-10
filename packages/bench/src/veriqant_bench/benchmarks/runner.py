@@ -10,9 +10,9 @@ from uuid import uuid4
 
 from pydantic import BaseModel
 
-from veriqore_bench import __version__
-from veriqore_bench.adapters import QPUAdapter
-from veriqore_bench.qpr import (
+from veriqant_bench import __version__
+from veriqant_bench.adapters import QPUAdapter
+from veriqant_bench.qpr import (
     QPR_VERSION,
     Circuit,
     Integrity,
@@ -26,8 +26,8 @@ from veriqore_bench.qpr import (
     sha256_hex,
     verify_qpr_file,
 )
-from veriqore_bench.qpr import Benchmark as QprBenchmark
-from veriqore_bench.qpr._generated import Execution, Transpilation
+from veriqant_bench.qpr import Benchmark as QprBenchmark
+from veriqant_bench.qpr._generated import Execution, Transpilation
 
 from .base import Benchmark, GeneratedCircuit
 
@@ -104,12 +104,12 @@ async def run_benchmark(
             analysis=analysis.analysis or None,
         ),
         provenance=Provenance(
-            veriqore_bench_version=__version__,
+            veriqant_bench_version=__version__,
             python_version=platform.python_version(),
             platform=platform.platform(),
             sdk_versions={
                 **outcome.metadata.get("sdk_versions", {}),
-                "veriqore-bench": __version__,
+                "veriqant-bench": __version__,
             },
         ),
         integrity=Integrity(content_sha256="0" * 64),

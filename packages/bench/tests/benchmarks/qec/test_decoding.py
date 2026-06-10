@@ -2,9 +2,9 @@
 
 from __future__ import annotations
 
-from veriqore_bench.benchmarks.qec.decoding import decode_counts, decoder_info
-from veriqore_bench.benchmarks.qec.memory import error_per_round
-from veriqore_bench.benchmarks.qec.schedule import repetition_memory, surface3_memory
+from veriqant_bench.benchmarks.qec.decoding import decode_counts, decoder_info
+from veriqant_bench.benchmarks.qec.memory import error_per_round
+from veriqant_bench.benchmarks.qec.schedule import repetition_memory, surface3_memory
 
 
 def bitstring_with(num_clbits: int, ones: set[int]) -> str:

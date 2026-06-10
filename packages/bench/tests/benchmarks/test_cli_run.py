@@ -1,4 +1,4 @@
-"""CLI tests for `veriqore-bench run rb|mirror`."""
+"""CLI tests for `veriqant-bench run rb|mirror`."""
 
 from __future__ import annotations
 
@@ -9,8 +9,8 @@ from pathlib import Path
 import pytest
 from click.testing import CliRunner
 
-from veriqore_bench.cli import main
-from veriqore_bench.qpr import verify_qpr_file
+from veriqant_bench.cli import main
+from veriqant_bench.qpr import verify_qpr_file
 
 pytestmark = pytest.mark.slow
 

@@ -35,7 +35,7 @@ from qiskit import QuantumCircuit, qasm3, transpile
 from qiskit.circuit.library import UnitaryGate
 from qiskit.quantum_info import Statevector, random_unitary
 
-from veriqore_bench.qpr._generated import Metric, MetricQuality, MetricStatistics
+from veriqant_bench.qpr._generated import Metric, MetricQuality, MetricStatistics
 
 from .base import AnalysisResult, Benchmark, GeneratedCircuit
 from .stats import bootstrap_mean_ci

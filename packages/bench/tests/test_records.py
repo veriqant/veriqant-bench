@@ -5,7 +5,7 @@ from pathlib import Path
 
 import pytest
 
-from veriqore_bench.qpr import (
+from veriqant_bench.qpr import (
     QuantumPerformanceRecord,
     UnsupportedQprVersionError,
     content_sha256,
@@ -38,7 +38,7 @@ def test_seal_sets_matching_content_hash(record: QuantumPerformanceRecord) -> No
 
 def test_seal_drops_stale_signature(record: QuantumPerformanceRecord) -> None:
     pytest.importorskip("cryptography")
-    from veriqore_bench.qpr import generate_signing_key, sign_qpr
+    from veriqant_bench.qpr import generate_signing_key, sign_qpr
 
     signed = sign_qpr(record, generate_signing_key())
     assert signed.integrity.signature is not None

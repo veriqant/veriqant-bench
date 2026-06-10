@@ -13,7 +13,7 @@ jobs:
       - uses: actions/checkout@v4
       - name: Enforce apps -> packages only
         run: |
-          if grep -rnE "@veriqore/(api|web)|from ['\"](\.\./)*apps/|import .*apps/" packages \
+          if grep -rnE "@veriqant/(api|web)|from ['\"](\.\./)*apps/|import .*apps/" packages \
                --include="*.ts" --include="*.py" --include="*.json" \
                --exclude-dir=node_modules --exclude-dir=.venv; then
             echo "::error::packages/ must never import from apps/"
@@ -21,7 +21,7 @@ jobs:
           fi
 
   python:
-    name: Python (veriqore-bench)
+    name: Python (veriqant-bench)
     runs-on: ubuntu-latest
     defaults:
       run:
@@ -40,7 +40,7 @@ jobs:
       - name: Type check (strict)
         run: uv run mypy
       - name: Tests (coverage gate ≥90%)
-        run: uv run pytest -n auto --cov=veriqore_bench --cov-report=term-missing --cov-fail-under=90
+        run: uv run pytest -n auto --cov=veriqant_bench --cov-report=term-missing --cov-fail-under=90
 
   typescript:
     name: TypeScript (schema, api, web)
@@ -82,7 +82,7 @@ jobs:
           uv sync --directory packages/bench
       - name: Regenerate all schema artifacts
         run: |
-          pnpm --filter @veriqore/schema generate
+          pnpm --filter @veriqant/schema generate
           packages/schema/scripts/generate-pydantic.sh
           packages/schema/scripts/generate-example.sh
       - name: Fail on drift

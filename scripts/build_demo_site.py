@@ -7,7 +7,7 @@ methodology, not device comparisons: no rankings, no device names beyond
 "Aer (simulated)".
 
 Usage: python scripts/build_demo_site.py <output-dir>
-Requires: veriqore-bench[local,qec] installed (the pages workflow uses the
+Requires: veriqant-bench[local,qec] installed (the pages workflow uses the
 repo's own environment).
 """
 
@@ -19,15 +19,15 @@ import sys
 from datetime import UTC, datetime
 from pathlib import Path
 
-from veriqore_bench import __version__
-from veriqore_bench.adapters import NoiseSpec
-from veriqore_bench.adapters.aer import AerSimulatorAdapter
-from veriqore_bench.benchmarks import run_benchmark
-from veriqore_bench.benchmarks.qec.memory import RepetitionMemory, RepetitionParams
-from veriqore_bench.benchmarks.qv import QuantumVolume, QVParams
-from veriqore_bench.benchmarks.rb import RandomizedBenchmarking, RBParams
-from veriqore_bench.qpr import QuantumPerformanceRecord, dump_qpr, verify_qpr_file
-from veriqore_bench.report import load_verified_records, render_report
+from veriqant_bench import __version__
+from veriqant_bench.adapters import NoiseSpec
+from veriqant_bench.adapters.aer import AerSimulatorAdapter
+from veriqant_bench.benchmarks import run_benchmark
+from veriqant_bench.benchmarks.qec.memory import RepetitionMemory, RepetitionParams
+from veriqant_bench.benchmarks.qv import QuantumVolume, QVParams
+from veriqant_bench.benchmarks.rb import RandomizedBenchmarking, RBParams
+from veriqant_bench.qpr import QuantumPerformanceRecord, dump_qpr, verify_qpr_file
+from veriqant_bench.report import load_verified_records, render_report
 
 SEED = 20260610
 NOISE = NoiseSpec(depolarizing_1q=0.01, depolarizing_2q=0.04)
@@ -109,7 +109,7 @@ def landing_page(
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
-<title>veriqore-bench — reproducible QPU benchmarking with sealed records</title>
+<title>veriqant-bench — reproducible QPU benchmarking with sealed records</title>
 <style>
 body {{ font-family: -apple-system, "Segoe UI", Helvetica, Arial, sans-serif;
        margin: 2rem auto; max-width: 46rem; color: #1a1a2e; line-height: 1.55;
@@ -127,7 +127,7 @@ li {{ margin: 0.4rem 0; }}
 </style>
 </head>
 <body>
-<h1>veriqore-bench</h1>
+<h1>veriqant-bench</h1>
 <p class="tagline">Independent, reproducible QPU benchmarking. Every run
 emits a sealed <strong>Quantum Performance Record</strong> that anyone can
 re-verify — schema, circuit hashes, content seal, statistics included.</p>
@@ -148,15 +148,15 @@ SHA-256 hashes), the master seed, the full transpiler configuration, raw
 measurement counts, SDK versions, and a content seal over all of it. Every
 metric carries sample size and a confidence interval; estimates that fail
 their own quality diagnostics are published as flagged-unreliable.
-<a href="https://github.com/veriqore/veriqore-bench/blob/main/docs/QPR-SPEC.md">
+<a href="https://github.com/veriqant/veriqant-bench/blob/main/docs/QPR-SPEC.md">
 Read the specification</a> (CC&nbsp;BY&nbsp;4.0).</p>
 
 <h2>Verify one yourself — about a minute</h2>
 <p>Don't take this page's word for anything. Download a record and check it
 with the same open-source verifier:</p>
-<pre><code>pip install veriqore-bench
+<pre><code>pip install veriqant-bench
 curl -O {html.escape("records/rb-ideal.qpr.json")}   # or click a record link above
-veriqore-bench verify rb-ideal.qpr.json</code></pre>
+veriqant-bench verify rb-ideal.qpr.json</code></pre>
 <p>The verifier re-derives every circuit hash and the content seal locally.
 Expected output ends with <code>OK: ... valid, internally consistent
 QPR</code>; this record's seal is
@@ -166,11 +166,11 @@ file and verification fails.</p>
 <h2>Status</h2>
 <p>Simulator-validated today (closed-loop against analytic noise injection
 and the Stim oracle); live hardware adapters are the next milestone.
-Veriqore is not affiliated with any quantum hardware vendor.</p>
+Veriqant is not affiliated with any quantum hardware vendor.</p>
 
-<p class="meta">generated {html.escape(timestamp)} · veriqore-bench
+<p class="meta">generated {html.escape(timestamp)} · veriqant-bench
 {html.escape(__version__)} ·
-<a href="https://github.com/veriqore/veriqore-bench">source</a> ·
+<a href="https://github.com/veriqant/veriqant-bench">source</a> ·
 Apache-2.0</p>
 </body>
 </html>

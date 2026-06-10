@@ -1,4 +1,4 @@
-"""Qiskit Aer simulator adapter (pip install veriqore-bench[local])."""
+"""Qiskit Aer simulator adapter (pip install veriqant-bench[local])."""
 
 from __future__ import annotations
 

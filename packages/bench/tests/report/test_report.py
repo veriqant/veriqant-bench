@@ -19,9 +19,9 @@ from fixtures import (
     throughput_record,
 )
 
-from veriqore_bench.cli import main
-from veriqore_bench.qpr import QuantumPerformanceRecord, dump_qpr
-from veriqore_bench.report import (
+from veriqant_bench.cli import main
+from veriqant_bench.qpr import QuantumPerformanceRecord, dump_qpr
+from veriqant_bench.report import (
     ReportInputError,
     collect_qpr_files,
     load_verified_records,
@@ -135,7 +135,7 @@ def test_cli_report(qpr_dir: Path, tmp_path: Path) -> None:
     )
     assert result.exit_code == 0, result.output
     assert output.exists()
-    assert "Veriqore benchmark report" in output.read_text(encoding="utf-8")
+    assert "Veriqant benchmark report" in output.read_text(encoding="utf-8")
 
 
 def test_cli_report_rejects_naive_timestamp(qpr_dir: Path, tmp_path: Path) -> None:

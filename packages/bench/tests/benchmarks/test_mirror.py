@@ -6,8 +6,8 @@ import pydantic
 import pytest
 from qiskit import qasm3
 
-from veriqore_bench.benchmarks.base import GeneratedCircuit
-from veriqore_bench.benchmarks.mirror import MirrorCircuits, MirrorParams, polarization
+from veriqant_bench.benchmarks.base import GeneratedCircuit
+from veriqant_bench.benchmarks.mirror import MirrorCircuits, MirrorParams, polarization
 
 MIRROR = MirrorCircuits()
 

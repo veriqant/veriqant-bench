@@ -14,7 +14,7 @@ from typing import Any
 from hypothesis import given, settings
 from hypothesis import strategies as st
 
-from veriqore_bench.qpr import (
+from veriqant_bench.qpr import (
     QPR_VERSION,
     Benchmark,
     Circuit,
@@ -173,7 +173,7 @@ def qpr_records(draw: st.DrawFn) -> QuantumPerformanceRecord:
             analysis=draw(st.none() | PARAMETERS),
         ),
         provenance=Provenance(
-            veriqore_bench_version=draw(SEMVER),
+            veriqant_bench_version=draw(SEMVER),
             python_version=draw(SEMVER),
             platform=draw(TEXT.filter(bool)),
             sdk_versions=draw(st.dictionaries(IDENTIFIER, SEMVER, min_size=1, max_size=3)),

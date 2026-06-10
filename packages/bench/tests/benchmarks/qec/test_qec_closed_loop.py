@@ -18,19 +18,19 @@ import math
 
 import pytest
 
-from veriqore_bench.adapters import NoiseSpec
-from veriqore_bench.adapters.aer import AerSimulatorAdapter
-from veriqore_bench.benchmarks import run_benchmark
-from veriqore_bench.benchmarks.qec.decoding import decode_bits, decode_counts
-from veriqore_bench.benchmarks.qec.memory import (
+from veriqant_bench.adapters import NoiseSpec
+from veriqant_bench.adapters.aer import AerSimulatorAdapter
+from veriqant_bench.benchmarks import run_benchmark
+from veriqant_bench.benchmarks.qec.decoding import decode_bits, decode_counts
+from veriqant_bench.benchmarks.qec.memory import (
     RepetitionMemory,
     RepetitionParams,
     SurfaceMemory,
     SurfaceParams,
 )
-from veriqore_bench.benchmarks.qec.schedule import repetition_memory, surface3_memory
-from veriqore_bench.benchmarks.qec.validation import sample_stim_bits
-from veriqore_bench.qpr import QuantumPerformanceRecord, verify_qpr_document
+from veriqant_bench.benchmarks.qec.schedule import repetition_memory, surface3_memory
+from veriqant_bench.benchmarks.qec.validation import sample_stim_bits
+from veriqant_bench.qpr import QuantumPerformanceRecord, verify_qpr_document
 
 pytestmark = pytest.mark.slow
 

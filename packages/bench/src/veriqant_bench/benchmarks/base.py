@@ -17,8 +17,8 @@ from typing import Any, ClassVar
 
 from pydantic import AwareDatetime, BaseModel, ConfigDict, Field
 
-from veriqore_bench.adapters import JobSpec, QPUAdapter
-from veriqore_bench.qpr._generated import Metric
+from veriqant_bench.adapters import JobSpec, QPUAdapter
+from veriqant_bench.qpr._generated import Metric
 
 
 class GeneratedCircuit(BaseModel):

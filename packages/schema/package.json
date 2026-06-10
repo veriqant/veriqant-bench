@@ -1,11 +1,11 @@
 {
-  "name": "@veriqore/schema",
+  "name": "@veriqant/schema",
   "version": "0.1.0",
   "description": "QPR (Quantum Performance Record) JSON Schema — single source of truth — with generated TypeScript types and an Ajv validator",
   "license": "Apache-2.0",
   "repository": {
     "type": "git",
-    "url": "git+https://github.com/veriqore/veriqore-bench.git",
+    "url": "git+https://github.com/veriqant/veriqant-bench.git",
     "directory": "packages/schema"
   },
   "publishConfig": {

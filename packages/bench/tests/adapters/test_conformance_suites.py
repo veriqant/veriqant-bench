@@ -3,10 +3,10 @@
 
 from __future__ import annotations
 
-from veriqore_bench.adapters import NoiseSpec, QPUAdapter
-from veriqore_bench.adapters.aer import AerSimulatorAdapter
-from veriqore_bench.adapters.braket_local import BraketLocalAdapter
-from veriqore_bench.adapters.conformance import AdapterConformanceSuite
+from veriqant_bench.adapters import NoiseSpec, QPUAdapter
+from veriqant_bench.adapters.aer import AerSimulatorAdapter
+from veriqant_bench.adapters.braket_local import BraketLocalAdapter
+from veriqant_bench.adapters.conformance import AdapterConformanceSuite
 
 
 class TestAerConformance(AdapterConformanceSuite):

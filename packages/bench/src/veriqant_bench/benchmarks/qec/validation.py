@@ -23,7 +23,7 @@ from __future__ import annotations
 import numpy as np
 import stim
 
-from veriqore_bench.adapters import NoiseSpec
+from veriqant_bench.adapters import NoiseSpec
 
 from .schedule import MemorySchedule
 

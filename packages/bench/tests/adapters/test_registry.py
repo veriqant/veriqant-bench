@@ -4,9 +4,9 @@ from importlib.metadata import EntryPoint
 
 import pytest
 
-from veriqore_bench.adapters import AdapterUnavailableError, QPUAdapter, get, list_adapters
-from veriqore_bench.adapters import registry as registry_module
-from veriqore_bench.adapters.aer import AerSimulatorAdapter
+from veriqant_bench.adapters import AdapterUnavailableError, QPUAdapter, get, list_adapters
+from veriqant_bench.adapters import registry as registry_module
+from veriqant_bench.adapters.aer import AerSimulatorAdapter
 
 
 def test_builtin_adapters_are_discovered_and_available() -> None:
@@ -54,7 +54,7 @@ def test_known_name_with_missing_extra_gets_specific_hint(
     )
     monkeypatch.setattr(registry_module, "_discover", lambda: [broken])
     info = list_adapters()[0]
-    assert info.install_hint == "pip install 'veriqore-bench[local]'"
+    assert info.install_hint == "pip install 'veriqant-bench[local]'"
 
 
 def test_factory_not_satisfying_protocol_is_rejected(monkeypatch: pytest.MonkeyPatch) -> None:

@@ -75,7 +75,7 @@ Scale: three key attributes to measure the performance of near-term quantum
 computers*, arXiv:2110.14108) is IBM's defined speed metric with a specific
 protocol: parameterized template circuits whose parameters are updated at
 runtime between layers, capturing the classical-quantum interaction loop.
-Veriqore's `throughput` benchmark measures a related but different thing —
+Veriqant's `throughput` benchmark measures a related but different thing —
 sequential client-observed round-trips of *static* circuit batches, with no
 runtime parameter updates — so publishing it under the CLOPS name would be
 exactly the kind of methodological blur this product exists to call out.
@@ -102,7 +102,7 @@ Numbers from the two protocols are not comparable.
 
 ## `qec_repetition` / `qec_surface` — QEC memory diagnostics (suite 0.1.0)
 
-Requires `pip install veriqore-bench[local,qec]` (PyMatching for decoding;
+Requires `pip install veriqant-bench[local,qec]` (PyMatching for decoding;
 Stim as the validation oracle — Stim is our calculator for checking
 ourselves, never an execution target).
 
@@ -149,9 +149,9 @@ ourselves, never an execution target).
 ## Criteria profiles
 
 A criteria profile is a named, versioned, **cited** set of logical-qubit
-criteria evaluated over QEC evidence — Veriqore executes others' published
+criteria evaluated over QEC evidence — Veriqant executes others' published
 norms, it does not define its own. Profiles register through the
-`veriqore_bench.criteria_profiles` entry-point group. Verdicts are
+`veriqant_bench.criteria_profiles` entry-point group. Verdicts are
 `pass` / `fail` / `not_evaluable`; `not_evaluable` is a first-class outcome
 with a reason and evidence — an honest "this experiment cannot answer that"
 beats a forced verdict.

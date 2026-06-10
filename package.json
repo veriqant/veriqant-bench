@@ -1,5 +1,5 @@
 {
-  "name": "veriqore",
+  "name": "veriqant",
   "version": "0.1.0",
   "private": true,
   "description": "Independent observability & verification platform for quantum compute",
@@ -9,7 +9,7 @@
     "node": ">=22"
   },
   "scripts": {
-    "generate": "pnpm --filter @veriqore/schema generate",
+    "generate": "pnpm --filter @veriqant/schema generate",
     "build": "pnpm -r build",
     "lint": "eslint .",
     "typecheck": "pnpm -r typecheck",

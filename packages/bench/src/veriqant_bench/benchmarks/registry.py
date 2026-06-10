@@ -1,4 +1,4 @@
-"""Benchmark discovery via the 'veriqore_bench.benchmarks' entry-point group.
+"""Benchmark discovery via the 'veriqant_bench.benchmarks' entry-point group.
 
 Same dogfooding pattern as the adapter registry: built-in benchmarks register
 through entry points in this package's own pyproject, third-party benchmarks
@@ -13,15 +13,15 @@ from typing import Any
 
 from .base import Benchmark
 
-ENTRY_POINT_GROUP = "veriqore_bench.benchmarks"
+ENTRY_POINT_GROUP = "veriqant_bench.benchmarks"
 
 _INSTALL_HINTS = {
-    "rb": "pip install 'veriqore-bench[local]'",
-    "mirror": "pip install 'veriqore-bench[local]'",
-    "qv": "pip install 'veriqore-bench[local]'",
-    "throughput": "pip install 'veriqore-bench[local]'",
-    "qec_repetition": "pip install 'veriqore-bench[local,qec]'",
-    "qec_surface": "pip install 'veriqore-bench[local,qec]'",
+    "rb": "pip install 'veriqant-bench[local]'",
+    "mirror": "pip install 'veriqant-bench[local]'",
+    "qv": "pip install 'veriqant-bench[local]'",
+    "throughput": "pip install 'veriqant-bench[local]'",
+    "qec_repetition": "pip install 'veriqant-bench[local,qec]'",
+    "qec_surface": "pip install 'veriqant-bench[local,qec]'",
 }
 
 

@@ -17,9 +17,9 @@ import math
 from datetime import UTC, datetime
 from pathlib import Path
 
-from veriqore_bench import __version__
-from veriqore_bench.qpr import QuantumPerformanceRecord, load_qpr, verify_qpr_file
-from veriqore_bench.qpr._generated import Metric
+from veriqant_bench import __version__
+from veriqant_bench.qpr import QuantumPerformanceRecord, load_qpr, verify_qpr_file
+from veriqant_bench.qpr._generated import Metric
 
 CHART_WIDTH = 480
 CHART_HEIGHT = 220
@@ -79,7 +79,7 @@ def render_report(
 <html lang="en">
 <head>
 <meta charset="utf-8">
-<title>Veriqore benchmark report</title>
+<title>Veriqant benchmark report</title>
 <style>
 body {{ font-family: -apple-system, "Segoe UI", Helvetica, Arial, sans-serif;
        margin: 2rem auto; max-width: 60rem; color: #1a1a2e; }}
@@ -101,8 +101,8 @@ svg {{ background: #fbfbfd; border: 1px solid #e5e5ee; margin-top: 0.6rem; }}
 </style>
 </head>
 <body>
-<h1>Veriqore benchmark report</h1>
-<p class="meta">generated {html.escape(timestamp)} · veriqore-bench {html.escape(tool_version)}
+<h1>Veriqant benchmark report</h1>
+<p class="meta">generated {html.escape(timestamp)} · veriqant-bench {html.escape(tool_version)}
  · {len(records)} record(s) · all records verified</p>
 <table>
 <thead><tr><th>benchmark</th><th>adapter / device</th><th>key metric</th>

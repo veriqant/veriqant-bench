@@ -7,8 +7,8 @@ import numpy as np
 import pydantic
 import pytest
 
-from veriqore_bench.benchmarks.base import GeneratedCircuit
-from veriqore_bench.benchmarks.qv import QuantumVolume, QVParams, heavy_outputs
+from veriqant_bench.benchmarks.base import GeneratedCircuit
+from veriqant_bench.benchmarks.qv import QuantumVolume, QVParams, heavy_outputs
 
 QV = QuantumVolume()
 

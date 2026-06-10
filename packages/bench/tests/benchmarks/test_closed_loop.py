@@ -20,13 +20,13 @@ import numpy as np
 import pytest
 from qiskit import qasm3, transpile
 
-from veriqore_bench.adapters import NoiseSpec
-from veriqore_bench.adapters.aer import _NOISY_1Q_GATES, NOISE_BASIS, AerSimulatorAdapter
-from veriqore_bench.benchmarks import run_benchmark
-from veriqore_bench.benchmarks.mirror import MirrorCircuits, MirrorParams
-from veriqore_bench.benchmarks.qv import QuantumVolume, QVParams
-from veriqore_bench.benchmarks.rb import RandomizedBenchmarking, RBParams
-from veriqore_bench.qpr import QuantumPerformanceRecord, verify_qpr_document
+from veriqant_bench.adapters import NoiseSpec
+from veriqant_bench.adapters.aer import _NOISY_1Q_GATES, NOISE_BASIS, AerSimulatorAdapter
+from veriqant_bench.benchmarks import run_benchmark
+from veriqant_bench.benchmarks.mirror import MirrorCircuits, MirrorParams
+from veriqant_bench.benchmarks.qv import QuantumVolume, QVParams
+from veriqant_bench.benchmarks.rb import RandomizedBenchmarking, RBParams
+from veriqant_bench.qpr import QuantumPerformanceRecord, verify_qpr_document
 
 pytestmark = pytest.mark.slow
 
@@ -157,7 +157,7 @@ async def test_same_seed_reproduces_identical_measurement_content() -> None:
     assert [r.counts for r in first.results.raw] == [r.counts for r in second.results.raw]
     assert first.results.metrics == second.results.metrics
 
-    from veriqore_bench.qpr import seal
+    from veriqant_bench.qpr import seal
 
     aligned = second.model_copy(
         update={

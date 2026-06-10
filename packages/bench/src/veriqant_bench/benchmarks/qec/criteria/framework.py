@@ -1,8 +1,8 @@
 """Criteria-profile framework: pluggable, versioned logical-qubit criteria.
 
-Veriqore is the neutral executor of *others'* published norms: a
+Veriqant is the neutral executor of *others'* published norms: a
 CriteriaProfile is a named, cited set of Criterion evaluators discovered
-through the 'veriqore_bench.criteria_profiles' entry-point group, never a
+through the 'veriqant_bench.criteria_profiles' entry-point group, never a
 definition of our own. Verdicts are pass / fail / not_evaluable —
 not_evaluable is a first-class outcome with a reason: an honest "this
 experiment cannot answer that" beats a forced verdict.
@@ -25,7 +25,7 @@ VerdictStatus = Literal["pass", "fail", "not_evaluable"]
 
 SIMULATED_ISSUE = "simulated_noise_model_not_hardware"
 
-ENTRY_POINT_GROUP = "veriqore_bench.criteria_profiles"
+ENTRY_POINT_GROUP = "veriqant_bench.criteria_profiles"
 
 
 class RateWithCI(BaseModel):

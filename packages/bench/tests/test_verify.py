@@ -7,7 +7,7 @@ from typing import Any
 import pytest
 from conftest import reseal_document
 
-from veriqore_bench.qpr import (
+from veriqant_bench.qpr import (
     QuantumPerformanceRecord,
     dumps_qpr,
     generate_signing_key,

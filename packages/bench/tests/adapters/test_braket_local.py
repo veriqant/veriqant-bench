@@ -5,9 +5,9 @@ from __future__ import annotations
 
 import pytest
 
-from veriqore_bench.adapters import JobSpec, SubmissionError, UnsupportedCircuitError
-from veriqore_bench.adapters.braket_local import BraketLocalAdapter, convert_qasm3_to_braket
-from veriqore_bench.adapters.conformance import BELL_2Q
+from veriqant_bench.adapters import JobSpec, SubmissionError, UnsupportedCircuitError
+from veriqant_bench.adapters.braket_local import BraketLocalAdapter, convert_qasm3_to_braket
+from veriqant_bench.adapters.conformance import BELL_2Q
 
 
 def test_conversion_renames_gates_and_strips_classical_scaffolding() -> None:

@@ -4,7 +4,7 @@ import math
 
 import pytest
 
-from veriqore_bench.qpr import canonical_json, content_sha256, sha256_hex
+from veriqant_bench.qpr import canonical_json, content_sha256, sha256_hex
 
 
 def test_keys_sorted_recursively_and_compact() -> None:

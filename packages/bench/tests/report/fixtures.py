@@ -15,14 +15,14 @@ from uuid import UUID
 
 from conftest import StaticAdapter
 
-from veriqore_bench.benchmarks import run_benchmark
-from veriqore_bench.benchmarks.mirror import MirrorCircuits, MirrorParams
-from veriqore_bench.benchmarks.qec.memory import RepetitionMemory, RepetitionParams
-from veriqore_bench.benchmarks.qv import QuantumVolume, QVParams
-from veriqore_bench.benchmarks.rb import RandomizedBenchmarking, RBParams
-from veriqore_bench.benchmarks.throughput import SIMULATOR_TIMING_ISSUE
-from veriqore_bench.qpr import QuantumPerformanceRecord, seal, sha256_hex
-from veriqore_bench.qpr._generated import (
+from veriqant_bench.benchmarks import run_benchmark
+from veriqant_bench.benchmarks.mirror import MirrorCircuits, MirrorParams
+from veriqant_bench.benchmarks.qec.memory import RepetitionMemory, RepetitionParams
+from veriqant_bench.benchmarks.qv import QuantumVolume, QVParams
+from veriqant_bench.benchmarks.rb import RandomizedBenchmarking, RBParams
+from veriqant_bench.benchmarks.throughput import SIMULATOR_TIMING_ISSUE
+from veriqant_bench.qpr import QuantumPerformanceRecord, seal, sha256_hex
+from veriqant_bench.qpr._generated import (
     Benchmark,
     Circuit,
     Device,
@@ -41,10 +41,10 @@ from veriqore_bench.qpr._generated import (
 FIXED_AT = datetime(2026, 1, 1, 12, 0, 0, tzinfo=UTC)
 
 _FIXED_PROVENANCE = Provenance(
-    veriqore_bench_version="0.1.0",
+    veriqant_bench_version="0.1.0",
     python_version="3.12.0",
     platform="golden-fixture",
-    sdk_versions={"veriqore-bench": "0.1.0"},
+    sdk_versions={"veriqant-bench": "0.1.0"},
 )
 _FIXED_TRANSPILATION = Transpilation(sdk="fixed", sdk_version="0.0.0", settings={})
 

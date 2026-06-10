@@ -25,8 +25,8 @@ from typing import Any, Literal
 
 from pydantic import BaseModel, ConfigDict, Field, field_validator, model_validator
 
-from veriqore_bench.adapters import NoiseSpec, QPUAdapter
-from veriqore_bench.qpr._generated import Metric, MetricQuality, MetricStatistics
+from veriqant_bench.adapters import NoiseSpec, QPUAdapter
+from veriqant_bench.qpr._generated import Metric, MetricQuality, MetricStatistics
 
 from ..base import AnalysisResult, Benchmark, ExecutionOutcome, GeneratedCircuit
 from ..stats import bootstrap_rng, percentile_ci, wilson_interval

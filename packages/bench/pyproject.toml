@@ -3,13 +3,13 @@ requires = ["hatchling"]
 build-backend = "hatchling.build"
 
 [project]
-name = "veriqore-bench"
+name = "veriqant-bench"
 version = "0.1.0"
 description = "Standardized, reproducible benchmark suites for quantum processors — produces signed Quantum Performance Records (QPRs)"
 readme = "README.md"
 license = "Apache-2.0"
 requires-python = ">=3.12"
-authors = [{ name = "Veriqore" }]
+authors = [{ name = "Veriqant" }]
 keywords = ["quantum", "benchmarking", "qpu", "verification", "qec", "quantum-volume"]
 classifiers = [
     "Development Status :: 4 - Beta",
@@ -28,7 +28,7 @@ dependencies = [
 
 [project.optional-dependencies]
 # Provider SDKs are optional so the core install stays lean:
-#   pip install veriqore-bench[local,braket]
+#   pip install veriqant-bench[local,braket]
 # Local ideal/noisy simulation via Qiskit Aer — needs no provider account.
 # Also required by benchmark circuit generation (Clifford utilities, fitting).
 local = ["qiskit>=1.4", "qiskit-aer>=0.15", "qiskit-qasm3-import>=0.5", "scipy>=1.11"]
@@ -42,28 +42,28 @@ qec = ["pymatching>=2.2", "stim>=1.13"]
 signing = ["cryptography>=43"]
 
 [project.urls]
-Homepage = "https://github.com/veriqore/veriqore-bench"
-Documentation = "https://github.com/veriqore/veriqore-bench/blob/main/docs/QPR-SPEC.md"
-Changelog = "https://github.com/veriqore/veriqore-bench/blob/main/CHANGELOG.md"
-Issues = "https://github.com/veriqore/veriqore-bench/issues"
+Homepage = "https://github.com/veriqant/veriqant-bench"
+Documentation = "https://github.com/veriqant/veriqant-bench/blob/main/docs/QPR-SPEC.md"
+Changelog = "https://github.com/veriqant/veriqant-bench/blob/main/CHANGELOG.md"
+Issues = "https://github.com/veriqant/veriqant-bench/issues"
 
 [project.scripts]
-veriqore-bench = "veriqore_bench.cli:main"
+veriqant-bench = "veriqant_bench.cli:main"
 
-[project.entry-points."veriqore_bench.adapters"]
-aer_simulator = "veriqore_bench.adapters.aer:AerSimulatorAdapter"
-braket_local = "veriqore_bench.adapters.braket_local:BraketLocalAdapter"
+[project.entry-points."veriqant_bench.adapters"]
+aer_simulator = "veriqant_bench.adapters.aer:AerSimulatorAdapter"
+braket_local = "veriqant_bench.adapters.braket_local:BraketLocalAdapter"
 
-[project.entry-points."veriqore_bench.benchmarks"]
-rb = "veriqore_bench.benchmarks.rb:RandomizedBenchmarking"
-mirror = "veriqore_bench.benchmarks.mirror:MirrorCircuits"
-qv = "veriqore_bench.benchmarks.qv:QuantumVolume"
-throughput = "veriqore_bench.benchmarks.throughput:Throughput"
-qec_repetition = "veriqore_bench.benchmarks.qec.memory:RepetitionMemory"
-qec_surface = "veriqore_bench.benchmarks.qec.memory:SurfaceMemory"
+[project.entry-points."veriqant_bench.benchmarks"]
+rb = "veriqant_bench.benchmarks.rb:RandomizedBenchmarking"
+mirror = "veriqant_bench.benchmarks.mirror:MirrorCircuits"
+qv = "veriqant_bench.benchmarks.qv:QuantumVolume"
+throughput = "veriqant_bench.benchmarks.throughput:Throughput"
+qec_repetition = "veriqant_bench.benchmarks.qec.memory:RepetitionMemory"
+qec_surface = "veriqant_bench.benchmarks.qec.memory:SurfaceMemory"
 
-[project.entry-points."veriqore_bench.criteria_profiles"]
-ab-lq-2026 = "veriqore_bench.benchmarks.qec.criteria.ab_lq_2026:AbLq2026Profile"
+[project.entry-points."veriqant_bench.criteria_profiles"]
+ab-lq-2026 = "veriqant_bench.benchmarks.qec.criteria.ab_lq_2026:AbLq2026Profile"
 
 [dependency-groups]
 dev = [
@@ -90,7 +90,7 @@ dev = [
 testpaths = ["tests"]
 # Coverage flags live in CI / the documented full-suite command, NOT here:
 # targeted single-file runs must not fail on package-wide coverage.
-# Full gate:  uv run pytest -n auto --cov=veriqore_bench --cov-fail-under=90
+# Full gate:  uv run pytest -n auto --cov=veriqant_bench --cov-fail-under=90
 timeout = 60
 markers = [
     "slow: multi-second simulator executions",
@@ -110,7 +110,7 @@ select = ["E", "F", "I", "UP", "B", "SIM", "C4", "RET", "RUF"]
 
 [tool.ruff.lint.per-file-ignores]
 # Generated code is normalized by ruff format only.
-"src/veriqore_bench/qpr/_generated.py" = ["E501"]
+"src/veriqant_bench/qpr/_generated.py" = ["E501"]
 
 [tool.mypy]
 python_version = "3.12"
@@ -119,7 +119,7 @@ files = ["src", "tests"]
 plugins = ["pydantic.mypy"]
 
 [[tool.mypy.overrides]]
-module = "veriqore_bench.qpr._generated"
+module = "veriqant_bench.qpr._generated"
 # Generated models: tolerate codegen artifacts (constr() in annotations is
 # valid for pydantic but rejected by mypy's type-annotation rules).
 disallow_any_explicit = false

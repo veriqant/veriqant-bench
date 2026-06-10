@@ -49,7 +49,7 @@ class Provider(BaseModel):
     """
     adapter: Annotated[str, Field(pattern="^[a-z0-9][a-z0-9_.-]*$")]
     """
-    veriqore-bench adapter used, e.g. 'aer_simulator', 'braket_local', 'ibm_runtime', 'braket'.
+    veriqant-bench adapter used, e.g. 'aer_simulator', 'braket_local', 'ibm_runtime', 'braket'.
     """
     region: str | None = None
     """
@@ -239,9 +239,9 @@ class Provenance(BaseModel):
     model_config = ConfigDict(
         extra="forbid",
     )
-    veriqore_bench_version: str
+    veriqant_bench_version: str
     """
-    Exact veriqore-bench version that produced this record.
+    Exact veriqant-bench version that produced this record.
     """
     python_version: str
     """

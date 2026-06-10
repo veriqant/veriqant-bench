@@ -10,7 +10,7 @@ from typing import Any
 
 import pytest
 
-from veriqore_bench.adapters import (
+from veriqant_bench.adapters import (
     ExecutionError,
     JobHandle,
     JobSpec,

@@ -24,7 +24,7 @@ from typing import Literal, Protocol
 
 from pydantic import BaseModel, ConfigDict
 
-from veriqore_bench.adapters import NoiseSpec
+from veriqant_bench.adapters import NoiseSpec
 
 from .schedule import MemorySchedule
 

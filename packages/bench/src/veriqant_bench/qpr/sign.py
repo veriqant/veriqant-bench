@@ -1,6 +1,6 @@
 """Ed25519 signing of sealed QPRs.
 
-Requires the 'signing' extra (pip install veriqore-bench[signing]). The
+Requires the 'signing' extra (pip install veriqant-bench[signing]). The
 signature covers the ASCII hex of integrity.content_sha256, so a signature
 remains verifiable without re-canonicalizing the whole record.
 """
@@ -29,7 +29,7 @@ class SigningUnavailableError(RuntimeError):
     def __init__(self) -> None:
         super().__init__(
             "QPR signing requires the 'cryptography' package; "
-            "install with: pip install veriqore-bench[signing]"
+            "install with: pip install veriqant-bench[signing]"
         )
 
 

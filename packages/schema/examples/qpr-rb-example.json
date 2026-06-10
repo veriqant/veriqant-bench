@@ -82,7 +82,7 @@
     ]
   },
   "provenance": {
-    "veriqore_bench_version": "0.1.0",
+    "veriqant_bench_version": "0.1.0",
     "python_version": "3.12.13",
     "platform": "test",
     "sdk_versions": {
@@ -90,6 +90,6 @@
     }
   },
   "integrity": {
-    "content_sha256": "3b1a7af6736923d47e2597c7fc89d2534043b6520300c8f322ae7929680d474f"
+    "content_sha256": "2c5ae7e9695b647a68e6dbf458b436944710283eb56f731e0f59d2dd26cf4c14"
   }
 }

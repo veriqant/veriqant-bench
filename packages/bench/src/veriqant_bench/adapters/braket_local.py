@@ -1,4 +1,4 @@
-"""Amazon Braket LocalSimulator adapter (pip install veriqore-bench[braket]).
+"""Amazon Braket LocalSimulator adapter (pip install veriqant-bench[braket]).
 
 Two boundary conversions, both recorded in the job's transpilation metadata:
 
@@ -195,11 +195,11 @@ class BraketLocalAdapter(LocalAdapterBase):
         metadata: dict[str, Any] = {
             "sdk_versions": {
                 "amazon-braket-sdk": version("amazon-braket-sdk"),
-                "veriqore-bench": __version__,
+                "veriqant-bench": __version__,
             },
             "platform": platform.platform(),
             "transpilation": {
-                "sdk": "veriqore-bench",
+                "sdk": "veriqant-bench",
                 "sdk_version": __version__,
                 "settings": {
                     "conversion": "openqasm3-to-braket-dialect",

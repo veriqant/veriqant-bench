@@ -1,6 +1,6 @@
 """Data types of the QPUAdapter contract.
 
-Counts bitstring convention (everywhere in veriqore-bench, matching the QPR
+Counts bitstring convention (everywhere in veriqant-bench, matching the QPR
 spec): the rightmost character is qubit/classical bit 0 — i.e. the string
 reads c[n-1] ... c[0]. Adapters normalize backend-native orderings to this.
 """
@@ -13,7 +13,7 @@ from typing import Any, Literal
 
 from pydantic import AwareDatetime, BaseModel, ConfigDict, Field, model_validator
 
-from veriqore_bench.qpr._generated import Device
+from veriqant_bench.qpr._generated import Device
 
 
 class JobStatus(StrEnum):

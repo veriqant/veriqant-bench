@@ -18,7 +18,7 @@ const schemaCopyPath = join(pkgRoot, 'src', 'generated', 'qpr.schema.json');
 const banner = `/* eslint-disable */
 /**
  * AUTO-GENERATED from schema/qpr-0.2.0.schema.json — do not edit by hand.
- * Regenerate with: pnpm --filter @veriqore/schema generate
+ * Regenerate with: pnpm --filter @veriqant/schema generate
  */`;
 
 const ts = await compileFromFile(schemaPath, {

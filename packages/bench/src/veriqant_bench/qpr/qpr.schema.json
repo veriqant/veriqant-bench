@@ -1,6 +1,6 @@
 {
   "$schema": "https://json-schema.org/draft/2020-12/schema",
-  "$id": "https://schema.veriqore.dev/qpr/0.2.0/qpr.schema.json",
+  "$id": "https://schema.veriqant.dev/qpr/0.2.0/qpr.schema.json",
   "title": "QuantumPerformanceRecord",
   "description": "QPR v0.2.0 \u2014 a self-contained, reproducible record of one benchmark execution against one quantum device or simulator. A QPR carries everything needed to re-run the benchmark bit-for-bit and to independently verify the reported metrics.",
   "type": "object",
@@ -111,7 +111,7 @@
           "pattern": "^[a-z0-9][a-z0-9_.-]*$"
         },
         "adapter": {
-          "description": "veriqore-bench adapter used, e.g. 'aer_simulator', 'braket_local', 'ibm_runtime', 'braket'.",
+          "description": "veriqant-bench adapter used, e.g. 'aer_simulator', 'braket_local', 'ibm_runtime', 'braket'.",
           "type": "string",
           "pattern": "^[a-z0-9][a-z0-9_.-]*$"
         },
@@ -464,14 +464,14 @@
       "type": "object",
       "additionalProperties": false,
       "required": [
-        "veriqore_bench_version",
+        "veriqant_bench_version",
         "python_version",
         "platform",
         "sdk_versions"
       ],
       "properties": {
-        "veriqore_bench_version": {
-          "description": "Exact veriqore-bench version that produced this record.",
+        "veriqant_bench_version": {
+          "description": "Exact veriqant-bench version that produced this record.",
           "type": "string"
         },
         "python_version": {

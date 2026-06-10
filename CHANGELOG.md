@@ -1,6 +1,6 @@
 # Changelog
 
-All notable changes to veriqore-bench. The QPR schema is versioned
+All notable changes to veriqant-bench. The QPR schema is versioned
 separately (see the compatibility table in README.md).
 
 ## 0.1.0 — 2026-06-10
@@ -17,7 +17,7 @@ next milestone.
   intervals do not validate. Optional `quality` field
   (`reliable` + machine-readable issues) so failed diagnostics are
   published flagged, never hidden.
-- Independent verification: `veriqore-bench verify` re-derives circuit
+- Independent verification: `veriqant-bench verify` re-derives circuit
   hashes and the content seal, checks cross-references and statistical
   sanity. Generated Pydantic models and TypeScript types from one schema;
   cross-language golden fixture.
@@ -51,6 +51,6 @@ next milestone.
 
 ### Reporting
 
-- `veriqore-bench report`: one self-contained HTML file (inline CSS/SVG,
+- `veriqant-bench report`: one self-contained HTML file (inline CSS/SVG,
   zero external requests), inputs verified first, unreliable metrics
   visibly badged, criteria scorecards watermarked when simulator-derived.

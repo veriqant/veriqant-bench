@@ -1,4 +1,4 @@
-# Contributing to veriqore-bench
+# Contributing to veriqant-bench
 
 Thanks for considering a contribution. This project's value is its
 credibility: reproducibility, statistical honesty, and documented
@@ -14,7 +14,7 @@ cd packages/bench
 uv sync                      # installs all extras + dev tools
 uv run pytest                # fast suite, no coverage gate
 uv run pytest -m "not slow"  # skip multi-second simulator runs
-uv run pytest -n auto --cov=veriqore_bench --cov-fail-under=90   # the CI gate
+uv run pytest -n auto --cov=veriqant_bench --cov-fail-under=90   # the CI gate
 uv run ruff check . && uv run ruff format --check . && uv run mypy
 ```
 
@@ -33,7 +33,7 @@ Install the git hooks once: `uvx pre-commit install`.
 After changing it, regenerate everything (CI fails on drift):
 
 ```bash
-pnpm --filter @veriqore/schema generate
+pnpm --filter @veriqant/schema generate
 packages/schema/scripts/generate-pydantic.sh
 packages/schema/scripts/generate-example.sh
 ```
@@ -42,18 +42,18 @@ packages/schema/scripts/generate-example.sh
 
 The adapter contract has two halves:
 
-1. **Structural**: implement the `veriqore_bench.adapters.QPUAdapter`
-   protocol and register it under the `veriqore_bench.adapters`
+1. **Structural**: implement the `veriqant_bench.adapters.QPUAdapter`
+   protocol and register it under the `veriqant_bench.adapters`
    entry-point group in your own package.
 2. **Behavioral**: subclass
-   `veriqore_bench.adapters.conformance.AdapterConformanceSuite` in your
+   `veriqant_bench.adapters.conformance.AdapterConformanceSuite` in your
    test suite and make it pass. The suite certifies honest job lifecycle,
    QPR bit-ordering, seed determinism on simulators, typed errors, and
    schema-valid capability reporting. An adapter that does not pass the
-   conformance suite is not a Veriqore adapter.
+   conformance suite is not a Veriqant adapter.
 
 Benchmarks and criteria profiles plug in the same way
-(`veriqore_bench.benchmarks`, `veriqore_bench.criteria_profiles`).
+(`veriqant_bench.benchmarks`, `veriqant_bench.criteria_profiles`).
 
 ## Methodology changes
 

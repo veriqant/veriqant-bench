@@ -1,7 +1,7 @@
 """The Alice & Bob five-criteria logical-qubit profile (June 2026).
 
 Citation: Alice & Bob, "Defining the Logical Qubit: Five Criteria to
-Benchmark Logical Qubit Claims", June 2026. Veriqore implements this
+Benchmark Logical Qubit Claims", June 2026. Veriqant implements this
 profile as a neutral executor of the published criteria; the thresholds and
 their interpretation below follow the publication, with every numeric
 choice surfaced in verdict evidence.

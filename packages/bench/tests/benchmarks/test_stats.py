@@ -2,7 +2,7 @@ from __future__ import annotations
 
 import pytest
 
-from veriqore_bench.benchmarks import bootstrap_mean_ci, bootstrap_rng, percentile_ci
+from veriqant_bench.benchmarks import bootstrap_mean_ci, bootstrap_rng, percentile_ci
 
 
 def test_bootstrap_is_deterministic() -> None:

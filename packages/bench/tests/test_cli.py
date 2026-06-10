@@ -5,9 +5,9 @@ from pathlib import Path
 
 from click.testing import CliRunner
 
-from veriqore_bench import __version__
-from veriqore_bench.cli import main
-from veriqore_bench.qpr import QPR_VERSION, QuantumPerformanceRecord, dump_qpr, dumps_qpr
+from veriqant_bench import __version__
+from veriqant_bench.cli import main
+from veriqant_bench.qpr import QPR_VERSION, QuantumPerformanceRecord, dump_qpr, dumps_qpr
 
 
 def test_verify_valid_file(record: QuantumPerformanceRecord, tmp_path: Path) -> None:
@@ -45,7 +45,7 @@ def test_schema_prints_bundled_schema() -> None:
 def test_version_command() -> None:
     result = CliRunner().invoke(main, ["version"])
     assert result.exit_code == 0
-    assert f"veriqore-bench {__version__}" in result.output
+    assert f"veriqant-bench {__version__}" in result.output
     assert f"qpr-schema {QPR_VERSION}" in result.output
 
 

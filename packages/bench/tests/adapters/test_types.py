@@ -6,7 +6,7 @@ from decimal import Decimal
 import pydantic
 import pytest
 
-from veriqore_bench.adapters import (
+from veriqant_bench.adapters import (
     VALID_TRANSITIONS,
     CalibrationSnapshot,
     CostEstimate,
@@ -14,7 +14,7 @@ from veriqore_bench.adapters import (
     JobStatus,
     NoiseSpec,
 )
-from veriqore_bench.qpr._generated import Device
+from veriqant_bench.qpr._generated import Device
 
 
 def make_capabilities(**overrides: object) -> DeviceCapabilities:

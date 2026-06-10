@@ -3,8 +3,8 @@ honest state history."""
 
 from __future__ import annotations
 
-from veriqore_bench.adapters import JobSpec, JobStatus, NoiseSpec
-from veriqore_bench.adapters.aer import AerSimulatorAdapter
+from veriqant_bench.adapters import JobSpec, JobStatus, NoiseSpec
+from veriqant_bench.adapters.aer import AerSimulatorAdapter
 
 GHZ_3Q = (
     "OPENQASM 3.0;\n"

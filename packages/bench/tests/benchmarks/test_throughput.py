@@ -6,13 +6,13 @@ from __future__ import annotations
 import pytest
 from conftest import StaticAdapter
 
-from veriqore_bench.benchmarks import run_benchmark
-from veriqore_bench.benchmarks.throughput import (
+from veriqant_bench.benchmarks import run_benchmark
+from veriqant_bench.benchmarks.throughput import (
     SIMULATOR_TIMING_ISSUE,
     Throughput,
     ThroughputParams,
 )
-from veriqore_bench.qpr import QuantumPerformanceRecord, verify_qpr_document
+from veriqant_bench.qpr import QuantumPerformanceRecord, verify_qpr_document
 
 THROUGHPUT = Throughput()
 PARAMS = ThroughputParams(width=2, depth=2, batch_size=3, batches=4)

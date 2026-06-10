@@ -1,8 +1,8 @@
 """The QPUAdapter protocol — the neutral contract every backend satisfies.
 
 Structural (typing.Protocol), not nominal: third-party adapters need no
-import-time relationship with veriqore-bench beyond matching this shape.
-The conformance suite in veriqore_bench.adapters.conformance is the
+import-time relationship with veriqant-bench beyond matching this shape.
+The conformance suite in veriqant_bench.adapters.conformance is the
 behavioral half of the contract.
 """
 
@@ -59,5 +59,5 @@ class QPUAdapter(Protocol):
         self, handle: JobHandle, *, timeout: float = 60.0, poll_interval: float = 0.05
     ) -> JobResult:
         """Poll until terminal, then return the result. Raises
-        veriqore_bench.adapters.TimeoutError past the deadline."""
+        veriqant_bench.adapters.TimeoutError past the deadline."""
         ...

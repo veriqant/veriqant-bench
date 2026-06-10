@@ -2,7 +2,7 @@
 <html lang="en">
 <head>
 <meta charset="utf-8">
-<title>Veriqore benchmark report</title>
+<title>Veriqant benchmark report</title>
 <style>
 body { font-family: -apple-system, "Segoe UI", Helvetica, Arial, sans-serif;
        margin: 2rem auto; max-width: 60rem; color: #1a1a2e; }
@@ -24,18 +24,18 @@ svg { background: #fbfbfd; border: 1px solid #e5e5ee; margin-top: 0.6rem; }
 </style>
 </head>
 <body>
-<h1>Veriqore benchmark report</h1>
-<p class="meta">generated 2026-01-01 12:00:00 UTC · veriqore-bench 0.1.0
+<h1>Veriqant benchmark report</h1>
+<p class="meta">generated 2026-01-01 12:00:00 UTC · veriqant-bench 0.1.0
  · 5 record(s) · all records verified</p>
 <table>
 <thead><tr><th>benchmark</th><th>adapter / device</th><th>key metric</th>
 <th>value (95% CI)</th><th>quality</th><th>record</th></tr></thead>
 <tbody>
-<tr><td>mirror_circuits</td><td>static_test / static_device (simulator)</td><td>success_probability.depth_1</td><td>0.5 [0, 1]</td><td><span class="badge ok">no diagnostics</span></td><td><code>402a5b43f05c</code></td></tr>
-<tr><td>qec_repetition_memory</td><td>static_test / static_device (simulator)</td><td>logical_error_per_round.distance_3</td><td>0 [0, 0.003827]</td><td><span class="badge ok">reliable</span></td><td><code>e37ccab498f3</code></td></tr>
-<tr><td>quantum_volume</td><td>static_test / static_device (simulator)</td><td>quantum_volume</td><td>1 [1, 1]</td><td><span class="badge bad">UNRELIABLE</span> <span class="issues">qv.insufficient_circuits_for_confidence, qv.no_width_passed</span></td><td><code>bff0d3a7a9c8</code></td></tr>
-<tr><td>rb_1q</td><td>static_test / static_device (simulator)</td><td>error_per_clifford</td><td>2.968e-06 [2.968e-06, 2.968e-06]</td><td><span class="badge ok">reliable</span></td><td><code>cd72a63c5ffb</code></td></tr>
-<tr><td>throughput</td><td>static_test / static_device (simulator)</td><td>job_round_trip_seconds</td><td>0.0421 [0.03789, 0.04631]</td><td><span class="badge bad">UNRELIABLE</span> <span class="issues">timing.simulator_not_comparable_to_hardware</span></td><td><code>407267d3dcf6</code></td></tr>
+<tr><td>mirror_circuits</td><td>static_test / static_device (simulator)</td><td>success_probability.depth_1</td><td>0.5 [0, 1]</td><td><span class="badge ok">no diagnostics</span></td><td><code>ee76cac8d170</code></td></tr>
+<tr><td>qec_repetition_memory</td><td>static_test / static_device (simulator)</td><td>logical_error_per_round.distance_3</td><td>0 [0, 0.003827]</td><td><span class="badge ok">reliable</span></td><td><code>044f1e14ef0f</code></td></tr>
+<tr><td>quantum_volume</td><td>static_test / static_device (simulator)</td><td>quantum_volume</td><td>1 [1, 1]</td><td><span class="badge bad">UNRELIABLE</span> <span class="issues">qv.insufficient_circuits_for_confidence, qv.no_width_passed</span></td><td><code>e567249431ee</code></td></tr>
+<tr><td>rb_1q</td><td>static_test / static_device (simulator)</td><td>error_per_clifford</td><td>2.968e-06 [2.968e-06, 2.968e-06]</td><td><span class="badge ok">reliable</span></td><td><code>b00298721a0c</code></td></tr>
+<tr><td>throughput</td><td>static_test / static_device (simulator)</td><td>job_round_trip_seconds</td><td>0.0421 [0.03789, 0.04631]</td><td><span class="badge bad">UNRELIABLE</span> <span class="issues">timing.simulator_not_comparable_to_hardware</span></td><td><code>d937d890a247</code></td></tr>
 </tbody>
 </table>
 
@@ -43,7 +43,7 @@ svg { background: #fbfbfd; border: 1px solid #e5e5ee; margin-top: 0.6rem; }
 <p class="meta">adapter static_test · device
  static_device · seed 7 · shots 64
  · suite 0.1.0
- · <code>402a5b43f05cb1f9bf738e001945d3ab492f37da6c3eec78708dc2d790765c89</code></p>
+ · <code>ee76cac8d170b89c7feac7b89a416676b8193519dbc3e57539890e044e9bf53a</code></p>
 <table>
 <thead><tr><th>metric</th><th>value</th><th>95% CI</th><th>samples</th><th>quality</th></tr></thead>
 <tbody>
@@ -83,7 +83,7 @@ svg { background: #fbfbfd; border: 1px solid #e5e5ee; margin-top: 0.6rem; }
 <p class="meta">adapter static_test · device
  static_device · seed 7 · shots 200
  · suite 0.1.0
- · <code>e37ccab498f315c961d2f4970b380d4888a4663c722b13c76cb86b93f34f3b8e</code></p>
+ · <code>044f1e14ef0f0737d08455a94d7bcec737ba10901dda5f4c5eb9713c1a89d07f</code></p>
 <table>
 <thead><tr><th>metric</th><th>value</th><th>95% CI</th><th>samples</th><th>quality</th></tr></thead>
 <tbody>
@@ -143,7 +143,7 @@ svg { background: #fbfbfd; border: 1px solid #e5e5ee; margin-top: 0.6rem; }
 <p class="meta">adapter static_test · device
  static_device · seed 7 · shots 64
  · suite 0.1.0
- · <code>bff0d3a7a9c8ab8c703a6ae3e6c315d228550ea52febdc4088518e6a5015498d</code></p>
+ · <code>e567249431eeed6bdaeee3ec91b568838a0cebf98e500e0a782aa3440bc248b0</code></p>
 <table>
 <thead><tr><th>metric</th><th>value</th><th>95% CI</th><th>samples</th><th>quality</th></tr></thead>
 <tbody>
@@ -181,7 +181,7 @@ svg { background: #fbfbfd; border: 1px solid #e5e5ee; margin-top: 0.6rem; }
 <p class="meta">adapter static_test · device
  static_device · seed 7 · shots 64
  · suite 0.1.0
- · <code>cd72a63c5ffb7846564d0272af9f7bf2299d38315b4d10186e227db27c13df26</code></p>
+ · <code>b00298721a0ca3679cb5cb7f83c81221c02abe6b7f214573a62e4e9ef93528c0</code></p>
 <table>
 <thead><tr><th>metric</th><th>value</th><th>95% CI</th><th>samples</th><th>quality</th></tr></thead>
 <tbody>
@@ -220,7 +220,7 @@ svg { background: #fbfbfd; border: 1px solid #e5e5ee; margin-top: 0.6rem; }
 <p class="meta">adapter static_test · device
  static_device · seed 7 · shots 64
  · suite 0.1.0
- · <code>407267d3dcf606aafc4ac7d9fb4aae2c24d8b35c1ce019ee415c194b11245228</code></p>
+ · <code>d937d890a247c72a0e2710bdd13ae4c729a15885b36eb7a10be3deb0f236adbd</code></p>
 <table>
 <thead><tr><th>metric</th><th>value</th><th>95% CI</th><th>samples</th><th>quality</th></tr></thead>
 <tbody>

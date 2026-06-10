@@ -8,8 +8,8 @@ import pydantic
 import pytest
 from qiskit import qasm3
 
-from veriqore_bench.benchmarks.qec.memory import RepetitionParams, SurfaceParams
-from veriqore_bench.benchmarks.qec.schedule import (
+from veriqant_bench.benchmarks.qec.memory import RepetitionParams, SurfaceParams
+from veriqant_bench.benchmarks.qec.schedule import (
     SURFACE3_X_STABILIZERS,
     SURFACE3_Z_STABILIZERS,
     repetition_memory,

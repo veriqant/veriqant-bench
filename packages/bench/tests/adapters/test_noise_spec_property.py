@@ -5,7 +5,7 @@ from __future__ import annotations
 from hypothesis import given
 from hypothesis import strategies as st
 
-from veriqore_bench.adapters import NoiseSpec
+from veriqant_bench.adapters import NoiseSpec
 
 RATE = st.floats(min_value=0.0, max_value=0.99, allow_nan=False)
 READOUT = st.floats(min_value=0.0, max_value=1.0, allow_nan=False)

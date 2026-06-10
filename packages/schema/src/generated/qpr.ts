@@ -1,7 +1,7 @@
 /* eslint-disable */
 /**
  * AUTO-GENERATED from schema/qpr-0.2.0.schema.json — do not edit by hand.
- * Regenerate with: pnpm --filter @veriqore/schema generate
+ * Regenerate with: pnpm --filter @veriqant/schema generate
  */
 
 /**
@@ -66,7 +66,7 @@ export interface Provider {
    */
   name: string;
   /**
-   * veriqore-bench adapter used, e.g. 'aer_simulator', 'braket_local', 'ibm_runtime', 'braket'.
+   * veriqant-bench adapter used, e.g. 'aer_simulator', 'braket_local', 'ibm_runtime', 'braket'.
    */
   adapter: string;
   /**
@@ -313,9 +313,9 @@ export interface MetricQuality {
  */
 export interface Provenance {
   /**
-   * Exact veriqore-bench version that produced this record.
+   * Exact veriqant-bench version that produced this record.
    */
-  veriqore_bench_version: string;
+  veriqant_bench_version: string;
   /**
    * Python interpreter version, e.g. '3.12.13'.
    */

@@ -1,6 +1,6 @@
 """A deterministic reference QPR.
 
-Used by the test suites of every Veriqore component (Python and TypeScript)
+Used by the test suites of every Veriqant component (Python and TypeScript)
 as the canonical cross-language fixture, and committed to the repository at
 packages/schema/examples/. Regenerate with:
 packages/schema/scripts/generate-example.sh
@@ -96,7 +96,7 @@ def example_record() -> QuantumPerformanceRecord:
             ],
         ),
         provenance=Provenance(
-            veriqore_bench_version="0.1.0",
+            veriqant_bench_version="0.1.0",
             python_version="3.12.13",
             platform="test",
             sdk_versions={"qiskit": "1.4.2"},

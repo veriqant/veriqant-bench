@@ -26,7 +26,7 @@ from qiskit import QuantumCircuit, qasm3
 from qiskit.quantum_info import Clifford, random_clifford
 from scipy.optimize import curve_fit
 
-from veriqore_bench.qpr._generated import Metric, MetricQuality, MetricStatistics
+from veriqant_bench.qpr._generated import Metric, MetricQuality, MetricStatistics
 
 from .base import AnalysisResult, Benchmark, GeneratedCircuit
 from .stats import bootstrap_rng, percentile_ci

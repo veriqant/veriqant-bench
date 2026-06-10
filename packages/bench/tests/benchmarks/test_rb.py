@@ -5,8 +5,8 @@ from __future__ import annotations
 import pydantic
 import pytest
 
-from veriqore_bench.benchmarks.base import GeneratedCircuit
-from veriqore_bench.benchmarks.rb import (
+from veriqant_bench.benchmarks.base import GeneratedCircuit
+from veriqant_bench.benchmarks.rb import (
     RandomizedBenchmarking,
     RBParams,
     epc_from_alpha,

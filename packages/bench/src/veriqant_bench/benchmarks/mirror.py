@@ -23,7 +23,7 @@ from pydantic import BaseModel, ConfigDict, Field, field_validator
 from qiskit import QuantumCircuit, qasm3
 from qiskit.quantum_info import Statevector
 
-from veriqore_bench.qpr._generated import Metric, MetricStatistics
+from veriqant_bench.qpr._generated import Metric, MetricStatistics
 
 from .base import AnalysisResult, Benchmark, GeneratedCircuit
 from .stats import bootstrap_mean_ci

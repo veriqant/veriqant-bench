@@ -4,7 +4,7 @@ This is the behavioral contract of the adapter protocol — every adapter,
 including third-party ones, must pass it. Usage in an adapter's test suite
 (requires pytest and pytest-asyncio):
 
-    from veriqore_bench.adapters.conformance import AdapterConformanceSuite
+    from veriqant_bench.adapters.conformance import AdapterConformanceSuite
 
     class TestMyAdapterConformance(AdapterConformanceSuite):
         def make_adapter(self):
@@ -17,7 +17,7 @@ from decimal import Decimal
 
 import pytest
 
-from veriqore_bench.qpr._generated import Device
+from veriqant_bench.qpr._generated import Device
 
 from .errors import AdapterError, ExecutionError, SubmissionError
 from .protocol import QPUAdapter

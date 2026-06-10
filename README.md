@@ -1,8 +1,8 @@
-# veriqore-bench
+# veriqant-bench
 
-[![CI](https://github.com/veriqore/veriqore-bench/actions/workflows/ci.yml/badge.svg)](https://github.com/veriqore/veriqore-bench/actions/workflows/ci.yml)
-[![PyPI](https://img.shields.io/pypi/v/veriqore-bench)](https://pypi.org/project/veriqore-bench/)
-[![npm](https://img.shields.io/npm/v/%40veriqore%2Fschema)](https://www.npmjs.com/package/@veriqore/schema)
+[![CI](https://github.com/veriqant/veriqant-bench/actions/workflows/ci.yml/badge.svg)](https://github.com/veriqant/veriqant-bench/actions/workflows/ci.yml)
+[![PyPI](https://img.shields.io/pypi/v/veriqant-bench)](https://pypi.org/project/veriqant-bench/)
+[![npm](https://img.shields.io/npm/v/%40veriqant%2Fschema)](https://www.npmjs.com/package/@veriqant/schema)
 [![License: Apache-2.0](https://img.shields.io/badge/license-Apache--2.0-blue)](LICENSE)
 
 **Independent, reproducible QPU benchmarking with sealed records.**
@@ -19,10 +19,10 @@ as flagged-unreliable, never as clean-looking numbers.
 ## Quickstart
 
 ```bash
-pip install 'veriqore-bench[local]'                      # Aer simulators, no account needed
-veriqore-bench run rb --adapter aer --qubits 0 --out results/
-veriqore-bench verify results/*.qpr.json                 # independent re-verification
-veriqore-bench report results/ -o report.html            # self-contained HTML report
+pip install 'veriqant-bench[local]'                      # Aer simulators, no account needed
+veriqant-bench run rb --adapter aer --qubits 0 --out results/
+veriqant-bench verify results/*.qpr.json                 # independent re-verification
+veriqant-bench report results/ -o report.html            # self-contained HTML report
 ```
 
 ## What's in the box
@@ -44,8 +44,8 @@ timescales. Verdicts are `pass` / `fail` / `not_evaluable` — an honest
 "this experiment cannot answer that" is a first-class outcome.
 
 ```bash
-pip install 'veriqore-bench[local,qec]'
-veriqore-bench run qec --code repetition --distances 3,5,7 --rounds 7 \
+pip install 'veriqant-bench[local,qec]'
+veriqant-bench run qec --code repetition --distances 3,5,7 --rounds 7 \
     --criteria ab-lq-2026 --noise noise.json --out results/
 ```
 
@@ -60,13 +60,13 @@ veriqore-bench run qec --code repetition --distances 3,5,7 --rounds 7 \
   from simulated noise carry `simulated_noise_model_not_hardware`. No
   dashboard built on QPRs can accidentally present a simulation as a
   hardware claim.
-- **Independence.** Veriqore is not affiliated with, funded by, or
+- **Independence.** Veriqant is not affiliated with, funded by, or
   endorsed by any quantum hardware vendor. Methodology corrections are
   welcome — open an issue.
 
 ## Compatibility
 
-| veriqore-bench (PyPI) | QPR schema | @veriqore/schema (npm) |
+| veriqant-bench (PyPI) | QPR schema | @veriqant/schema (npm) |
 | --- | --- | --- |
 | 0.1.x | 0.2.0 | 0.1.x |
 

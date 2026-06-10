@@ -7,15 +7,15 @@ from typing import Any
 
 import pytest
 
-from veriqore_bench.adapters import (
+from veriqant_bench.adapters import (
     CalibrationSnapshot,
     CostEstimate,
     DeviceCapabilities,
     JobSpec,
     LocalAdapterBase,
 )
-from veriqore_bench.qpr import QuantumPerformanceRecord, content_sha256
-from veriqore_bench.qpr.example import example_record
+from veriqant_bench.qpr import QuantumPerformanceRecord, content_sha256
+from veriqant_bench.qpr.example import example_record
 
 
 def reseal_document(document: dict[str, Any]) -> dict[str, Any]:

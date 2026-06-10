@@ -1,8 +1,8 @@
 """Adapter discovery and construction.
 
-Adapters register through the 'veriqore_bench.adapters' entry-point group —
+Adapters register through the 'veriqant_bench.adapters' entry-point group —
 the built-in ones in this package's own pyproject, third-party ones in
-theirs, with no changes to veriqore-bench. An adapter whose dependencies are
+theirs, with no changes to veriqant-bench. An adapter whose dependencies are
 missing (extras not installed) is reported as unavailable with an install
 hint rather than raising at discovery time.
 """
@@ -16,11 +16,11 @@ from typing import Any
 from .errors import AdapterUnavailableError
 from .protocol import QPUAdapter
 
-ENTRY_POINT_GROUP = "veriqore_bench.adapters"
+ENTRY_POINT_GROUP = "veriqant_bench.adapters"
 
 _INSTALL_HINTS = {
-    "aer_simulator": "pip install 'veriqore-bench[local]'",
-    "braket_local": "pip install 'veriqore-bench[braket]'",
+    "aer_simulator": "pip install 'veriqant-bench[local]'",
+    "braket_local": "pip install 'veriqant-bench[braket]'",
 }
 
 

@@ -1,6 +1,6 @@
 #!/usr/bin/env bash
 # Regenerates the committed cross-language golden example QPR from the
-# deterministic reference producer in veriqore-bench.
+# deterministic reference producer in veriqant-bench.
 set -euo pipefail
 
 ROOT="$(cd "$(dirname "$0")/../../.." && pwd)"
@@ -10,8 +10,8 @@ cd "$ROOT/packages/bench"
 uv run python -c "
 from pathlib import Path
 
-from veriqore_bench.qpr import dumps_qpr
-from veriqore_bench.qpr.example import example_record
+from veriqant_bench.qpr import dumps_qpr
+from veriqant_bench.qpr.example import example_record
 
 Path('$OUT').write_text(dumps_qpr(example_record()), encoding='utf-8')
 print('wrote $OUT')

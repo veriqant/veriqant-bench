@@ -1,4 +1,4 @@
-"""veriqore-bench command-line interface."""
+"""veriqant-bench command-line interface."""
 
 from __future__ import annotations
 
@@ -39,7 +39,7 @@ SMOKE_CIRCUIT = (
 
 
 @click.group()
-@click.version_option(version=__version__, prog_name="veriqore-bench")
+@click.version_option(version=__version__, prog_name="veriqant-bench")
 def main() -> None:
     """Standardized, reproducible benchmarks for quantum processors."""
 
@@ -64,14 +64,14 @@ def verify(qpr_file: Path) -> None:
 @main.command()
 def schema() -> None:
     """Print the bundled QPR JSON Schema."""
-    text = files("veriqore_bench.qpr").joinpath(SCHEMA_RESOURCE).read_text(encoding="utf-8")
+    text = files("veriqant_bench.qpr").joinpath(SCHEMA_RESOURCE).read_text(encoding="utf-8")
     click.echo(text, nl=False)
 
 
 @main.command()
 def version() -> None:
     """Print package and QPR schema versions."""
-    click.echo(f"veriqore-bench {__version__}")
+    click.echo(f"veriqant-bench {__version__}")
     click.echo(f"qpr-schema {QPR_VERSION}")
 
 

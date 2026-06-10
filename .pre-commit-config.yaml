@@ -5,19 +5,19 @@ repos:
   - repo: local
     hooks:
       - id: ruff-format
-        name: ruff format (veriqore-bench)
+        name: ruff format (veriqant-bench)
         entry: bash -c 'cd packages/bench && uv run ruff format .'
         language: system
         files: ^packages/bench/.*\.py$
         pass_filenames: false
       - id: ruff-check
-        name: ruff check (veriqore-bench)
+        name: ruff check (veriqant-bench)
         entry: bash -c 'cd packages/bench && uv run ruff check --fix .'
         language: system
         files: ^packages/bench/.*\.py$
         pass_filenames: false
       - id: mypy
-        name: mypy strict (veriqore-bench)
+        name: mypy strict (veriqant-bench)
         entry: bash -c 'cd packages/bench && uv run mypy'
         language: system
         files: ^packages/bench/.*\.py$

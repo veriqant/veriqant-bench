@@ -1,4 +1,4 @@
-"""Throughput benchmark — Veriqore's own metric set, deliberately NOT CLOPS.
+"""Throughput benchmark — Veriqant's own metric set, deliberately NOT CLOPS.
 
 CLOPS (Wack et al., arXiv:2110.14108) is IBM's defined metric with a
 specific protocol built on parameterized template circuits with runtime
@@ -35,8 +35,8 @@ from typing import Any
 import numpy as np
 from pydantic import BaseModel, ConfigDict, Field
 
-from veriqore_bench.adapters import JobSpec, QPUAdapter
-from veriqore_bench.qpr._generated import Metric, MetricQuality, MetricStatistics
+from veriqant_bench.adapters import JobSpec, QPUAdapter
+from veriqant_bench.qpr._generated import Metric, MetricQuality, MetricStatistics
 
 from .base import (
     AnalysisResult,
