@@ -23,15 +23,15 @@ jobs:
   build:
     runs-on: ubuntu-latest
     steps:
-      - uses: actions/checkout@v4
-      - uses: astral-sh/setup-uv@v5
+      - uses: actions/checkout@v6
+      - uses: astral-sh/setup-uv@v8.0.0
         with:
           python-version: "3.12"
       - name: Install SDK
         run: uv sync --directory packages/bench
       - name: Build demo site
         run: uv run --directory packages/bench python ../../scripts/build_demo_site.py ../../site
-      - uses: actions/upload-pages-artifact@v3
+      - uses: actions/upload-pages-artifact@v4
         with:
           path: site
 

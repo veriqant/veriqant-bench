@@ -1,7 +1,7 @@
 {
   "name": "@veriqant/schema",
-  "version": "0.1.0",
-  "description": "QPR (Quantum Performance Record) JSON Schema — single source of truth — with generated TypeScript types and an Ajv validator",
+  "version": "0.1.1",
+  "description": "QPR (Quantum Performance Record) JSON Schema \u2014 single source of truth \u2014 with generated TypeScript types and an Ajv validator",
   "license": "Apache-2.0",
   "repository": {
     "type": "git",

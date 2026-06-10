@@ -10,7 +10,7 @@ jobs:
     name: packages/ must not depend on apps/
     runs-on: ubuntu-latest
     steps:
-      - uses: actions/checkout@v4
+      - uses: actions/checkout@v6
       - name: Enforce apps -> packages only
         run: |
           if grep -rnE "@veriqant/(api|web)|from ['\"](\.\./)*apps/|import .*apps/" packages \
@@ -27,8 +27,8 @@ jobs:
       run:
         working-directory: packages/bench
     steps:
-      - uses: actions/checkout@v4
-      - uses: astral-sh/setup-uv@v5
+      - uses: actions/checkout@v6
+      - uses: astral-sh/setup-uv@v8.0.0
         with:
           python-version: "3.12"
       - name: Sync dependencies
@@ -46,9 +46,9 @@ jobs:
     name: TypeScript (schema, api, web)
     runs-on: ubuntu-latest
     steps:
-      - uses: actions/checkout@v4
-      - uses: pnpm/action-setup@v4
-      - uses: actions/setup-node@v4
+      - uses: actions/checkout@v6
+      - uses: pnpm/action-setup@v5
+      - uses: actions/setup-node@v6
         with:
           node-version: 22
           cache: pnpm
@@ -67,12 +67,12 @@ jobs:
     name: Generated code matches schema
     runs-on: ubuntu-latest
     steps:
-      - uses: actions/checkout@v4
-      - uses: astral-sh/setup-uv@v5
+      - uses: actions/checkout@v6
+      - uses: astral-sh/setup-uv@v8.0.0
         with:
           python-version: "3.12"
-      - uses: pnpm/action-setup@v4
-      - uses: actions/setup-node@v4
+      - uses: pnpm/action-setup@v5
+      - uses: actions/setup-node@v6
         with:
           node-version: 22
           cache: pnpm

@@ -3,6 +3,12 @@
 All notable changes to veriqant-bench. The QPR schema is versioned
 separately (see the compatibility table in README.md).
 
+## @veriqant/schema 0.1.1 (npm) — 2026-06-10
+
+No functional changes relative to 0.1.0 (which was published manually).
+First release through the automated trusted-publishing pipeline; release
+workflow now runs npm >= 11.5 (Node 24) as trusted publishing requires.
+
 ## 0.1.0 — 2026-06-10
 
 First public release. Simulator-validated; live hardware adapters are the
