@@ -1,0 +1,244 @@
+{
+  "qpr_version": "0.2.0",
+  "record_id": "00000000-0000-0000-0000-000000000003",
+  "created_at": "2026-01-01T12:00:00Z",
+  "benchmark": {
+    "id": "quantum_volume",
+    "display_name": "quantum volume (widths 2)",
+    "suite_version": "0.1.0",
+    "parameters": {
+      "widths": [
+        2
+      ],
+      "circuits_per_width": 5,
+      "bootstrap_resamples": 200
+    }
+  },
+  "provider": {
+    "name": "local",
+    "adapter": "static_test"
+  },
+  "device": {
+    "name": "static_device",
+    "num_qubits": 4,
+    "simulator": true,
+    "basis_gates": [
+      "h",
+      "cx"
+    ]
+  },
+  "execution": {
+    "seed": 7,
+    "shots": 64,
+    "live": false,
+    "transpilation": {
+      "sdk": "fixed",
+      "sdk_version": "0.0.0",
+      "settings": {}
+    },
+    "submitted_at": "2026-01-01T12:00:00Z",
+    "completed_at": "2026-01-01T12:00:00Z"
+  },
+  "circuits": [
+    {
+      "index": 0,
+      "name": "qv_w2_s0",
+      "qasm3": "OPENQASM 3.0;\ninclude \"stdgates.inc\";\nbit[2] c;\nqubit[2] q;\nrz(0.4231243874904429) q[0];\nsx q[0];\nrz(-1.5479960646257762) q[0];\nsx q[0];\nrz(1.0915994001218294) q[0];\nrz(1.31578716439083) q[1];\nsx q[1];\nrz(-1.6047470136806936) q[1];\nsx q[1];\nrz(2.202290059235155) q[1];\ncx q[1], q[0];\nrz(0.6197363903481762) q[0];\nsx q[1];\nrz(3.2874469921439124) q[1];\ncx q[1], q[0];\nrz(0.14592570984943384) q[0];\nsx q[1];\ncx q[1], q[0];\nrz(2.283943863955619) q[0];\nsx q[0];\nrz(-0.981880308576903) q[0];\nsx q[0];\nrz(-0.7505765835841238) q[0];\nrz(-1.7940186189252998) q[0];\nsx q[0];\nrz(-1.8801791815579554) q[0];\nsx q[0];\nrz(0.7559137663864242) q[0];\nrz(0.26670509142168264) q[1];\nsx q[1];\nrz(-1.785757501455219) q[1];\nsx q[1];\nrz(1.4549935063538726) q[1];\nrz(-0.9977301488223143) q[1];\nsx q[1];\nrz(-2.080158076300565) q[1];\nsx q[1];\nrz(2.456725467098458) q[1];\ncx q[1], q[0];\nrz(0.8830669223412305) q[0];\nsx q[1];\nrz(3.322494138037768) q[1];\ncx q[1], q[0];\nrz(0.27345012904640037) q[0];\nsx q[1];\ncx q[1], q[0];\nrz(0.8491845929938773) q[0];\nsx q[0];\nrz(-0.7498491602607427) q[0];\nsx q[0];\nrz(-1.9796960742343117) q[0];\nrz(-3.105346319027804) q[1];\nsx q[1];\nrz(-1.9019389381446326) q[1];\nsx q[1];\nrz(0.42317980266366995) q[1];\nc[0] = measure q[0];\nc[1] = measure q[1];\n",
+      "qasm3_sha256": "3c741b6a1eb8740e575c91c9c394cb2c89dcf686c24b99d1dbedd0808f5a8da6",
+      "metadata": {
+        "width": 2,
+        "sample": 0,
+        "heavy_outputs": [
+          "10",
+          "11"
+        ],
+        "median_probability": 0.267270581,
+        "ideal_heavy_probability": 0.670880363
+      }
+    },
+    {
+      "index": 1,
+      "name": "qv_w2_s1",
+      "qasm3": "OPENQASM 3.0;\ninclude \"stdgates.inc\";\nbit[2] c;\nqubit[2] q;\nrz(0.0677281428007781) q[0];\nsx q[0];\nrz(-2.3819829936708423) q[0];\nsx q[0];\nrz(-2.0494395778583945) q[0];\nrz(-0.47271167589255647) q[1];\nsx q[1];\nrz(-2.8447168237538953) q[1];\nsx q[1];\nrz(-0.4076190675168938) q[1];\ncx q[1], q[0];\nrz(-0.9244063090739401) q[0];\nsx q[1];\nrz(3.262350456411887) q[1];\ncx q[1], q[0];\nrz(0.13780127599159234) q[0];\nsx q[1];\ncx q[1], q[0];\nrz(-3.000061707727351) q[0];\nsx q[0];\nrz(-1.2171323949192718) q[0];\nsx q[0];\nrz(-2.1423532034160777) q[0];\nrz(-1.1247673923073114) q[0];\nsx q[0];\nrz(-1.4984718718599135) q[0];\nsx q[0];\nrz(1.7317614096286933) q[0];\nrz(0.5713725981948929) q[1];\nsx q[1];\nrz(-1.4313735101950593) q[1];\nsx q[1];\nrz(3.037932244779382) q[1];\nrz(2.9743383669458696) q[1];\nsx q[1];\nrz(-1.73425528260307) q[1];\nsx q[1];\nrz(1.3649762208656444) q[1];\ncx q[0], q[1];\nsx q[0];\nrz(3.2989781291562017) q[0];\nrz(0.6513662329594235) q[1];\ncx q[0], q[1];\nsx q[0];\nrz(0.0995526418052581) q[1];\ncx q[0], q[1];\nrz(-1.0193876278262697) q[0];\nsx q[0];\nrz(-2.830242227655157) q[0];\nsx q[0];\nrz(-2.3896517709228746) q[0];\nrz(-0.3858298214818112) q[1];\nsx q[1];\nrz(-2.987347067258834) q[1];\nsx q[1];\nrz(1.5768421367927274) q[1];\nc[0] = measure q[0];\nc[1] = measure q[1];\n",
+      "qasm3_sha256": "d123157abc2432212317076431fe64ebb8833aa10c755e1d5182509f397ab2dd",
+      "metadata": {
+        "width": 2,
+        "sample": 1,
+        "heavy_outputs": [
+          "00",
+          "01"
+        ],
+        "median_probability": 0.22175464,
+        "ideal_heavy_probability": 0.754534711
+      }
+    },
+    {
+      "index": 2,
+      "name": "qv_w2_s2",
+      "qasm3": "OPENQASM 3.0;\ninclude \"stdgates.inc\";\nbit[2] c;\nqubit[2] q;\nrz(1.1326751731201519) q[0];\nsx q[0];\nrz(-1.4678544266794198) q[0];\nsx q[0];\nrz(0.18175502170383329) q[0];\nrz(-2.773736648508458) q[1];\nsx q[1];\nrz(-1.5073883816661136) q[1];\nsx q[1];\nrz(-1.9622831689986402) q[1];\ncx q[0], q[1];\nsx q[0];\nrz(3.265483883098948) q[0];\nrz(-0.7679297670134915) q[1];\ncx q[0], q[1];\nsx q[0];\nrz(0.4378239798307961) q[1];\ncx q[0], q[1];\nrz(0.36968501976195833) q[0];\nsx q[0];\nrz(-1.2182283637426217) q[0];\nsx q[0];\nrz(0.941663129901535) q[0];\nrz(1.9429561883929232) q[0];\nsx q[0];\nrz(-1.6826182912207877) q[0];\nsx q[0];\nrz(-0.5372481199822188) q[0];\nrz(-0.36818279838128554) q[1];\nsx q[1];\nrz(-0.830165214621509) q[1];\nsx q[1];\nrz(-1.3861398857214855) q[1];\nrz(-0.8181330030895402) q[1];\nsx q[1];\nrz(-0.38710744107657646) q[1];\nsx q[1];\nrz(-2.1371069159479) q[1];\ncx q[1], q[0];\nrz(-0.9831668587038002) q[0];\nsx q[1];\nrz(-2.8129035067391475) q[1];\ncx q[1], q[0];\nrz(0.3266212040796009) q[0];\nsx q[1];\ncx q[1], q[0];\nrz(-2.97826785758034) q[0];\nsx q[0];\nrz(-1.7442292436958935) q[0];\nsx q[0];\nrz(0.38230245654280237) q[0];\nrz(0.18586348292003052) q[1];\nsx q[1];\nrz(-0.629481792513273) q[1];\nsx q[1];\nrz(0.10223761186300351) q[1];\nc[0] = measure q[0];\nc[1] = measure q[1];\n",
+      "qasm3_sha256": "fe0594ebe9a9a1ee761fca7aa4857accabee66bd6060e95014ddeca35186ce96",
+      "metadata": {
+        "width": 2,
+        "sample": 2,
+        "heavy_outputs": [
+          "00",
+          "01"
+        ],
+        "median_probability": 0.251265093,
+        "ideal_heavy_probability": 0.68850922
+      }
+    },
+    {
+      "index": 3,
+      "name": "qv_w2_s3",
+      "qasm3": "OPENQASM 3.0;\ninclude \"stdgates.inc\";\nbit[2] c;\nqubit[2] q;\nrz(2.5141497503740187) q[0];\nsx q[0];\nrz(-2.061920913752565) q[0];\nsx q[0];\nrz(-1.5722610453737005) q[0];\nrz(-2.1558485962128007) q[1];\nsx q[1];\nrz(-2.7934746029668682) q[1];\nsx q[1];\nrz(-2.011969008498772) q[1];\ncx q[1], q[0];\nrz(-0.8084938726556742) q[0];\nsx q[1];\nrz(3.398554689725166) q[1];\ncx q[1], q[0];\nrz(0.4464054462777052) q[0];\nsx q[1];\ncx q[1], q[0];\nrz(2.277182845178163) q[0];\nsx q[0];\nrz(-1.0952892558942793) q[0];\nsx q[0];\nrz(-2.024705448453048) q[0];\nrz(0.4043016869343776) q[0];\nsx q[0];\nrz(-1.4174195122047522) q[0];\nsx q[0];\nrz(-1.2954881966893996) q[0];\nrz(1.6390142255848499) q[1];\nsx q[1];\nrz(-1.7410716640018435) q[1];\nsx q[1];\nrz(-1.6554347883846) q[1];\nrz(2.992123759785226) q[1];\nsx q[1];\nrz(-1.3333776162590816) q[1];\nsx q[1];\nrz(1.4309774783710338) q[1];\ncx q[1], q[0];\nrz(0.5949742769722377) q[0];\nsx q[1];\nrz(3.3758059863936114) q[1];\ncx q[1], q[0];\nrz(0.1862665986615874) q[0];\nsx q[1];\ncx q[1], q[0];\nrz(-1.4617857429945698) q[0];\nsx q[0];\nrz(-1.933405169158915) q[0];\nsx q[0];\nrz(1.1924104252365773) q[0];\nrz(1.7709419555125585) q[1];\nsx q[1];\nrz(-1.0655174801219012) q[1];\nsx q[1];\nrz(2.906187035340249) q[1];\nc[0] = measure q[0];\nc[1] = measure q[1];\n",
+      "qasm3_sha256": "7aff77c45c6fd26dbff1e683fdb7d047cf14b6aa3723bdc181ca83468b4e3e16",
+      "metadata": {
+        "width": 2,
+        "sample": 3,
+        "heavy_outputs": [
+          "00",
+          "01"
+        ],
+        "median_probability": 0.213951823,
+        "ideal_heavy_probability": 0.739534746
+      }
+    },
+    {
+      "index": 4,
+      "name": "qv_w2_s4",
+      "qasm3": "OPENQASM 3.0;\ninclude \"stdgates.inc\";\nbit[2] c;\nqubit[2] q;\nrz(-0.15591922340420705) q[0];\nsx q[0];\nrz(-1.7304470309761868) q[0];\nsx q[0];\nrz(1.7581196821569112) q[0];\nrz(-1.1860797297960581) q[1];\nsx q[1];\nrz(-1.747043801559725) q[1];\nsx q[1];\nrz(-2.6018692413120608) q[1];\ncx q[1], q[0];\nrz(-0.6828070185158843) q[0];\nsx q[1];\nrz(3.4185902508716413) q[1];\ncx q[1], q[0];\nrz(0.19958282221037593) q[0];\nsx q[1];\ncx q[1], q[0];\nrz(2.5363896531974444) q[0];\nsx q[0];\nrz(-1.0074850196567269) q[0];\nsx q[0];\nrz(2.480893761614695) q[0];\nrz(-1.8059164610601703) q[0];\nsx q[0];\nrz(-0.5483211195926518) q[0];\nsx q[0];\nrz(-1.0519656112451674) q[0];\nrz(1.9256982725167697) q[1];\nsx q[1];\nrz(-2.038938799611781) q[1];\nsx q[1];\nrz(1.357138489155881) q[1];\nrz(1.414220939648116) q[1];\nsx q[1];\nrz(-2.1273368753478232) q[1];\nsx q[1];\nrz(-0.2878646059656127) q[1];\ncx q[0], q[1];\nsx q[0];\nrz(3.166584755413664) q[0];\nrz(-0.22248517784510272) q[1];\ncx q[0], q[1];\nsx q[0];\nrz(0.14979988499187705) q[1];\ncx q[0], q[1];\nrz(-0.8497986050293571) q[0];\nsx q[0];\nrz(-0.7092483542183015) q[0];\nsx q[0];\nrz(-2.3104874900969925) q[0];\nrz(-0.4399556633923236) q[1];\nsx q[1];\nrz(-1.0482407129960905) q[1];\nsx q[1];\nrz(-1.1153680637649366) q[1];\nc[0] = measure q[0];\nc[1] = measure q[1];\n",
+      "qasm3_sha256": "6e68cc6e48c7695323fb98572cbd04ccdfb789659572d4faa44cd7f40b3efa25",
+      "metadata": {
+        "width": 2,
+        "sample": 4,
+        "heavy_outputs": [
+          "10",
+          "11"
+        ],
+        "median_probability": 0.219007708,
+        "ideal_heavy_probability": 0.824988076
+      }
+    }
+  ],
+  "results": {
+    "raw": [
+      {
+        "circuit_index": 0,
+        "shots": 64,
+        "counts": {
+          "00": 64
+        }
+      },
+      {
+        "circuit_index": 1,
+        "shots": 64,
+        "counts": {
+          "00": 64
+        }
+      },
+      {
+        "circuit_index": 2,
+        "shots": 64,
+        "counts": {
+          "00": 64
+        }
+      },
+      {
+        "circuit_index": 3,
+        "shots": 64,
+        "counts": {
+          "00": 64
+        }
+      },
+      {
+        "circuit_index": 4,
+        "shots": 64,
+        "counts": {
+          "00": 64
+        }
+      }
+    ],
+    "metrics": [
+      {
+        "name": "quantum_volume",
+        "value": 1.0,
+        "statistics": {
+          "sample_size": 320,
+          "confidence_level": 0.977,
+          "ci_lower": 1.0,
+          "ci_upper": 1.0,
+          "estimator": "qv_definition_max_passing_width"
+        },
+        "quality": {
+          "reliable": false,
+          "issues": [
+            "qv.insufficient_circuits_for_confidence",
+            "qv.no_width_passed"
+          ]
+        }
+      },
+      {
+        "name": "heavy_output_probability.width_2",
+        "value": 0.6,
+        "unit": "probability",
+        "statistics": {
+          "sample_size": 320,
+          "confidence_level": 0.95,
+          "ci_lower": 0.2,
+          "ci_upper": 1.0,
+          "std_error": 0.230822443,
+          "estimator": "mean_bootstrap_percentile"
+        },
+        "quality": {
+          "reliable": false,
+          "issues": [
+            "qv.insufficient_circuits_for_confidence"
+          ]
+        }
+      },
+      {
+        "name": "qv_pass.width_2",
+        "value": 0.0,
+        "statistics": {
+          "sample_size": 320,
+          "confidence_level": 0.977,
+          "ci_lower": 0.0,
+          "ci_upper": 0.0,
+          "estimator": "qv_two_sigma_one_sided"
+        },
+        "quality": {
+          "reliable": false,
+          "issues": [
+            "qv.insufficient_circuits_for_confidence"
+          ]
+        }
+      }
+    ],
+    "analysis": {
+      "per_width": {
+        "2": {
+          "n_circuits": 5,
+          "mean_heavy_output_probability": 0.6,
+          "sigma": 0.0273861279,
+          "two_sigma_lower_bound": 0.545227744,
+          "threshold": 0.666666667,
+          "passed": false
+        }
+      },
+      "passed_widths": [],
+      "pass_criterion": "mean - 2*sqrt(mean*(1-mean)/(n_circuits*shots)) > 2/3"
+    }
+  },
+  "provenance": {
+    "veriqant_bench_version": "0.1.0",
+    "python_version": "3.12.0",
+    "platform": "golden-fixture",
+    "sdk_versions": {
+      "veriqant-bench": "0.1.0"
+    }
+  },
+  "integrity": {
+    "content_sha256": "0f4d8862c849992825501feb4ec2da678fc43e90b0297b718a0b033952517a4d"
+  }
+}

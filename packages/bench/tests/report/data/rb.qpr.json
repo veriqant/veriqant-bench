@@ -1,0 +1,224 @@
+{
+  "qpr_version": "0.2.0",
+  "record_id": "00000000-0000-0000-0000-000000000001",
+  "created_at": "2026-01-01T12:00:00Z",
+  "benchmark": {
+    "id": "rb_1q",
+    "display_name": "1-qubit Clifford randomized benchmarking",
+    "suite_version": "0.1.0",
+    "parameters": {
+      "qubits": [
+        0
+      ],
+      "lengths": [
+        1,
+        2,
+        4
+      ],
+      "samples_per_length": 2,
+      "bootstrap_resamples": 200
+    }
+  },
+  "provider": {
+    "name": "local",
+    "adapter": "static_test"
+  },
+  "device": {
+    "name": "static_device",
+    "num_qubits": 4,
+    "simulator": true,
+    "basis_gates": [
+      "h",
+      "cx"
+    ]
+  },
+  "execution": {
+    "seed": 7,
+    "shots": 64,
+    "live": false,
+    "transpilation": {
+      "sdk": "fixed",
+      "sdk_version": "0.0.0",
+      "settings": {}
+    },
+    "submitted_at": "2026-01-01T12:00:00Z",
+    "completed_at": "2026-01-01T12:00:00Z"
+  },
+  "circuits": [
+    {
+      "index": 0,
+      "name": "rb_1q_len1_s0",
+      "qasm3": "OPENQASM 3.0;\ninclude \"stdgates.inc\";\nbit[1] c;\nqubit[1] q;\ny q[0];\nh q[0];\ny q[0];\nh q[0];\nc[0] = measure q[0];\n",
+      "qasm3_sha256": "32f91e0bc09ba5ad3bc49e32c0f86b18a72dac6d543e5fca6fea1438bb0e752f",
+      "metadata": {
+        "length": 1,
+        "sample": 0
+      }
+    },
+    {
+      "index": 1,
+      "name": "rb_1q_len1_s1",
+      "qasm3": "OPENQASM 3.0;\ninclude \"stdgates.inc\";\nbit[1] c;\nqubit[1] q;\ns q[0];\nh q[0];\ns q[0];\nx q[0];\ns q[0];\nh q[0];\ns q[0];\nc[0] = measure q[0];\n",
+      "qasm3_sha256": "a35820bcffca040e39fca29b5b10000a87dda08bb99a48892d0f6cf8d46a3cb8",
+      "metadata": {
+        "length": 1,
+        "sample": 1
+      }
+    },
+    {
+      "index": 2,
+      "name": "rb_1q_len2_s0",
+      "qasm3": "OPENQASM 3.0;\ninclude \"stdgates.inc\";\nbit[1] c;\nqubit[1] q;\nx q[0];\nsdg q[0];\nh q[0];\nz q[0];\nsdg q[0];\nh q[0];\ny q[0];\nsdg q[0];\nh q[0];\nc[0] = measure q[0];\n",
+      "qasm3_sha256": "3bfb736182ccaba1d052b7c30de792a0b339605b17a043bcf1b115d6f97bc5f8",
+      "metadata": {
+        "length": 2,
+        "sample": 0
+      }
+    },
+    {
+      "index": 3,
+      "name": "rb_1q_len2_s1",
+      "qasm3": "OPENQASM 3.0;\ninclude \"stdgates.inc\";\nbit[1] c;\nqubit[1] q;\ns q[0];\nsdg q[0];\nh q[0];\nh q[0];\nc[0] = measure q[0];\n",
+      "qasm3_sha256": "e16be7ed1ea01680235dd29ec9dd2472acf56345ad3bb52e648d78ae9f4ac675",
+      "metadata": {
+        "length": 2,
+        "sample": 1
+      }
+    },
+    {
+      "index": 4,
+      "name": "rb_1q_len4_s0",
+      "qasm3": "OPENQASM 3.0;\ninclude \"stdgates.inc\";\nbit[1] c;\nqubit[1] q;\nh q[0];\ns q[0];\ny q[0];\ns q[0];\nh q[0];\ns q[0];\nz q[0];\nh q[0];\ns q[0];\nx q[0];\nh q[0];\nz q[0];\nsdg q[0];\nh q[0];\nc[0] = measure q[0];\n",
+      "qasm3_sha256": "108a6e983ef17084f3a36af5c48ef6a14041666c6d61fe2fec1df9614199097d",
+      "metadata": {
+        "length": 4,
+        "sample": 0
+      }
+    },
+    {
+      "index": 5,
+      "name": "rb_1q_len4_s1",
+      "qasm3": "OPENQASM 3.0;\ninclude \"stdgates.inc\";\nbit[1] c;\nqubit[1] q;\ny q[0];\ns q[0];\ny q[0];\nh q[0];\ny q[0];\nh q[0];\nz q[0];\nh q[0];\nz q[0];\nh q[0];\ns q[0];\nc[0] = measure q[0];\n",
+      "qasm3_sha256": "383f4f56d709559f3ccd4074c8642f047e0190d2e2c4153c12862578a400feeb",
+      "metadata": {
+        "length": 4,
+        "sample": 1
+      }
+    }
+  ],
+  "results": {
+    "raw": [
+      {
+        "circuit_index": 0,
+        "shots": 64,
+        "counts": {
+          "0": 64
+        }
+      },
+      {
+        "circuit_index": 1,
+        "shots": 64,
+        "counts": {
+          "0": 64
+        }
+      },
+      {
+        "circuit_index": 2,
+        "shots": 64,
+        "counts": {
+          "0": 64
+        }
+      },
+      {
+        "circuit_index": 3,
+        "shots": 64,
+        "counts": {
+          "0": 64
+        }
+      },
+      {
+        "circuit_index": 4,
+        "shots": 64,
+        "counts": {
+          "0": 64
+        }
+      },
+      {
+        "circuit_index": 5,
+        "shots": 64,
+        "counts": {
+          "0": 64
+        }
+      }
+    ],
+    "metrics": [
+      {
+        "name": "error_per_clifford",
+        "value": 2.96753297e-06,
+        "unit": "probability",
+        "qubits": [
+          0
+        ],
+        "statistics": {
+          "sample_size": 384,
+          "confidence_level": 0.95,
+          "ci_lower": 2.96753297e-06,
+          "ci_upper": 2.96753297e-06,
+          "std_error": 0.0,
+          "estimator": "rb_exponential_fit_bootstrap"
+        },
+        "quality": {
+          "reliable": true
+        }
+      },
+      {
+        "name": "rb_decay_rate",
+        "value": 0.999994065,
+        "unit": "probability",
+        "qubits": [
+          0
+        ],
+        "statistics": {
+          "sample_size": 384,
+          "confidence_level": 0.95,
+          "ci_lower": 0.999994065,
+          "ci_upper": 0.999994065,
+          "std_error": 0.0,
+          "estimator": "rb_exponential_fit_bootstrap"
+        },
+        "quality": {
+          "reliable": true
+        }
+      }
+    ],
+    "analysis": {
+      "survival_means": {
+        "1": 1.0,
+        "2": 1.0,
+        "4": 1.0
+      },
+      "fit": {
+        "amplitude": 0.32577854,
+        "alpha": 0.999994065,
+        "baseline": 0.674225968,
+        "r_squared": 1.0,
+        "converged": true
+      },
+      "bootstrap": {
+        "requested_resamples": 200,
+        "successful_refits": 200
+      }
+    }
+  },
+  "provenance": {
+    "veriqant_bench_version": "0.1.0",
+    "python_version": "3.12.0",
+    "platform": "golden-fixture",
+    "sdk_versions": {
+      "veriqant-bench": "0.1.0"
+    }
+  },
+  "integrity": {
+    "content_sha256": "dbee0454ae4bfba44ce127a4baa896a3fbdc020a09258673b0fe9de12a9a155a"
+  }
+}

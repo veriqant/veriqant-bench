@@ -76,6 +76,17 @@ The canonical form of a JSON value, for hashing purposes:
 > cases (e.g. `2.0` vs `2`). Adopting RFC 8785 (JCS) number formatting is
 > planned for the next schema minor; in v0.1 the reference verifier is
 > `veriqant-bench verify`.
+>
+> **Confirmed instance:** because the seal binds exact float bits, records
+> whose metrics pass through platform-dependent numerics (scipy fits, BLAS
+> statevector math) seal to *different hashes on different platforms* even
+> when every displayed value is identical — observed between macOS and
+> Linux CI for otherwise-identical benchmark runs. A sealed record remains
+> verifiable everywhere; only *re-producing* it bit-for-bit requires the
+> same platform. Producers needing platform-portable reproductions (e.g.
+> this repo's committed golden-test fixtures, see
+> `tests/report/make_fixtures.py`) should quantize float values to a fixed
+> number of significant digits *before* sealing.
 
 ## Integrity & signing
 

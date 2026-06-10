@@ -10,17 +10,10 @@ from pathlib import Path
 
 import pytest
 from click.testing import CliRunner
-from fixtures import (
-    FIXED_AT,
-    mirror_record,
-    qec_record,
-    qv_record,
-    rb_record,
-    throughput_record,
-)
+from fixtures import FIXED_AT, fixture_paths, load_fixture_records
 
 from veriqant_bench.cli import main
-from veriqant_bench.qpr import QuantumPerformanceRecord, dump_qpr
+from veriqant_bench.qpr import QuantumPerformanceRecord
 from veriqant_bench.report import (
     ReportInputError,
     collect_qpr_files,
@@ -32,23 +25,30 @@ GOLDEN_PATH = Path(__file__).parent / "golden_report.html"
 
 
 @pytest.fixture
-async def fixture_records() -> list[QuantumPerformanceRecord]:
-    return [
-        await rb_record(),
-        await mirror_record(),
-        await qv_record(),
-        await qec_record(),
-        throughput_record(),
-    ]
+def fixture_records() -> list[QuantumPerformanceRecord]:
+    return load_fixture_records()
 
 
 @pytest.fixture
-def qpr_dir(tmp_path: Path, fixture_records: list[QuantumPerformanceRecord]) -> Path:
+def qpr_dir(tmp_path: Path) -> Path:
+    """Byte-exact copies of the committed fixtures (tests may tamper)."""
+    import shutil
+
     directory = tmp_path / "records"
     directory.mkdir()
-    for record in fixture_records:
-        dump_qpr(record, directory / f"{record.benchmark.id}.qpr.json")
+    for path in fixture_paths():
+        shutil.copy(path, directory / path.name)
     return directory
+
+
+def test_committed_fixtures_pass_verification() -> None:
+    """The static fixtures are real sealed records: quantization happened
+    BEFORE sealing, so the independent verifier must accept them as-is."""
+    from veriqant_bench.qpr import verify_qpr_file
+
+    for path in fixture_paths():
+        report = verify_qpr_file(path)
+        assert report.ok, (path, [str(issue) for issue in report.issues])
 
 
 def render(records: list[QuantumPerformanceRecord], qpr_dir: Path) -> str:
@@ -57,9 +57,13 @@ def render(records: list[QuantumPerformanceRecord], qpr_dir: Path) -> str:
 
 
 def test_golden_file(fixture_records: list[QuantumPerformanceRecord], qpr_dir: Path) -> None:
-    """Fixed inputs + fixed generated-at => byte-identical HTML.
+    """Fixed inputs + fixed generated-at => byte-identical HTML, on every
+    platform: the inputs are committed bytes (see fixtures.py), so no
+    test-time numerics can perturb seals or rendered values.
 
-    Regenerate intentionally with: UPDATE_GOLDEN=1 uv run pytest tests/report
+    Regenerate intentionally with:
+        uv run python tests/report/make_fixtures.py   # if producers changed
+        UPDATE_GOLDEN=1 uv run pytest tests/report
     """
     document = render(fixture_records, qpr_dir)
     if os.environ.get("UPDATE_GOLDEN") == "1":

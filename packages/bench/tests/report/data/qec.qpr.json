@@ -1,0 +1,374 @@
+{
+  "qpr_version": "0.2.0",
+  "record_id": "00000000-0000-0000-0000-000000000005",
+  "created_at": "2026-01-01T12:00:00Z",
+  "benchmark": {
+    "id": "qec_repetition_memory",
+    "display_name": "repetition-code memory (d=3,5, 5 rounds)",
+    "suite_version": "0.1.0",
+    "parameters": {
+      "distances": [
+        3,
+        5
+      ],
+      "rounds": 5,
+      "criteria": "ab-lq-2026",
+      "bootstrap_resamples": 200
+    }
+  },
+  "provider": {
+    "name": "local",
+    "adapter": "static_test"
+  },
+  "device": {
+    "name": "static_device",
+    "num_qubits": 4,
+    "simulator": true,
+    "basis_gates": [
+      "h",
+      "cx"
+    ]
+  },
+  "execution": {
+    "seed": 7,
+    "shots": 200,
+    "live": false,
+    "transpilation": {
+      "sdk": "fixed",
+      "sdk_version": "0.0.0",
+      "settings": {}
+    },
+    "submitted_at": "2026-01-01T12:00:00Z",
+    "completed_at": "2026-01-01T12:00:00Z"
+  },
+  "circuits": [
+    {
+      "index": 0,
+      "name": "qec_rep_d3_r5",
+      "qasm3": "OPENQASM 3.0;\ninclude \"stdgates.inc\";\nbit[13] c;\nqubit[5] q;\ncx q[0], q[3];\ncx q[1], q[3];\ncx q[1], q[4];\ncx q[2], q[4];\nc[0] = measure q[3];\nreset q[3];\nc[1] = measure q[4];\nreset q[4];\ncx q[0], q[3];\ncx q[1], q[3];\ncx q[1], q[4];\ncx q[2], q[4];\nc[2] = measure q[3];\nreset q[3];\nc[3] = measure q[4];\nreset q[4];\ncx q[0], q[3];\ncx q[1], q[3];\ncx q[1], q[4];\ncx q[2], q[4];\nc[4] = measure q[3];\nreset q[3];\nc[5] = measure q[4];\nreset q[4];\ncx q[0], q[3];\ncx q[1], q[3];\ncx q[1], q[4];\ncx q[2], q[4];\nc[6] = measure q[3];\nreset q[3];\nc[7] = measure q[4];\nreset q[4];\ncx q[0], q[3];\ncx q[1], q[3];\ncx q[1], q[4];\ncx q[2], q[4];\nc[8] = measure q[3];\nreset q[3];\nc[9] = measure q[4];\nreset q[4];\nc[10] = measure q[0];\nc[11] = measure q[1];\nc[12] = measure q[2];\n",
+      "qasm3_sha256": "5d137b810f1677ddd2aeb02f7dbf23683bec276a0bd5d2c7341ace8635e666db",
+      "metadata": {
+        "code": "repetition",
+        "basis": "z",
+        "distance": 3,
+        "rounds": 5
+      }
+    },
+    {
+      "index": 1,
+      "name": "qec_rep_d5_r5",
+      "qasm3": "OPENQASM 3.0;\ninclude \"stdgates.inc\";\nbit[25] c;\nqubit[9] q;\ncx q[0], q[5];\ncx q[1], q[5];\ncx q[1], q[6];\ncx q[2], q[6];\ncx q[2], q[7];\ncx q[3], q[7];\ncx q[3], q[8];\ncx q[4], q[8];\nc[0] = measure q[5];\nreset q[5];\nc[1] = measure q[6];\nreset q[6];\nc[2] = measure q[7];\nreset q[7];\nc[3] = measure q[8];\nreset q[8];\ncx q[0], q[5];\ncx q[1], q[5];\ncx q[1], q[6];\ncx q[2], q[6];\ncx q[2], q[7];\ncx q[3], q[7];\ncx q[3], q[8];\ncx q[4], q[8];\nc[4] = measure q[5];\nreset q[5];\nc[5] = measure q[6];\nreset q[6];\nc[6] = measure q[7];\nreset q[7];\nc[7] = measure q[8];\nreset q[8];\ncx q[0], q[5];\ncx q[1], q[5];\ncx q[1], q[6];\ncx q[2], q[6];\ncx q[2], q[7];\ncx q[3], q[7];\ncx q[3], q[8];\ncx q[4], q[8];\nc[8] = measure q[5];\nreset q[5];\nc[9] = measure q[6];\nreset q[6];\nc[10] = measure q[7];\nreset q[7];\nc[11] = measure q[8];\nreset q[8];\ncx q[0], q[5];\ncx q[1], q[5];\ncx q[1], q[6];\ncx q[2], q[6];\ncx q[2], q[7];\ncx q[3], q[7];\ncx q[3], q[8];\ncx q[4], q[8];\nc[12] = measure q[5];\nreset q[5];\nc[13] = measure q[6];\nreset q[6];\nc[14] = measure q[7];\nreset q[7];\nc[15] = measure q[8];\nreset q[8];\ncx q[0], q[5];\ncx q[1], q[5];\ncx q[1], q[6];\ncx q[2], q[6];\ncx q[2], q[7];\ncx q[3], q[7];\ncx q[3], q[8];\ncx q[4], q[8];\nc[16] = measure q[5];\nreset q[5];\nc[17] = measure q[6];\nreset q[6];\nc[18] = measure q[7];\nreset q[7];\nc[19] = measure q[8];\nreset q[8];\nc[20] = measure q[0];\nc[21] = measure q[1];\nc[22] = measure q[2];\nc[23] = measure q[3];\nc[24] = measure q[4];\n",
+      "qasm3_sha256": "a0e9526b7de6bc2a16b60a878880397e261be6e00c41aee5be379dbdfd44982d",
+      "metadata": {
+        "code": "repetition",
+        "basis": "z",
+        "distance": 5,
+        "rounds": 5
+      }
+    }
+  ],
+  "results": {
+    "raw": [
+      {
+        "circuit_index": 0,
+        "shots": 200,
+        "counts": {
+          "00000": 200
+        }
+      },
+      {
+        "circuit_index": 1,
+        "shots": 200,
+        "counts": {
+          "000000000": 200
+        }
+      }
+    ],
+    "metrics": [
+      {
+        "name": "logical_error_per_round.distance_3",
+        "value": 0.0,
+        "unit": "probability",
+        "statistics": {
+          "sample_size": 200,
+          "confidence_level": 0.95,
+          "ci_lower": 0.0,
+          "ci_upper": 0.00382720862,
+          "estimator": "mwpm_decode_wilson_per_round"
+        },
+        "quality": {
+          "reliable": true
+        }
+      },
+      {
+        "name": "logical_error_per_round.distance_5",
+        "value": 0.0,
+        "unit": "probability",
+        "statistics": {
+          "sample_size": 200,
+          "confidence_level": 0.95,
+          "ci_lower": 0.0,
+          "ci_upper": 0.00382720862,
+          "estimator": "mwpm_decode_wilson_per_round"
+        },
+        "quality": {
+          "reliable": true
+        }
+      },
+      {
+        "name": "lambda.d3_to_d5",
+        "value": 1.0,
+        "statistics": {
+          "sample_size": 200,
+          "confidence_level": 0.95,
+          "ci_lower": 0.0,
+          "ci_upper": 400.0,
+          "estimator": "parametric_bootstrap_rate_ratio"
+        },
+        "quality": {
+          "reliable": false,
+          "issues": [
+            "lambda.unresolved_zero_errors"
+          ]
+        }
+      },
+      {
+        "name": "post_selection_fraction",
+        "value": 0.0,
+        "unit": "probability",
+        "statistics": {
+          "sample_size": 400,
+          "confidence_level": 0.95,
+          "ci_lower": 0.0,
+          "ci_upper": 0.0,
+          "estimator": "exact_accounting"
+        },
+        "quality": {
+          "reliable": true
+        }
+      },
+      {
+        "name": "criteria.ab-lq-2026.sufficient_cycles",
+        "value": 1.0,
+        "statistics": {
+          "sample_size": 1,
+          "confidence_level": 0.95,
+          "ci_lower": 1.0,
+          "ci_upper": 1.0,
+          "estimator": "criterion_verdict"
+        },
+        "quality": {
+          "reliable": false,
+          "issues": [
+            "simulated_noise_model_not_hardware"
+          ]
+        }
+      },
+      {
+        "name": "criteria.ab-lq-2026.all_runs_counted",
+        "value": 1.0,
+        "statistics": {
+          "sample_size": 1,
+          "confidence_level": 0.95,
+          "ci_lower": 1.0,
+          "ci_upper": 1.0,
+          "estimator": "criterion_verdict"
+        },
+        "quality": {
+          "reliable": false,
+          "issues": [
+            "simulated_noise_model_not_hardware"
+          ]
+        }
+      },
+      {
+        "name": "criteria.ab-lq-2026.breakeven",
+        "value": 0.0,
+        "statistics": {
+          "sample_size": 1,
+          "confidence_level": 0.95,
+          "ci_lower": 0.0,
+          "ci_upper": 0.0,
+          "estimator": "criterion_verdict"
+        },
+        "quality": {
+          "reliable": false,
+          "issues": [
+            "verdict.not_evaluable",
+            "simulated_noise_model_not_hardware"
+          ]
+        }
+      },
+      {
+        "name": "criteria.ab-lq-2026.scalable_parameters",
+        "value": 0.0,
+        "statistics": {
+          "sample_size": 1,
+          "confidence_level": 0.95,
+          "ci_lower": 0.0,
+          "ci_upper": 0.0,
+          "estimator": "criterion_verdict"
+        },
+        "quality": {
+          "reliable": false,
+          "issues": [
+            "verdict.not_evaluable",
+            "simulated_noise_model_not_hardware"
+          ]
+        }
+      },
+      {
+        "name": "criteria.ab-lq-2026.utility_timescales",
+        "value": 0.0,
+        "statistics": {
+          "sample_size": 1,
+          "confidence_level": 0.95,
+          "ci_lower": 0.0,
+          "ci_upper": 0.0,
+          "estimator": "criterion_verdict"
+        },
+        "quality": {
+          "reliable": false,
+          "issues": [
+            "verdict.not_evaluable",
+            "simulated_noise_model_not_hardware"
+          ]
+        }
+      }
+    ],
+    "analysis": {
+      "decoder": {
+        "name": "pymatching-mwpm",
+        "version": "2.4.0",
+        "graph": "phenomenological, uniform weights (hook errors not modeled)"
+      },
+      "per_distance": {
+        "3": {
+          "distance": 3,
+          "rounds": 5,
+          "basis": "z",
+          "shots": 200,
+          "logical_errors": 0,
+          "p_total": 0.0,
+          "eps": {
+            "value": 0.0,
+            "ci_lower": 0.0,
+            "ci_upper": 0.00382720862,
+            "confidence_level": 0.95
+          }
+        },
+        "5": {
+          "distance": 5,
+          "rounds": 5,
+          "basis": "z",
+          "shots": 200,
+          "logical_errors": 0,
+          "p_total": 0.0,
+          "eps": {
+            "value": 0.0,
+            "ci_lower": 0.0,
+            "ci_upper": 0.00382720862,
+            "confidence_level": 0.95
+          }
+        }
+      },
+      "lambda_steps": [
+        {
+          "from_distance": 3,
+          "to_distance": 5,
+          "value": 1.0,
+          "ci_lower": 0.0,
+          "ci_upper": 400.0,
+          "resolved": false
+        }
+      ],
+      "post_selection": {
+        "shots_submitted": 400,
+        "shots_analyzed": 400
+      },
+      "physical_baseline": null,
+      "code_caveat": "bit-flip repetition code corrects one error species only",
+      "criteria": {
+        "profile": "ab-lq-2026",
+        "version": "1.0.0",
+        "citation": "Alice & Bob, \"Defining the Logical Qubit: Five Criteria to Benchmark Logical Qubit Claims\", June 2026.",
+        "simulated": true,
+        "verdicts": [
+          {
+            "criterion": "sufficient_cycles",
+            "status": "pass",
+            "reason": null,
+            "evidence": {
+              "per_distance": [
+                {
+                  "distance": 3,
+                  "rounds": 5
+                },
+                {
+                  "distance": 5,
+                  "rounds": 5
+                }
+              ],
+              "violations": [],
+              "rule": "rounds >= distance"
+            }
+          },
+          {
+            "criterion": "all_runs_counted",
+            "status": "pass",
+            "reason": null,
+            "evidence": {
+              "shots_submitted": 400,
+              "shots_analyzed": 400,
+              "post_selection_fraction": 0.0,
+              "rule": "post_selection_fraction == 0.0"
+            }
+          },
+          {
+            "criterion": "breakeven",
+            "status": "not_evaluable",
+            "reason": "no physical baseline available (ideal simulation has no meaningful physical comparator)",
+            "evidence": {}
+          },
+          {
+            "criterion": "scalable_parameters",
+            "status": "not_evaluable",
+            "reason": "zero logical errors observed at adjacent distances (d3->d5): suppression is unresolved at this shot count, not demonstrated",
+            "evidence": {
+              "unresolved_steps": [
+                {
+                  "from_distance": 3,
+                  "to_distance": 5,
+                  "value": 1.0,
+                  "ci_lower": 0.0,
+                  "ci_upper": 400.0,
+                  "resolved": false
+                }
+              ]
+            }
+          },
+          {
+            "criterion": "utility_timescales",
+            "status": "not_evaluable",
+            "reason": "memory experiment ran 5 rounds, far below the utility threshold of 1000000 rounds; this experiment cannot speak to application timescales",
+            "evidence": {
+              "threshold_rounds": 1000000,
+              "observed_rounds": 5
+            }
+          }
+        ]
+      }
+    }
+  },
+  "provenance": {
+    "veriqant_bench_version": "0.1.0",
+    "python_version": "3.12.0",
+    "platform": "golden-fixture",
+    "sdk_versions": {
+      "veriqant-bench": "0.1.0"
+    }
+  },
+  "integrity": {
+    "content_sha256": "a234791eda207f4be6f9eb8d6733412d812dde479b94106ea93503044a81d689"
+  }
+}
