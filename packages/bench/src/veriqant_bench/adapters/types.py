@@ -101,11 +101,19 @@ class CostEstimate(BaseModel):
     amount: Decimal = Field(ge=0)
     currency: str = Field(default="USD", pattern="^[A-Z]{3}$")
     confidence: Literal["exact", "estimate", "unknown"]
+    qpu_seconds: float | None = Field(default=None, ge=0.0)
+    """Estimated QPU/runtime seconds this job will consume. Monetarily free
+    plans (e.g. IBM open) still burn a runtime quota; the cost gate budgets
+    money and quota-seconds independently."""
+    heuristic: str | None = None
+    """Name of the model that produced this estimate (e.g.
+    'per_circuit_1s_per_shot_1ms'), recorded in the spend ledger so a later
+    audit can tell which estimator was in force."""
 
     @classmethod
     def free(cls) -> CostEstimate:
         """The simulator case: exactly zero."""
-        return cls(amount=Decimal(0), currency="USD", confidence="exact")
+        return cls(amount=Decimal(0), currency="USD", confidence="exact", qpu_seconds=0.0)
 
 
 class JobSpec(BaseModel):
