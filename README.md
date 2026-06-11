@@ -68,6 +68,7 @@ veriqant-bench run qec --code repetition --distances 3,5,7 --rounds 7 \
 
 | veriqant-bench (PyPI) | QPR schema | @veriqant/schema (npm) |
 | --- | --- | --- |
+| main (unreleased) | 0.3.0 | 0.2.x |
 | 0.1.x | 0.2.0 | 0.1.x |
 
 Consumers must reject QPR major versions they do not understand; both the

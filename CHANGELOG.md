@@ -3,6 +3,14 @@
 All notable changes to veriqant-bench. The QPR schema is versioned
 separately (see the compatibility table in README.md).
 
+## @veriqant/schema 0.2.0 (npm) — unreleased
+
+QPR schema 0.2.0 → 0.3.0 (additive minor): optional `execution.timing`
+(queue vs execution wall-clock split, with its source) and optional
+`execution.cost` (live spend accountability: the gated estimate, its
+append-only-ledger entry id, provider-reported actual usage; monetary
+amounts as decimal strings). All existing 0.2.0 records remain valid.
+
 ## @veriqant/schema 0.1.1 (npm) — 2026-06-10
 
 No functional changes relative to 0.1.0 (which was published manually).

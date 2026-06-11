@@ -1,7 +1,7 @@
 # Architecture
 
 *Status: June 2026 — veriqant-bench 0.1.0 on PyPI, @veriqant/schema 0.1.1 on npm,
-QPR schema 0.2.0. All benchmarks are simulator-validated; live hardware adapters
+QPR schema 0.3.0. All benchmarks are simulator-validated; live hardware adapters
 are the next milestone. Update this document when a module lands.*
 
 Veriqant-bench is an independent verification SDK for quantum compute: it runs
@@ -17,7 +17,7 @@ JSON documents that anyone can independently re-verify with
 ┌─────────────────────────────────────────────────────────────────────────┐
 │                                                                         │
 │  packages/schema ────── THE CONTRACT ───────────────────────────────┐   │
-│  │ schema/qpr-0.2.0.schema.json   (single source of truth)          │   │
+│  │ schema/qpr-0.3.0.schema.json   (single source of truth)          │   │
 │  │ ├─ codegen → Pydantic models (Python)                            │   │
 │  │ ├─ codegen → TypeScript types + Ajv validator                    │   │
 │  │ └─ CI drift check: the two can never silently diverge            │   │
@@ -134,7 +134,7 @@ scripts/      build_demo_site.py (GitHub Pages demo)
 ```
 
 The canonical schema lives at `packages/schema/schema/qpr-<version>.schema.json`
-(currently 0.2.0). Generated from it (committed, drift-checked in CI):
+(currently 0.3.0). Generated from it (committed, drift-checked in CI):
 
 | Artifact | Generator | Consumer |
 | --- | --- | --- |

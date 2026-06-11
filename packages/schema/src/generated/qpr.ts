@@ -1,11 +1,11 @@
 /* eslint-disable */
 /**
- * AUTO-GENERATED from schema/qpr-0.2.0.schema.json — do not edit by hand.
+ * AUTO-GENERATED from schema/qpr-0.3.0.schema.json — do not edit by hand.
  * Regenerate with: pnpm --filter @veriqant/schema generate
  */
 
 /**
- * QPR v0.2.0 — a self-contained, reproducible record of one benchmark execution against one quantum device or simulator. A QPR carries everything needed to re-run the benchmark bit-for-bit and to independently verify the reported metrics.
+ * QPR v0.3.0 — a self-contained, reproducible record of one benchmark execution against one quantum device or simulator. A QPR carries everything needed to re-run the benchmark bit-for-bit and to independently verify the reported metrics.
  */
 export interface QuantumPerformanceRecord {
   /**
@@ -142,6 +142,8 @@ export interface Execution {
    * Provider job identifiers, for cross-referencing against provider records.
    */
   job_ids?: string[];
+  timing?: ExecutionTiming;
+  cost?: ExecutionCost;
 }
 /**
  * Exact transpiler configuration. Identical circuit families are submitted to every provider; only this recorded transpilation step may differ, so it must be fully captured.
@@ -165,6 +167,48 @@ export interface Transpilation {
   settings: {
     [k: string]: unknown | undefined;
   };
+}
+/**
+ * Queue vs execution wall-clock split for the job batch. Queue time is provider load, not device performance; recording the split keeps the two from being conflated by consumers.
+ */
+export interface ExecutionTiming {
+  /**
+   * Seconds between submission and execution start, when known.
+   */
+  queue_seconds?: number;
+  /**
+   * Seconds of actual execution, when known.
+   */
+  execution_seconds?: number;
+  /**
+   * Where the split came from, e.g. 'provider_job_metrics', 'local_state_transitions'.
+   */
+  source: string;
+}
+/**
+ * Spend accountability for live execution: the pre-submit estimate that passed the producer's cost gate, the local spend-ledger entry it committed, and provider-reported actual usage when available. Monetary amounts are decimal strings, never binary floats.
+ */
+export interface ExecutionCost {
+  /**
+   * Identifier of the producer's append-only spend-ledger entry for this submission (client-side bookkeeping cross-reference).
+   */
+  ledger_entry_id: string;
+  /**
+   * Estimated monetary cost as a decimal string, e.g. '0.00', '1.25'.
+   */
+  estimated_amount: string;
+  /**
+   * ISO 4217 currency code of estimated_amount.
+   */
+  currency: string;
+  /**
+   * Estimated QPU/runtime seconds charged against the producer's runtime-quota budget.
+   */
+  estimated_qpu_seconds: number;
+  /**
+   * Provider-reported actual runtime seconds, when available.
+   */
+  actual_qpu_seconds?: number;
 }
 /**
  * One executed circuit: the abstract (pre-transpilation) definition, the transpiled form actually submitted, and SHA-256 hashes of both for verification.

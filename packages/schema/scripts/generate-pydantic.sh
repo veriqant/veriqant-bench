@@ -6,7 +6,7 @@
 set -euo pipefail
 
 ROOT="$(cd "$(dirname "$0")/../../.." && pwd)"
-SCHEMA="$ROOT/packages/schema/schema/qpr-0.2.0.schema.json"
+SCHEMA="$ROOT/packages/schema/schema/qpr-0.3.0.schema.json"
 BENCH="$ROOT/packages/bench"
 OUT="$BENCH/src/veriqant_bench/qpr/_generated.py"
 

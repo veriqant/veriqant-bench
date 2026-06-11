@@ -1,8 +1,8 @@
 {
   "$schema": "https://json-schema.org/draft/2020-12/schema",
-  "$id": "https://schema.veriqant.dev/qpr/0.2.0/qpr.schema.json",
+  "$id": "https://schema.veriqant.dev/qpr/0.3.0/qpr.schema.json",
   "title": "QuantumPerformanceRecord",
-  "description": "QPR v0.2.0 \u2014 a self-contained, reproducible record of one benchmark execution against one quantum device or simulator. A QPR carries everything needed to re-run the benchmark bit-for-bit and to independently verify the reported metrics.",
+  "description": "QPR v0.3.0 \u2014 a self-contained, reproducible record of one benchmark execution against one quantum device or simulator. A QPR carries everything needed to re-run the benchmark bit-for-bit and to independently verify the reported metrics.",
   "type": "object",
   "additionalProperties": false,
   "required": [
@@ -225,6 +225,74 @@
           "items": {
             "type": "string"
           }
+        },
+        "timing": {
+          "$ref": "#/$defs/ExecutionTiming"
+        },
+        "cost": {
+          "$ref": "#/$defs/ExecutionCost"
+        }
+      }
+    },
+    "ExecutionTiming": {
+      "description": "Queue vs execution wall-clock split for the job batch. Queue time is provider load, not device performance; recording the split keeps the two from being conflated by consumers.",
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "source"
+      ],
+      "properties": {
+        "queue_seconds": {
+          "description": "Seconds between submission and execution start, when known.",
+          "type": "number",
+          "minimum": 0
+        },
+        "execution_seconds": {
+          "description": "Seconds of actual execution, when known.",
+          "type": "number",
+          "minimum": 0
+        },
+        "source": {
+          "description": "Where the split came from, e.g. 'provider_job_metrics', 'local_state_transitions'.",
+          "type": "string"
+        }
+      }
+    },
+    "ExecutionCost": {
+      "description": "Spend accountability for live execution: the pre-submit estimate that passed the producer's cost gate, the local spend-ledger entry it committed, and provider-reported actual usage when available. Monetary amounts are decimal strings, never binary floats.",
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "ledger_entry_id",
+        "estimated_amount",
+        "currency",
+        "estimated_qpu_seconds"
+      ],
+      "properties": {
+        "ledger_entry_id": {
+          "description": "Identifier of the producer's append-only spend-ledger entry for this submission (client-side bookkeeping cross-reference).",
+          "type": "string",
+          "minLength": 1
+        },
+        "estimated_amount": {
+          "description": "Estimated monetary cost as a decimal string, e.g. '0.00', '1.25'.",
+          "type": "string",
+          "pattern": "^[0-9]+(\\.[0-9]+)?$"
+        },
+        "currency": {
+          "description": "ISO 4217 currency code of estimated_amount.",
+          "type": "string",
+          "pattern": "^[A-Z]{3}$"
+        },
+        "estimated_qpu_seconds": {
+          "description": "Estimated QPU/runtime seconds charged against the producer's runtime-quota budget.",
+          "type": "number",
+          "minimum": 0
+        },
+        "actual_qpu_seconds": {
+          "description": "Provider-reported actual runtime seconds, when available.",
+          "type": "number",
+          "minimum": 0
         }
       }
     },

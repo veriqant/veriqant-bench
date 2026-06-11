@@ -1,4 +1,4 @@
-# AUTO-GENERATED from packages/schema/schema/qpr-0.2.0.schema.json — do not edit.
+# AUTO-GENERATED from packages/schema/schema/qpr-0.3.0.schema.json — do not edit.
 # Regenerate with: packages/schema/scripts/generate-pydantic.sh
 
 from __future__ import annotations
@@ -104,6 +104,58 @@ class Device(BaseModel):
     calibration_snapshot: dict[str, Any] | None = None
     """
     Raw provider calibration data (T1/T2, gate/readout errors, ...) as reported at execution time. Free-form because formats differ per provider; recorded verbatim for auditability.
+    """
+
+
+class ExecutionTiming(BaseModel):
+    """
+    Queue vs execution wall-clock split for the job batch. Queue time is provider load, not device performance; recording the split keeps the two from being conflated by consumers.
+    """
+
+    model_config = ConfigDict(
+        extra="forbid",
+    )
+    queue_seconds: Annotated[float | None, Field(ge=0.0)] = None
+    """
+    Seconds between submission and execution start, when known.
+    """
+    execution_seconds: Annotated[float | None, Field(ge=0.0)] = None
+    """
+    Seconds of actual execution, when known.
+    """
+    source: str
+    """
+    Where the split came from, e.g. 'provider_job_metrics', 'local_state_transitions'.
+    """
+
+
+class ExecutionCost(BaseModel):
+    """
+    Spend accountability for live execution: the pre-submit estimate that passed the producer's cost gate, the local spend-ledger entry it committed, and provider-reported actual usage when available. Monetary amounts are decimal strings, never binary floats.
+    """
+
+    model_config = ConfigDict(
+        extra="forbid",
+    )
+    ledger_entry_id: Annotated[str, Field(min_length=1)]
+    """
+    Identifier of the producer's append-only spend-ledger entry for this submission (client-side bookkeeping cross-reference).
+    """
+    estimated_amount: Annotated[str, Field(pattern="^[0-9]+(\\.[0-9]+)?$")]
+    """
+    Estimated monetary cost as a decimal string, e.g. '0.00', '1.25'.
+    """
+    currency: Annotated[str, Field(pattern="^[A-Z]{3}$")]
+    """
+    ISO 4217 currency code of estimated_amount.
+    """
+    estimated_qpu_seconds: Annotated[float, Field(ge=0.0)]
+    """
+    Estimated QPU/runtime seconds charged against the producer's runtime-quota budget.
+    """
+    actual_qpu_seconds: Annotated[float | None, Field(ge=0.0)] = None
+    """
+    Provider-reported actual runtime seconds, when available.
     """
 
 
@@ -330,6 +382,8 @@ class Execution(BaseModel):
     """
     Provider job identifiers, for cross-referencing against provider records.
     """
+    timing: ExecutionTiming | None = None
+    cost: ExecutionCost | None = None
 
 
 class Metric(BaseModel):
@@ -399,7 +453,7 @@ class Results(BaseModel):
 
 class QuantumPerformanceRecord(BaseModel):
     """
-    QPR v0.2.0 — a self-contained, reproducible record of one benchmark execution against one quantum device or simulator. A QPR carries everything needed to re-run the benchmark bit-for-bit and to independently verify the reported metrics.
+    QPR v0.3.0 — a self-contained, reproducible record of one benchmark execution against one quantum device or simulator. A QPR carries everything needed to re-run the benchmark bit-for-bit and to independently verify the reported metrics.
     """
 
     model_config = ConfigDict(

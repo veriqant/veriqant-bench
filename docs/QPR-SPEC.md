@@ -1,10 +1,16 @@
 # QPR — Quantum Performance Record
 
-**Schema version: 0.2.0** (semver; canonical schema:
-[`packages/schema/schema/qpr-0.2.0.schema.json`](../packages/schema/schema/qpr-0.2.0.schema.json))
+**Schema version: 0.3.0** (semver; canonical schema:
+[`packages/schema/schema/qpr-0.3.0.schema.json`](../packages/schema/schema/qpr-0.3.0.schema.json))
 
 Version history:
 
+- **0.3.0** — adds optional `execution.timing` (queue vs execution
+  wall-clock split, with its source) and `execution.cost` (live spend
+  accountability: the gated estimate, its append-only-ledger entry id, and
+  provider-reported actual usage). Both are structural so consumers never
+  parse conventions out of free-form blobs; monetary amounts are decimal
+  strings, never binary floats.
 - **0.2.0** — adds optional `results.metrics[].quality`
   (`{reliable, issues[]}`): estimator self-assessment. A benchmark whose fit
   fails its quality thresholds publishes the metric with `reliable=false`
@@ -40,7 +46,7 @@ hashing is a major bump.
 | `benchmark` | Benchmark identity: `id` (e.g. `rb_1q`, `mirror_circuits`), `suite_version` (semver of the benchmark implementation), and the complete `parameters` object. `parameters` + `execution.seed` MUST fully determine the generated circuits. |
 | `provider` | Cloud path: provider `name` (`local`, `ibm`, `aws-braket`, ...), veriqant-bench `adapter`, optional `region`. |
 | `device` | Target QPU/simulator: `name`, `num_qubits`, `simulator` flag, optional native `basis_gates`, `coupling_map`, and the raw provider `calibration_snapshot` (+ timestamp) in effect at execution time. |
-| `execution` | `seed` (required — no seed, no reproducibility), `shots`, `live` flag, full `transpilation` block (SDK, exact version, optimization level, verbatim settings), submission/completion timestamps, provider `job_ids`. |
+| `execution` | `seed` (required — no seed, no reproducibility), `shots`, `live` flag, full `transpilation` block (SDK, exact version, optimization level, verbatim settings), submission/completion timestamps, provider `job_ids`, optional `timing` (queue vs execution seconds + source) and `cost` (ledger entry id, gated estimate, provider-reported actuals — live runs only). |
 | `circuits[]` | Every executed circuit in submission order: OpenQASM 3 source (`qasm3`) with `qasm3_sha256`, plus the post-transpilation form (`transpiled_qasm3` / `transpiled_qasm3_sha256` — both or neither). `index` must equal the array position. |
 | `results.raw[]` | Per-circuit measurement `counts` (bitstring → occurrences, MSB-first) with `shots`; counts must sum to shots. Raw counts are always retained so metrics can be re-derived. |
 | `results.metrics[]` | Derived metrics. Each carries `value` plus mandatory `statistics`: `sample_size`, `confidence_level`, `ci_lower`, `ci_upper`, `estimator` (and optional `std_error`), plus optional `quality` (`reliable` flag + `issues[]`) — present whenever the producing benchmark runs fit/estimator diagnostics. |
@@ -74,7 +80,7 @@ The canonical form of a JSON value, for hashing purposes:
 > Python's serializer; cross-language re-hashing of records containing
 > non-integral floats outside the canonical producer may differ in rare edge
 > cases (e.g. `2.0` vs `2`). Adopting RFC 8785 (JCS) number formatting is
-> planned for the next schema minor; in v0.1 the reference verifier is
+> planned for a future schema revision; until then the reference verifier is
 > `veriqant-bench verify`.
 >
 > **Confirmed instance:** because the seal binds exact float bits, records
