@@ -39,8 +39,9 @@ from veriqant_bench.benchmarks.qec.memory import (
 )
 from veriqant_bench.benchmarks.qv import QuantumVolume, QVParams
 from veriqant_bench.benchmarks.rb import RandomizedBenchmarking, RBParams
-from veriqant_bench.benchmarks.throughput import SIMULATOR_TIMING_ISSUE
+from veriqant_bench.benchmarks.throughput import SIMULATOR_TIMING_ISSUE, Throughput
 from veriqant_bench.qpr import (
+    QPR_VERSION,
     QuantumPerformanceRecord,
     dump_qpr,
     seal,
@@ -177,13 +178,15 @@ def throughput_record() -> QuantumPerformanceRecord:
 
     qasm = 'OPENQASM 3.0;\ninclude "stdgates.inc";\nqubit[2] q;\nbit[2] c;\nc = measure q;\n'
     record = QuantumPerformanceRecord(
-        qpr_version="0.2.0",
+        # Track the source-of-truth constants so the fixtures cannot
+        # silently misadvertise versions after the next bump.
+        qpr_version=QPR_VERSION,
         record_id=UUID(int=4),
         created_at=FIXED_AT,
         benchmark=Benchmark(
             id="throughput",
             display_name="sequential batch throughput (fixture)",
-            suite_version="0.1.0",
+            suite_version=Throughput.version,
             parameters={"batches": 4, "batch_size": 3, "width": 2, "depth": 2},
         ),
         provider=Provider(name="local", adapter="static_test"),

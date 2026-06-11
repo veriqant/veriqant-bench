@@ -1,17 +1,17 @@
 {
-  "qpr_version": "0.2.0",
+  "qpr_version": "0.3.0",
   "record_id": "00000000-0000-0000-0000-000000000003",
   "created_at": "2026-01-01T12:00:00Z",
   "benchmark": {
     "id": "quantum_volume",
     "display_name": "quantum volume (widths 2)",
-    "suite_version": "0.1.0",
+    "suite_version": "0.2.0",
     "parameters": {
       "widths": [
         2
       ],
       "circuits_per_width": 5,
-      "bootstrap_resamples": 200
+      "bootstrap_resamples": 1000
     }
   },
   "provider": {
@@ -37,7 +37,12 @@
       "settings": {}
     },
     "submitted_at": "2026-01-01T12:00:00Z",
-    "completed_at": "2026-01-01T12:00:00Z"
+    "completed_at": "2026-01-01T12:00:00Z",
+    "timing": {
+      "queue_seconds": 6.9e-05,
+      "execution_seconds": 0.000107,
+      "source": "local_state_transitions"
+    }
   },
   "circuits": [
     {
@@ -187,7 +192,7 @@
           "confidence_level": 0.95,
           "ci_lower": 0.2,
           "ci_upper": 1.0,
-          "std_error": 0.230822443,
+          "std_error": 0.221680491,
           "estimator": "mean_bootstrap_percentile"
         },
         "quality": {
@@ -239,6 +244,6 @@
     }
   },
   "integrity": {
-    "content_sha256": "0f4d8862c849992825501feb4ec2da678fc43e90b0297b718a0b033952517a4d"
+    "content_sha256": "818bc2aea3848b57c9e9c2dcade3b62ab74d75390d660c2c82ef56a070dbc810"
   }
 }

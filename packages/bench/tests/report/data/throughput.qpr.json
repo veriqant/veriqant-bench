@@ -1,11 +1,11 @@
 {
-  "qpr_version": "0.2.0",
+  "qpr_version": "0.3.0",
   "record_id": "00000000-0000-0000-0000-000000000004",
   "created_at": "2026-01-01T12:00:00Z",
   "benchmark": {
     "id": "throughput",
     "display_name": "sequential batch throughput (fixture)",
-    "suite_version": "0.1.0",
+    "suite_version": "0.2.0",
     "parameters": {
       "batches": 4,
       "batch_size": 3,
@@ -148,6 +148,6 @@
     }
   },
   "integrity": {
-    "content_sha256": "872158b29fa453f9b006123fda5a31a029050d153d9d6888c9c47f8c6625f213"
+    "content_sha256": "311cbc740f87356d26c39f592ea6eddad6f19ca1acfc24af38d971d7cfb8a54b"
   }
 }

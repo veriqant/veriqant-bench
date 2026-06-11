@@ -31,26 +31,26 @@ svg { background: #fbfbfd; border: 1px solid #e5e5ee; margin-top: 0.6rem; }
 <thead><tr><th>benchmark</th><th>adapter / device</th><th>key metric</th>
 <th>value (95% CI)</th><th>quality</th><th>record</th></tr></thead>
 <tbody>
-<tr><td>mirror_circuits</td><td>static_test / static_device (simulator)</td><td>success_probability.depth_1</td><td>0.5 [0, 1]</td><td><span class="badge ok">no diagnostics</span></td><td><code>231d15e3fa6d</code></td></tr>
-<tr><td>qec_repetition_memory</td><td>static_test / static_device (simulator)</td><td>logical_error_per_round.distance_3</td><td>0 [0, 0.003827]</td><td><span class="badge ok">reliable</span></td><td><code>a234791eda20</code></td></tr>
-<tr><td>quantum_volume</td><td>static_test / static_device (simulator)</td><td>quantum_volume</td><td>1 [1, 1]</td><td><span class="badge bad">UNRELIABLE</span> <span class="issues">qv.insufficient_circuits_for_confidence, qv.no_width_passed</span></td><td><code>0f4d8862c849</code></td></tr>
-<tr><td>rb_1q</td><td>static_test / static_device (simulator)</td><td>error_per_clifford</td><td>2.968e-06 [2.968e-06, 2.968e-06]</td><td><span class="badge ok">reliable</span></td><td><code>dbee0454ae4b</code></td></tr>
-<tr><td>throughput</td><td>static_test / static_device (simulator)</td><td>job_round_trip_seconds</td><td>0.0421 [0.03789, 0.04631]</td><td><span class="badge bad">UNRELIABLE</span> <span class="issues">timing.simulator_not_comparable_to_hardware</span></td><td><code>872158b29fa4</code></td></tr>
+<tr><td>mirror_circuits</td><td>static_test / static_device (simulator)</td><td>success_probability.depth_1</td><td>0.5 [0, 1]</td><td><span class="badge ok">no diagnostics</span></td><td><code>f54e84e578ab</code></td></tr>
+<tr><td>qec_repetition_memory</td><td>static_test / static_device (simulator)</td><td>logical_error_per_round.distance_3</td><td>0 [0, 0.003827]</td><td><span class="badge ok">reliable</span></td><td><code>ff44513394fd</code></td></tr>
+<tr><td>quantum_volume</td><td>static_test / static_device (simulator)</td><td>quantum_volume</td><td>1 [1, 1]</td><td><span class="badge bad">UNRELIABLE</span> <span class="issues">qv.insufficient_circuits_for_confidence, qv.no_width_passed</span></td><td><code>818bc2aea384</code></td></tr>
+<tr><td>rb_1q</td><td>static_test / static_device (simulator)</td><td>error_per_clifford</td><td>2.968e-06 [2.968e-06, 2.968e-06]</td><td><span class="badge bad">UNRELIABLE</span> <span class="issues">statistics.zero_width_ci</span></td><td><code>304b228fa289</code></td></tr>
+<tr><td>throughput</td><td>static_test / static_device (simulator)</td><td>job_round_trip_seconds</td><td>0.0421 [0.03789, 0.04631]</td><td><span class="badge bad">UNRELIABLE</span> <span class="issues">timing.simulator_not_comparable_to_hardware</span></td><td><code>311cbc740f87</code></td></tr>
 </tbody>
 </table>
 
 <h2>2-qubit randomized mirror circuits</h2>
 <p class="meta">adapter static_test · device
  static_device · seed 7 · shots 64
- · suite 0.1.0
- · <code>231d15e3fa6d2b4ad3db51d611699eeca23ae4ee44e0c7abe28529e314706fea</code></p>
+ · suite 0.2.0
+ · <code>f54e84e578abfbd008806a5075a5a0eabcc842b38832871216e14cd5c76e8474</code></p>
 <table>
 <thead><tr><th>metric</th><th>value</th><th>95% CI</th><th>samples</th><th>quality</th></tr></thead>
 <tbody>
 <tr><td>success_probability.depth_1</td><td>0.5 probability</td><td>[0, 1]</td><td>128</td><td><span class="badge ok">no diagnostics</span></td></tr>
 <tr><td>mirror_polarization.depth_1</td><td>0.3333 probability</td><td>[-0.3333, 1]</td><td>128</td><td><span class="badge ok">no diagnostics</span></td></tr>
-<tr><td>success_probability.depth_2</td><td>0 probability</td><td>[0, 0]</td><td>128</td><td><span class="badge ok">no diagnostics</span></td></tr>
-<tr><td>mirror_polarization.depth_2</td><td>-0.3333 probability</td><td>[-0.3333, -0.3333]</td><td>128</td><td><span class="badge ok">no diagnostics</span></td></tr>
+<tr><td>success_probability.depth_2</td><td>0 probability</td><td>[0, 0]</td><td>128</td><td><span class="badge bad">UNRELIABLE</span> <span class="issues">statistics.zero_width_ci</span></td></tr>
+<tr><td>mirror_polarization.depth_2</td><td>-0.3333 probability</td><td>[-0.3333, -0.3333]</td><td>128</td><td><span class="badge bad">UNRELIABLE</span> <span class="issues">statistics.zero_width_ci</span></td></tr>
 </tbody>
 </table>
 
@@ -83,7 +83,7 @@ svg { background: #fbfbfd; border: 1px solid #e5e5ee; margin-top: 0.6rem; }
 <p class="meta">adapter static_test · device
  static_device · seed 7 · shots 200
  · suite 0.1.0
- · <code>a234791eda207f4be6f9eb8d6733412d812dde479b94106ea93503044a81d689</code></p>
+ · <code>ff44513394fda76bdfba55d6bd83992dbcad0672904c28f83c902887da6f2439</code></p>
 <table>
 <thead><tr><th>metric</th><th>value</th><th>95% CI</th><th>samples</th><th>quality</th></tr></thead>
 <tbody>
@@ -142,8 +142,8 @@ svg { background: #fbfbfd; border: 1px solid #e5e5ee; margin-top: 0.6rem; }
 <h2>quantum volume (widths 2)</h2>
 <p class="meta">adapter static_test · device
  static_device · seed 7 · shots 64
- · suite 0.1.0
- · <code>0f4d8862c849992825501feb4ec2da678fc43e90b0297b718a0b033952517a4d</code></p>
+ · suite 0.2.0
+ · <code>818bc2aea3848b57c9e9c2dcade3b62ab74d75390d660c2c82ef56a070dbc810</code></p>
 <table>
 <thead><tr><th>metric</th><th>value</th><th>95% CI</th><th>samples</th><th>quality</th></tr></thead>
 <tbody>
@@ -180,13 +180,13 @@ svg { background: #fbfbfd; border: 1px solid #e5e5ee; margin-top: 0.6rem; }
 <h2>1-qubit Clifford randomized benchmarking</h2>
 <p class="meta">adapter static_test · device
  static_device · seed 7 · shots 64
- · suite 0.1.0
- · <code>dbee0454ae4bfba44ce127a4baa896a3fbdc020a09258673b0fe9de12a9a155a</code></p>
+ · suite 0.2.0
+ · <code>304b228fa2891af8808c0d63cdde08e401f6516464d56382f59ab674858a3527</code></p>
 <table>
 <thead><tr><th>metric</th><th>value</th><th>95% CI</th><th>samples</th><th>quality</th></tr></thead>
 <tbody>
-<tr><td>error_per_clifford</td><td>2.968e-06 probability</td><td>[2.968e-06, 2.968e-06]</td><td>384</td><td><span class="badge ok">reliable</span></td></tr>
-<tr><td>rb_decay_rate</td><td>1 probability</td><td>[1, 1]</td><td>384</td><td><span class="badge ok">reliable</span></td></tr>
+<tr><td>error_per_clifford</td><td>2.968e-06 probability</td><td>[2.968e-06, 2.968e-06]</td><td>384</td><td><span class="badge bad">UNRELIABLE</span> <span class="issues">statistics.zero_width_ci</span></td></tr>
+<tr><td>rb_decay_rate</td><td>1 probability</td><td>[1, 1]</td><td>384</td><td><span class="badge bad">UNRELIABLE</span> <span class="issues">statistics.zero_width_ci</span></td></tr>
 </tbody>
 </table>
 
@@ -219,8 +219,8 @@ svg { background: #fbfbfd; border: 1px solid #e5e5ee; margin-top: 0.6rem; }
 <h2>sequential batch throughput (fixture)</h2>
 <p class="meta">adapter static_test · device
  static_device · seed 7 · shots 64
- · suite 0.1.0
- · <code>872158b29fa453f9b006123fda5a31a029050d153d9d6888c9c47f8c6625f213</code></p>
+ · suite 0.2.0
+ · <code>311cbc740f87356d26c39f592ea6eddad6f19ca1acfc24af38d971d7cfb8a54b</code></p>
 <table>
 <thead><tr><th>metric</th><th>value</th><th>95% CI</th><th>samples</th><th>quality</th></tr></thead>
 <tbody>
