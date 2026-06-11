@@ -149,6 +149,82 @@ def test_unknown_entry_kind_refuses_totals(ledger: SpendLedger) -> None:
         ledger.monthly_totals(JUNE)
 
 
+def _valid_estimate_line() -> dict[str, object]:
+    return {
+        "kind": "estimate",
+        "id": "entry-1",
+        "timestamp": JUNE.isoformat(),
+        "adapter": "a",
+        "device": "d",
+        "amount": "1.00",
+        "currency": "USD",
+        "qpu_seconds": 1.0,
+    }
+
+
+@pytest.mark.parametrize(
+    "corruption",
+    [
+        pytest.param({"id": None}, id="estimate-missing-id"),
+        pytest.param({"timestamp": None}, id="estimate-missing-timestamp"),
+        pytest.param({"timestamp": "not-a-date"}, id="estimate-bad-timestamp"),
+        pytest.param({"amount": None}, id="estimate-missing-amount"),
+        pytest.param({"amount": "abc"}, id="estimate-bad-amount"),
+        pytest.param({"amount": "Infinity"}, id="estimate-nonfinite-amount"),
+        pytest.param({"qpu_seconds": None}, id="estimate-missing-qpu-seconds"),
+        pytest.param({"qpu_seconds": "lots"}, id="estimate-bad-qpu-seconds"),
+    ],
+)
+def test_malformed_estimate_fields_refuse_totals_typed(
+    ledger: SpendLedger, corruption: dict[str, object]
+) -> None:
+    # Fail closed AND typed: a valid-JSON object with garbage fields must be
+    # the documented LedgerError, not a raw KeyError/ValueError traceback.
+    line = _valid_estimate_line()
+    line.update(corruption)
+    entry = {key: value for key, value in line.items() if value is not None}
+    ledger.path.parent.mkdir(parents=True, exist_ok=True)
+    with ledger.path.open("a", encoding="utf-8") as handle:
+        handle.write(json.dumps(entry) + "\n")
+    with pytest.raises(LedgerError):
+        ledger.monthly_totals(JUNE)
+
+
+@pytest.mark.parametrize(
+    "entry",
+    [
+        pytest.param({"kind": "actuals", "timestamp": JUNE.isoformat()}, id="actuals-missing-ref"),
+        pytest.param(
+            {"kind": "actuals", "ref": "entry-1", "amount": "abc"}, id="actuals-bad-amount"
+        ),
+        pytest.param(
+            {"kind": "actuals", "ref": "entry-1", "qpu_seconds": "many"},
+            id="actuals-bad-qpu-seconds",
+        ),
+        pytest.param({"kind": "released", "reason": "x"}, id="released-missing-ref"),
+        pytest.param({"kind": None}, id="null-kind"),
+    ],
+)
+def test_malformed_amendments_refuse_totals_typed(
+    ledger: SpendLedger, entry: dict[str, object]
+) -> None:
+    ledger.path.parent.mkdir(parents=True, exist_ok=True)
+    with ledger.path.open("a", encoding="utf-8") as handle:
+        handle.write(json.dumps(_valid_estimate_line()) + "\n")
+        handle.write(json.dumps(entry) + "\n")
+    with pytest.raises(LedgerError):
+        ledger.monthly_totals(JUNE)
+
+
+def test_ledger_error_names_the_offending_line(ledger: SpendLedger) -> None:
+    ledger.path.parent.mkdir(parents=True, exist_ok=True)
+    with ledger.path.open("a", encoding="utf-8") as handle:
+        handle.write(json.dumps(_valid_estimate_line()) + "\n")
+        handle.write(json.dumps({"kind": "estimate"}) + "\n")
+    with pytest.raises(LedgerError, match=":2"):
+        ledger.monthly_totals(JUNE)
+
+
 def test_lock_is_reentrant_within_an_instance(ledger: SpendLedger) -> None:
     with ledger.lock():
         # record_estimate locks internally; must not deadlock.

@@ -23,6 +23,7 @@ provider-side billing alarms (see docs/LIVE.md).
 from __future__ import annotations
 
 import json
+import math
 import os
 import sys
 import time
@@ -30,7 +31,7 @@ from collections.abc import Iterator
 from contextlib import contextmanager
 from dataclasses import dataclass
 from datetime import UTC, datetime
-from decimal import Decimal
+from decimal import Decimal, InvalidOperation
 from pathlib import Path
 from typing import Any
 from uuid import uuid4
@@ -219,17 +220,15 @@ class SpendLedger:
         actuals: dict[str, dict[str, Any]] = {}
         released: set[str] = set()
         for entry in self._read():
-            kind = entry.get("kind")
+            kind = entry["kind"]  # shapes guaranteed by _validate_entry
             if kind == "estimate":
                 stamp = datetime.fromisoformat(entry["timestamp"]).astimezone(UTC)
                 if (stamp.year, stamp.month) == (moment.year, moment.month):
                     estimates[entry["id"]] = entry
             elif kind == "actuals":
                 actuals[entry["ref"]] = entry  # last amendment wins
-            elif kind == "released":
-                released.add(entry["ref"])
             else:
-                raise LedgerError(f"{self.path}: unknown entry kind {kind!r}; refusing to total")
+                released.add(entry["ref"])
         monetary = Decimal("0")
         qpu_seconds = 0.0
         for entry_id, estimate in estimates.items():
@@ -280,8 +279,67 @@ class SpendLedger:
                         f"{self.path}:{line_number}: ledger line is not an object; "
                         "refusing to compute totals"
                     )
+                self._validate_entry(parsed, line_number)
                 entries.append(parsed)
         return entries
+
+    def _validate_entry(self, entry: dict[str, Any], line_number: int) -> None:
+        """Refuse, with the documented typed error, any entry whose fields
+        the totals computation cannot trust — same fail-closed rule as a
+        line that is not JSON at all, just one level deeper."""
+
+        def refuse(problem: str) -> None:
+            raise LedgerError(
+                f"{self.path}:{line_number}: {problem}; refusing to compute totals "
+                "from a ledger entry that cannot be trusted"
+            )
+
+        def check_amount(value: Any, required: bool) -> None:
+            if value is None:
+                if required:
+                    refuse("entry has no 'amount'")
+                return
+            try:
+                amount = Decimal(str(value))
+            except InvalidOperation:
+                refuse(f"unreadable amount {value!r}")
+                return  # pragma: no cover - refuse always raises
+            if not amount.is_finite():
+                refuse(f"non-finite amount {value!r}")
+
+        def check_qpu_seconds(value: Any, required: bool) -> None:
+            if value is None:
+                if required:
+                    refuse("entry has no 'qpu_seconds'")
+                return
+            if isinstance(value, bool) or not isinstance(value, int | float):
+                refuse(f"unreadable qpu_seconds {value!r}")
+                return  # pragma: no cover - refuse always raises
+            if not math.isfinite(value):
+                refuse(f"non-finite qpu_seconds {value!r}")
+
+        kind = entry.get("kind")
+        if kind == "estimate":
+            if not isinstance(entry.get("id"), str):
+                refuse("estimate entry has no string 'id'")
+            timestamp = entry.get("timestamp")
+            if not isinstance(timestamp, str):
+                refuse("estimate entry has no string 'timestamp'")
+            else:
+                try:
+                    datetime.fromisoformat(timestamp)
+                except ValueError:
+                    refuse(f"unreadable timestamp {timestamp!r}")
+            check_amount(entry.get("amount"), required=True)
+            check_qpu_seconds(entry.get("qpu_seconds"), required=True)
+        elif kind in ("actuals", "released"):
+            if not isinstance(entry.get("ref"), str):
+                refuse(f"{kind} entry has no string 'ref'")
+            if kind == "actuals":
+                check_amount(entry.get("amount"), required=False)
+                check_qpu_seconds(entry.get("qpu_seconds"), required=False)
+        else:
+            refuse(f"unknown entry kind {kind!r}")
 
 
 def _timestamp(now: datetime | None) -> str:
