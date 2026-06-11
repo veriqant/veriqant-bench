@@ -73,10 +73,41 @@ def test_estimate_is_offline_conservative_and_named(tmp_path: Path) -> None:
     assert estimate.heuristic == QUOTA_HEURISTIC
 
 
-# ---- open-plan gating (fail closed) ----------------------------------------------
+# ---- plan gating on pricing_type (fail closed) -------------------------------------
 
 
-async def test_premium_plan_is_refused_before_the_gate(tmp_path: Path) -> None:
+async def test_real_shaped_free_instance_classifies_and_submits(tmp_path: Path) -> None:
+    # The exact shape captured live from service.instances() on a real Open
+    # Plan account (June 2026): pricing_type "free" is the signal that the
+    # instance is unbilled and quota-bound.
+    adapter, _ = make_ibm_adapter(
+        tmp_path,
+        instances=[
+            {
+                "crn": "crn:v1:bluemix:public:quantum-computing:us-east:a/1:2::",
+                "plan": "open",
+                "name": "open-instance",
+                "tags": [],
+                "pricing_type": "free",
+            }
+        ],
+    )
+    handle = await adapter.submit(JobSpec(circuits=[ASYMMETRIC_2Q], shots=16, seed=1))
+    document = json.loads(adapter.handle_file(handle).read_text(encoding="utf-8"))
+    # The classified plan is recorded for the audit trail.
+    recorded = document["submit_metadata"]["ibm_instances"]
+    assert recorded == [{"name": "open-instance", "plan": "open", "pricing_type": "free"}]
+
+
+async def test_free_pricing_type_passes_regardless_of_plan_name(tmp_path: Path) -> None:
+    # The decision keys on pricing_type, not the plan NAME: a future free
+    # tier called something other than "open" must not be refused.
+    adapter, _ = make_ibm_adapter(tmp_path, plan="lite", pricing_type="free")
+    handle = await adapter.submit(JobSpec(circuits=[ASYMMETRIC_2Q], shots=16, seed=1))
+    assert handle.job_id
+
+
+async def test_paid_pricing_type_is_refused_before_the_gate(tmp_path: Path) -> None:
     adapter, _ = make_ibm_adapter(tmp_path, plan="premium")
     with pytest.raises(LiveRefusedError, match="premium billing not supported"):
         await adapter.submit(JobSpec(circuits=[ASYMMETRIC_2Q], shots=16, seed=1))
@@ -86,8 +117,67 @@ async def test_premium_plan_is_refused_before_the_gate(tmp_path: Path) -> None:
     assert not adapter._ledger.path.exists()
 
 
+async def test_free_sounding_plan_name_with_paid_pricing_is_refused(tmp_path: Path) -> None:
+    # Adversarial: a plan NAMED "open" that the provider says is billed must
+    # refuse — the name list is exactly the trap pricing_type avoids.
+    adapter, _ = make_ibm_adapter(tmp_path, plan="open", pricing_type="paid")
+    with pytest.raises(LiveRefusedError, match="premium billing not supported"):
+        await adapter.submit(JobSpec(circuits=[ASYMMETRIC_2Q], shots=16, seed=1))
+
+
+async def test_unrecognized_pricing_type_is_refused(tmp_path: Path) -> None:
+    adapter, _ = make_ibm_adapter(tmp_path, plan="open", pricing_type="subscription")
+    with pytest.raises(LiveRefusedError, match="premium billing not supported"):
+        await adapter.submit(JobSpec(circuits=[ASYMMETRIC_2Q], shots=16, seed=1))
+
+
 async def test_undeterminable_plan_is_refused(tmp_path: Path) -> None:
+    # An instance dict missing both plan and pricing_type: absence must
+    # never read as "free, go ahead."
     adapter, _ = make_ibm_adapter(tmp_path, plan=None)
+    with pytest.raises(LiveRefusedError, match="cannot determine the IBM plan"):
+        await adapter.submit(JobSpec(circuits=[ASYMMETRIC_2Q], shots=16, seed=1))
+
+
+async def test_no_instances_at_all_is_refused(tmp_path: Path) -> None:
+    adapter, _ = make_ibm_adapter(tmp_path, instances=[])
+    with pytest.raises(LiveRefusedError, match="cannot determine the IBM plan"):
+        await adapter.submit(JobSpec(circuits=[ASYMMETRIC_2Q], shots=16, seed=1))
+
+
+async def test_mixed_instances_without_a_pin_are_refused(tmp_path: Path) -> None:
+    # Free AND paid instances visible, account not pinned to one: the job
+    # could land on the billed instance, so refuse.
+    from conftest import fake_instance
+
+    adapter, _ = make_ibm_adapter(
+        tmp_path,
+        instances=[
+            fake_instance("open", crn="crn:fake:free"),
+            fake_instance("premium", crn="crn:fake:paid"),
+        ],
+    )
+    with pytest.raises(LiveRefusedError, match="premium billing not supported"):
+        await adapter.submit(JobSpec(circuits=[ASYMMETRIC_2Q], shots=16, seed=1))
+
+
+async def test_pin_to_the_free_instance_among_paid_passes(tmp_path: Path) -> None:
+    from conftest import fake_instance
+
+    adapter, _ = make_ibm_adapter(
+        tmp_path,
+        instances=[
+            fake_instance("open", crn="crn:fake:free"),
+            fake_instance("premium", crn="crn:fake:paid"),
+        ],
+        pinned_crn="crn:fake:free",
+    )
+    handle = await adapter.submit(JobSpec(circuits=[ASYMMETRIC_2Q], shots=16, seed=1))
+    assert handle.job_id
+
+
+async def test_pinned_instance_not_listed_is_refused(tmp_path: Path) -> None:
+    adapter, _ = make_ibm_adapter(tmp_path, pinned_crn="crn:fake:not-listed")
     with pytest.raises(LiveRefusedError, match="cannot determine the IBM plan"):
         await adapter.submit(JobSpec(circuits=[ASYMMETRIC_2Q], shots=16, seed=1))
 

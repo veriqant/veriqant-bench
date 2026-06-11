@@ -54,20 +54,57 @@ def permissive_limits() -> SpendLimits:
 # ---- IBM fakes ----------------------------------------------------------------
 
 
-class FakeRuntimeService:
-    """Stand-in for QiskitRuntimeService: one backend, a structured plan, and
-    a job store so re-attachment (resume) can be exercised."""
+def fake_instance(
+    plan: str | None = "open",
+    pricing_type: str | None = None,
+    crn: str = "crn:v1:fake:quantum-computing:instance:0",
+) -> dict[str, Any]:
+    """One instance dict shaped exactly like a real service.instances()
+    entry (field names pinned June 2026 against a real Open Plan account:
+    crn / plan / name / tags / pricing_type). plan=None drops both the
+    plan and pricing_type keys — the undeterminable shape."""
+    if plan is None:
+        return {"crn": crn, "name": "mystery-instance", "tags": []}
+    if pricing_type is None:
+        pricing_type = "free" if plan == "open" else "paid"
+    return {
+        "crn": crn,
+        "plan": plan,
+        "name": f"{plan}-instance",
+        "tags": [],
+        "pricing_type": pricing_type,
+    }
 
-    def __init__(self, backend: Any, plan: str | None = "open") -> None:
+
+class FakeRuntimeService:
+    """Stand-in for QiskitRuntimeService: one backend, instance dicts shaped
+    like the real instances() payload (plan/pricing_type live THERE, not in
+    active_account), and a job store so re-attachment (resume) can be
+    exercised."""
+
+    def __init__(
+        self,
+        backend: Any,
+        plan: str | None = "open",
+        pricing_type: str | None = None,
+        instances: list[dict[str, Any]] | None = None,
+        pinned_crn: str | None = None,
+    ) -> None:
         self._backend = backend
-        self._plan = plan
+        self._instances = (
+            instances if instances is not None else [fake_instance(plan, pricing_type)]
+        )
+        self._pinned_crn = pinned_crn
         self.jobs_store: dict[str, Any] = {}
 
     def active_account(self) -> dict[str, Any]:
         account: dict[str, Any] = {"channel": "ibm_quantum_platform"}
-        if self._plan is not None:
-            account["plan"] = self._plan
+        if self._pinned_crn is not None:
+            account["instance"] = self._pinned_crn
         return account
+
+    def instances(self) -> list[dict[str, Any]]:
+        return [dict(item) for item in self._instances]
 
     def backend(self, name: str) -> Any:
         return self._backend
@@ -89,7 +126,11 @@ def make_ibm_adapter(tmp_path: Path, **overrides: Any) -> tuple[Any, FakeRuntime
 
     backend = overrides.pop("backend", None) or FakeManilaV2()
     service = overrides.pop("service", None) or FakeRuntimeService(
-        backend, plan=overrides.pop("plan", "open")
+        backend,
+        plan=overrides.pop("plan", "open"),
+        pricing_type=overrides.pop("pricing_type", None),
+        instances=overrides.pop("instances", None),
+        pinned_crn=overrides.pop("pinned_crn", None),
     )
     adapter = IBMRuntimeAdapter(
         allow_live=overrides.pop("allow_live", True),

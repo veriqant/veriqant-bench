@@ -6,11 +6,13 @@
 - Credentials come from the standard qiskit-ibm-runtime paths (the
   QISKIT_IBM_TOKEN environment variable or a previously saved account);
   this adapter never writes credentials.
-- Open plan only in v1: monetarily free, but it consumes the per-month
-  runtime quota, so estimates are charged against the QPU-seconds budget.
-  The plan is read from the service's structured account data; if it
-  cannot be determined, the adapter refuses (fail closed) — an account we
-  cannot classify might be billable.
+- Free (unbilled) instances only in v1: monetarily free, but they consume
+  the per-month runtime quota, so estimates are charged against the
+  QPU-seconds budget. The billing class is read from the instance dicts
+  returned by service.instances() — keyed on `pricing_type`, with the
+  plan name recorded for the audit trail; if it cannot be positively
+  determined to be free, the adapter refuses (fail closed) — an instance
+  we cannot classify might be billable.
 - Backend resolution is lazy: constructing the adapter is free and
   offline. The backend (named, or least-busy when omitted) is resolved on
   first use, which is also why a least-busy submission's ledger entry may
@@ -97,6 +99,9 @@ class IBMRuntimeAdapter(LiveAdapterBase):
         self._backend_name = backend_name
         self._service = service
         self._backend = backend  # resolved lazily; construction is offline
+        # Set by _require_open_plan on a positive free classification;
+        # recorded in the handle file (the QPR has no structural plan slot).
+        self._classified_instances: list[dict[str, str]] | None = None
 
     # ---- backend resolution / credentials ---------------------------------
 
@@ -158,29 +163,78 @@ class IBMRuntimeAdapter(LiveAdapterBase):
         return {"backend_name": self._device_name()}
 
     def _require_open_plan(self) -> None:
-        """Refuse anything that is not positively the free open plan.
+        """Refuse anything that is not positively a free (unbilled) instance.
 
-        Fail closed: an account whose plan cannot be determined from the
-        structured account data might be billable, and only the open plan's
-        quota accounting is implemented. (The exact field names are pinned
-        against a real account — see the build report; until then this
-        reads the documented 'plan' key and refuses on absence.)"""
+        Field names pinned against a real Open Plan account (June 2026):
+        service.instances() entries carry {'crn', 'plan', 'name', 'tags',
+        'pricing_type'}, with plan='open' and pricing_type='free' on the
+        free tier. The billed-vs-free decision keys on `pricing_type`, not
+        the plan NAME: pricing_type states the billing semantics directly
+        and "free" is the provider's own claim that the instance is
+        unbilled and quota-bound, whereas plan names are product labels
+        that can grow free variants ("open", "lite", ...). A name list
+        fails in both directions — a renamed free tier would be refused
+        (annoying), and a billable plan that happens to match a
+        free-sounding name would pass (the failure mode this gate exists
+        to exclude). The plan name is still captured per instance for the
+        handle-file audit trail.
+
+        Fail closed throughout: no instances, a missing or unrecognized
+        pricing_type, or a pinned instance we cannot find all refuse —
+        absence never reads as "free, go ahead." When the account pins an
+        instance (active_account()['instance']), only that instance is
+        classified; otherwise EVERY visible instance must be free, because
+        the job could land on any of them."""
         service = self._service_or_raise()
-        account: dict[str, Any] = {}
-        with contextlib.suppress(Exception):
-            account = dict(service.active_account() or {})
-        plan = account.get("plan")
-        if plan is None:
+        try:
+            instances = [dict(item) for item in (service.instances() or [])]
+        except Exception:
+            instances = []
+        if not instances:
             raise LiveRefusedError(
                 "cannot determine the IBM plan for the active account "
-                f"(structured fields: {sorted(account)}); refusing rather than "
-                "risking a billable submission. Only the open plan is supported in v1."
+                "(service.instances() returned nothing usable); refusing rather "
+                "than risking a billable submission. Only free (unbilled) "
+                "instances are supported in v1."
             )
-        if str(plan).strip().lower() != "open":
-            raise LiveRefusedError(
-                f"premium billing not supported in v1: the active IBM account is on "
-                f"plan {plan!r}. Only the monetarily-free open plan is gated correctly."
-            )
+        pinned: Any = None
+        with contextlib.suppress(Exception):
+            pinned = dict(service.active_account() or {}).get("instance")
+        if pinned is not None:
+            candidates = [item for item in instances if item.get("crn") == pinned]
+            if not candidates:
+                raise LiveRefusedError(
+                    f"cannot determine the IBM plan: the account pins instance "
+                    f"{pinned!r} but service.instances() does not list it; refusing "
+                    "rather than risking a billable submission."
+                )
+        else:
+            candidates = instances
+        for instance in candidates:
+            name = instance.get("name", "<unnamed>")
+            plan = instance.get("plan")
+            pricing_type = instance.get("pricing_type")
+            if pricing_type is None:
+                raise LiveRefusedError(
+                    f"cannot determine the IBM plan: instance {name!r} carries no "
+                    f"'pricing_type' (fields: {sorted(instance)}); refusing rather "
+                    "than risking a billable submission. Only free (unbilled) "
+                    "instances are supported in v1."
+                )
+            if str(pricing_type).strip().lower() != "free":
+                raise LiveRefusedError(
+                    f"premium billing not supported in v1: instance {name!r} is on "
+                    f"plan {plan!r} with pricing_type {pricing_type!r}. Only free "
+                    "(unbilled, quota-bound) instances are gated correctly."
+                )
+        self._classified_instances = [
+            {
+                "name": str(instance.get("name", "<unnamed>")),
+                "plan": str(instance.get("plan")),
+                "pricing_type": str(instance.get("pricing_type")),
+            }
+            for instance in candidates
+        ]
 
     # ---- discovery ----------------------------------------------------------
 
@@ -265,7 +319,7 @@ class IBMRuntimeAdapter(LiveAdapterBase):
         job = sampler.run(isa_circuits, shots=spec.shots)
         job_id = str(job.job_id())
         self._jobs[job_id] = job
-        return job_id, {
+        metadata: dict[str, Any] = {
             "transpilation": {
                 "sdk": "qiskit",
                 "sdk_version": version("qiskit"),
@@ -277,6 +331,11 @@ class IBMRuntimeAdapter(LiveAdapterBase):
                 },
             }
         }
+        if self._classified_instances is not None:
+            # Audit trail: the instance(s) this submission was classified
+            # free against, with the plan name as recorded by the provider.
+            metadata["ibm_instances"] = self._classified_instances
+        return job_id, metadata
 
     async def _provider_status(self, job: Any) -> JobStatus:
         raw = job.status()
