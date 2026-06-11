@@ -22,14 +22,22 @@ task + per shot. Both budgets are capped independently, per calendar month
 (UTC):
 
 ```toml
-# ~/.config/veriqant/limits.toml  (or repo-local ./veriqant-limits.toml,
-# which takes precedence)
+# ~/.config/veriqant/limits.toml  (user-level: the only file that grants budget)
 [budgets]
 monthly_monetary_cap = 0.00       # e.g. 5.00 to allow ~$5 of Braket jobs
 currency = "USD"
 monthly_qpu_seconds_cap = 0.0     # e.g. 300.0 = half the IBM open quota
 allow_unknown_cost = false        # DANGEROUS — see below
 ```
+
+A repo-local `./veriqant-limits.toml` may additionally **tighten** the
+user-level limits for one project — lower a cap, or keep
+`allow_unknown_cost` off — but can never loosen them: caps it declares take
+the elementwise minimum, `allow_unknown_cost` can only be forced off, and
+the currency cannot change. Budgets belong to you, not to a repository, so
+`cd`-ing into an untrusted repo that ships a generous limits file cannot
+weaken your caps (and without a user-level file, a repo-local file grants
+nothing at all).
 
 Caps live only in config files, never in CLI flags: a typo'd flag must not be
 able to raise a limit. A malformed limits file is a hard error, never a
