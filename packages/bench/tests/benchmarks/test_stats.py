@@ -62,3 +62,36 @@ def test_degrade_zero_width_ci() -> None:
     merged = degrade_zero_width_ci(prior, 0.5, 0.5)
     assert merged is not None and not merged.reliable
     assert merged.issues == ["fit.did_not_converge", ZERO_WIDTH_CI_ISSUE]
+
+
+def test_flag_point_outside_ci() -> None:
+    """The published interval is the true percentile interval; a point
+    estimate outside it is flagged, never swallowed by silent widening."""
+    from veriqant_bench.benchmarks.stats import POINT_OUTSIDE_CI_ISSUE, flag_point_outside_ci
+    from veriqant_bench.qpr._generated import MetricQuality
+
+    keep = MetricQuality(reliable=True, issues=None)
+    assert flag_point_outside_ci(keep, 0.15, 0.1, 0.2) is keep
+    assert flag_point_outside_ci(None, 0.1, 0.1, 0.2) is None  # edge counts as inside
+
+    flagged = flag_point_outside_ci(keep, 0.25, 0.1, 0.2)
+    assert flagged is not None and not flagged.reliable
+    assert flagged.issues == [POINT_OUTSIDE_CI_ISSUE]
+
+
+def test_bootstrap_resamples_default_is_1000() -> None:
+    """Percentile tails of a 95% CI need more than 200 resamples to be
+    stable; 1000 is the revised package-wide default."""
+    import inspect
+
+    from veriqant_bench.benchmarks.mirror import MirrorParams
+    from veriqant_bench.benchmarks.qv import QVParams
+    from veriqant_bench.benchmarks.rb import RBParams
+    from veriqant_bench.benchmarks.stats import bootstrap_mean_ci
+    from veriqant_bench.benchmarks.throughput import ThroughputParams
+
+    assert inspect.signature(bootstrap_mean_ci).parameters["n_resamples"].default == 1000
+    assert RBParams.model_fields["bootstrap_resamples"].default == 1000
+    assert MirrorParams.model_fields["bootstrap_resamples"].default == 1000
+    assert QVParams.model_fields["bootstrap_resamples"].default == 1000
+    assert ThroughputParams.model_fields["bootstrap_resamples"].default == 1000

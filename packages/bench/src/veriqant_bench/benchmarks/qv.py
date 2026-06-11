@@ -38,7 +38,7 @@ from qiskit.quantum_info import Statevector, random_unitary
 from veriqant_bench.qpr._generated import Metric, MetricQuality, MetricStatistics
 
 from .base import AnalysisResult, Benchmark, GeneratedCircuit
-from .stats import bootstrap_mean_ci, degrade_zero_width_ci
+from .stats import bootstrap_mean_ci, degrade_zero_width_ci, flag_point_outside_ci
 
 CONFIDENCE = 0.95
 HEAVY_THRESHOLD = 2.0 / 3.0
@@ -58,7 +58,7 @@ class QVParams(BaseModel):
     """Circuit widths m (qubits = depth = m) to test."""
     circuits_per_width: int = Field(default=50, ge=5)
     """Random circuits per width. >= 100 for publication-grade claims."""
-    bootstrap_resamples: int = Field(default=200, ge=50)
+    bootstrap_resamples: int = Field(default=1000, ge=50)
 
     @field_validator("widths")
     @classmethod
@@ -186,7 +186,7 @@ class QuantumVolume(Benchmark[QVParams]):
                 issues=list(count_issues) or None,
             )
             sample_size = n * shots
-            ci_lower, ci_upper = min(lower, mean), max(upper, mean)
+            ci_lower, ci_upper = lower, upper  # true interval, never widened
             width_metrics.append(
                 Metric(
                     name=f"heavy_output_probability.width_{width}",
@@ -200,7 +200,12 @@ class QuantumVolume(Benchmark[QVParams]):
                         std_error=std_error,
                         estimator="mean_bootstrap_percentile",
                     ),
-                    quality=degrade_zero_width_ci(quality, ci_lower, ci_upper),
+                    quality=flag_point_outside_ci(
+                        degrade_zero_width_ci(quality, ci_lower, ci_upper),
+                        mean,
+                        ci_lower,
+                        ci_upper,
+                    ),
                 )
             )
             width_metrics.append(

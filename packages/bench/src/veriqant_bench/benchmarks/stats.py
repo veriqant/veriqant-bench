@@ -16,6 +16,7 @@ from veriqant_bench.qpr._generated import MetricQuality
 
 BOOTSTRAP_SEED = 271828
 ZERO_WIDTH_CI_ISSUE = "statistics.zero_width_ci"
+POINT_OUTSIDE_CI_ISSUE = "statistics.point_outside_bootstrap_ci"
 
 
 def degrade_zero_width_ci(
@@ -32,6 +33,21 @@ def degrade_zero_width_ci(
         return quality
     issues = list(quality.issues or []) if quality is not None else []
     issues.append(ZERO_WIDTH_CI_ISSUE)
+    return MetricQuality(reliable=False, issues=issues)
+
+
+def flag_point_outside_ci(
+    quality: MetricQuality | None, value: float, ci_lower: float, ci_upper: float
+) -> MetricQuality | None:
+    """The published interval is the bootstrap percentile interval as
+    computed — never silently widened to swallow the point estimate. A
+    point estimate outside its own resampling interval is an estimator-bias
+    signal: the metric is published with the true interval, reliable=false,
+    and this machine-readable issue (the verifier additionally warns)."""
+    if ci_lower <= value <= ci_upper:
+        return quality
+    issues = list(quality.issues or []) if quality is not None else []
+    issues.append(POINT_OUTSIDE_CI_ISSUE)
     return MetricQuality(reliable=False, issues=issues)
 
 
@@ -62,7 +78,7 @@ def percentile_ci(samples: Sequence[float], confidence: float) -> tuple[float, f
 def bootstrap_mean_ci(
     values: Sequence[float],
     *,
-    n_resamples: int = 200,
+    n_resamples: int = 1000,
     confidence: float = 0.95,
     rng: np.random.Generator | None = None,
     transform: Callable[[float], float] | None = None,

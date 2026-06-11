@@ -26,7 +26,7 @@ from qiskit.quantum_info import Statevector
 from veriqant_bench.qpr._generated import Metric, MetricStatistics
 
 from .base import AnalysisResult, Benchmark, GeneratedCircuit
-from .stats import bootstrap_mean_ci, degrade_zero_width_ci
+from .stats import bootstrap_mean_ci, degrade_zero_width_ci, flag_point_outside_ci
 
 CONFIDENCE = 0.95
 
@@ -46,7 +46,7 @@ class MirrorParams(BaseModel):
     samples_per_depth: int = Field(default=10, ge=2)
     two_qubit_density: float = Field(default=0.5, ge=0.0, le=1.0)
     """Probability that an available qubit pair gets a CX in a given layer."""
-    bootstrap_resamples: int = Field(default=200, ge=50)
+    bootstrap_resamples: int = Field(default=1000, ge=50)
 
     @field_validator("qubits")
     @classmethod
@@ -209,7 +209,7 @@ class MirrorCircuits(Benchmark[MirrorParams]):
         params: MirrorParams,
     ) -> Metric:
         lower, upper, std_error = ci
-        ci_lower, ci_upper = min(lower, value), max(upper, value)
+        ci_lower, ci_upper = lower, upper  # true interval, never widened
         return Metric(
             name=name,
             value=value,
@@ -223,5 +223,7 @@ class MirrorCircuits(Benchmark[MirrorParams]):
                 std_error=std_error,
                 estimator="mean_bootstrap_percentile",
             ),
-            quality=degrade_zero_width_ci(None, ci_lower, ci_upper),
+            quality=flag_point_outside_ci(
+                degrade_zero_width_ci(None, ci_lower, ci_upper), value, ci_lower, ci_upper
+            ),
         )

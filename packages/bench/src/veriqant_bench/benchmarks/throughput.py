@@ -46,7 +46,12 @@ from .base import (
     GeneratedCircuit,
 )
 from .mirror import MirrorCircuits, MirrorParams
-from .stats import bootstrap_rng, degrade_zero_width_ci, percentile_ci
+from .stats import (
+    bootstrap_rng,
+    degrade_zero_width_ci,
+    flag_point_outside_ci,
+    percentile_ci,
+)
 
 CONFIDENCE = 0.95
 SIMULATOR_TIMING_ISSUE = "timing.simulator_not_comparable_to_hardware"
@@ -65,7 +70,7 @@ class ThroughputParams(BaseModel):
     """Circuits per batch (B)."""
     batches: int = Field(default=5, ge=3)
     """Sequential batch repetitions (R); >=3 for meaningful spread stats."""
-    bootstrap_resamples: int = Field(default=200, ge=50)
+    bootstrap_resamples: int = Field(default=1000, ge=50)
 
     @property
     def template_layers(self) -> int:
@@ -187,7 +192,7 @@ class Throughput(Benchmark[ThroughputParams]):
         def metric(name: str, values: list[float], unit: str) -> Metric:
             value = float(np.median(values))
             lower, upper, std_error = self._bootstrap_median(values, params)
-            ci_lower, ci_upper = min(lower, value), max(upper, value)
+            ci_lower, ci_upper = lower, upper  # true interval, never widened
             return Metric(
                 name=name,
                 value=value,
@@ -200,7 +205,12 @@ class Throughput(Benchmark[ThroughputParams]):
                     std_error=std_error,
                     estimator="median_over_batches_bootstrap",
                 ),
-                quality=degrade_zero_width_ci(quality, ci_lower, ci_upper),
+                quality=flag_point_outside_ci(
+                    degrade_zero_width_ci(quality, ci_lower, ci_upper),
+                    value,
+                    ci_lower,
+                    ci_upper,
+                ),
             )
 
         quartile_1, quartile_3 = np.quantile(round_trips, [0.25, 0.75])

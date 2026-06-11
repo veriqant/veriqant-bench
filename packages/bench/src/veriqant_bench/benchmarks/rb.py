@@ -29,7 +29,12 @@ from scipy.optimize import curve_fit
 from veriqant_bench.qpr._generated import Metric, MetricQuality, MetricStatistics
 
 from .base import AnalysisResult, Benchmark, GeneratedCircuit
-from .stats import bootstrap_rng, degrade_zero_width_ci, percentile_ci
+from .stats import (
+    bootstrap_rng,
+    degrade_zero_width_ci,
+    flag_point_outside_ci,
+    percentile_ci,
+)
 
 CONFIDENCE = 0.95
 R_SQUARED_THRESHOLD = 0.9
@@ -50,7 +55,7 @@ class RBParams(BaseModel):
     """Clifford sequence lengths (need >=3 points to identify A, alpha, B)."""
     samples_per_length: int = Field(default=10, ge=2)
     """Independent random sequences per length (bootstrap needs >=2)."""
-    bootstrap_resamples: int = Field(default=200, ge=50)
+    bootstrap_resamples: int = Field(default=1000, ge=50)
 
     @field_validator("qubits")
     @classmethod
@@ -226,7 +231,9 @@ class RandomizedBenchmarking(Benchmark[RBParams]):
         estimator = "rb_exponential_fit_bootstrap"
 
         def metric(name: str, value: float, ci: tuple[float, float], std: float) -> Metric:
-            ci_lower, ci_upper = min(ci[0], value), max(ci[1], value)
+            # The true percentile interval — never widened to swallow the
+            # point estimate; disagreement is flagged instead.
+            ci_lower, ci_upper = ci
             return Metric(
                 name=name,
                 value=value,
@@ -240,7 +247,12 @@ class RandomizedBenchmarking(Benchmark[RBParams]):
                     std_error=std,
                     estimator=estimator,
                 ),
-                quality=degrade_zero_width_ci(quality, ci_lower, ci_upper),
+                quality=flag_point_outside_ci(
+                    degrade_zero_width_ci(quality, ci_lower, ci_upper),
+                    value,
+                    ci_lower,
+                    ci_upper,
+                ),
             )
 
         return AnalysisResult(
