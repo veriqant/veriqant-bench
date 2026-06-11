@@ -10,6 +10,7 @@ no provider SDKs present.
 from .base import (
     DEFAULT_JOBS_DIR,
     DEFAULT_LIVE_TIMEOUT_SECONDS,
+    RESUME_KWARG_ALLOWLIST,
     LiveAdapterBase,
 )
 from .gate import (
@@ -36,6 +37,7 @@ __all__ = [
     "LOCK_BACKEND",
     "PRICE_TABLE_REFUSE_AFTER_DAYS",
     "PRICE_TABLE_WARN_AFTER_DAYS",
+    "RESUME_KWARG_ALLOWLIST",
     "USER_CONFIG_DIR",
     "USER_LIMITS_PATH",
     "LimitsFileError",

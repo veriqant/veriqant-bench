@@ -106,6 +106,74 @@ def test_jobs_resume_rejects_a_non_handle_file(runner: CliRunner, tmp_path: Path
     assert "not a veriqant-bench handle file" in result.output
 
 
+@pytest.mark.parametrize("payload", ["{truncated", json.dumps([1, 2, 3])])
+def test_jobs_resume_rejects_unparseable_handle_files_cleanly(
+    runner: CliRunner, tmp_path: Path, payload: str
+) -> None:
+    # Non-JSON and JSON-but-not-an-object must both be the clean refusal,
+    # never a raw json traceback.
+    bogus = tmp_path / "garbage.json"
+    bogus.write_text(payload, encoding="utf-8")
+    result = runner.invoke(main, ["jobs", "resume", str(bogus)])
+    assert result.exit_code != 0
+    assert "not a veriqant-bench handle file" in result.output
+    assert result.exception is None or isinstance(result.exception, SystemExit)
+
+
+def test_jobs_resume_refuses_hostile_adapter_kwargs(
+    runner: CliRunner, tmp_path: Path, monkeypatch: pytest.MonkeyPatch
+) -> None:
+    # A handle file is producer-controlled input: kwargs outside the resume
+    # allowlist (here: trying to flip allow_live and redirect the ledger)
+    # must be refused BEFORE any adapter is constructed.
+    hostile = tmp_path / "hostile.json"
+    hostile.write_text(
+        json.dumps(
+            {
+                "adapter": "ibm_runtime",
+                "adapter_kwargs": {
+                    "backend_name": "ibm_fake",
+                    "allow_live": True,
+                    "ledger": "/tmp/elsewhere.jsonl",
+                },
+                "handle": {},
+            }
+        ),
+        encoding="utf-8",
+    )
+
+    def must_not_construct(name: str, **kwargs: Any) -> Any:
+        raise AssertionError("get_adapter must not be reached with hostile kwargs")
+
+    monkeypatch.setattr(cli, "get_adapter", must_not_construct)
+    result = runner.invoke(main, ["jobs", "resume", str(hostile)])
+    assert result.exit_code != 0
+    assert "allow_live" in result.output and "ledger" in result.output
+    assert result.exception is None or isinstance(result.exception, SystemExit)
+
+
+@pytest.mark.parametrize(
+    "kwargs",
+    [
+        pytest.param({"backend_name": {"nested": "object"}}, id="non-string-value"),
+        pytest.param("not-a-dict", id="non-dict-kwargs"),
+    ],
+)
+def test_jobs_resume_refuses_malformed_adapter_kwargs(
+    runner: CliRunner, tmp_path: Path, monkeypatch: pytest.MonkeyPatch, kwargs: Any
+) -> None:
+    bogus = tmp_path / "weird.json"
+    bogus.write_text(
+        json.dumps({"adapter": "ibm_runtime", "adapter_kwargs": kwargs}), encoding="utf-8"
+    )
+    monkeypatch.setattr(
+        cli, "get_adapter", lambda name, **kw: pytest.fail("adapter must not be constructed")
+    )
+    result = runner.invoke(main, ["jobs", "resume", str(bogus)])
+    assert result.exit_code != 0
+    assert result.exception is None or isinstance(result.exception, SystemExit)
+
+
 def test_probe_skips_smoke_on_live_adapter_without_live(
     runner: CliRunner, tmp_path: Path, monkeypatch: pytest.MonkeyPatch
 ) -> None:

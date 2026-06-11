@@ -126,6 +126,19 @@ async def test_resume_refuses_missing_benchmark_context(tmp_path: Path) -> None:
         await resume_run(submitter.handle_file(handle), submitter, timeout=10.0)
 
 
+async def test_resume_refuses_an_unparseable_handle_file(tmp_path: Path) -> None:
+    # Library path symmetry with the CLI: a file that is not JSON (or not a
+    # JSON object) is a typed ResumeError, not a raw json traceback.
+    submitter, _ = make_ibm_adapter(tmp_path)
+    garbage = tmp_path / "garbage.json"
+    garbage.write_text("{truncated", encoding="utf-8")
+    with pytest.raises(ResumeError, match="not a veriqant-bench handle file"):
+        await resume_run(garbage, submitter, timeout=10.0)
+    garbage.write_text(json.dumps([1, 2, 3]), encoding="utf-8")
+    with pytest.raises(ResumeError, match="not a veriqant-bench handle file"):
+        await resume_run(garbage, submitter, timeout=10.0)
+
+
 async def test_resume_refuses_adapter_mismatch(tmp_path: Path) -> None:
     submitter, _ = make_ibm_adapter(tmp_path)
     benchmark = RandomizedBenchmarking()

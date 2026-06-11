@@ -53,6 +53,13 @@ from .limits import USER_CONFIG_DIR, SpendLimits, load_limits
 
 DEFAULT_JOBS_DIR = USER_CONFIG_DIR / "jobs"
 
+# The closed set of constructor kwargs a handle file may carry back into
+# get_adapter() at resume time, with string values only. A handle file is
+# producer-controlled input, so resume must never splat it blindly: safety
+# kwargs (allow_live, limits, ledger, jobs_dir) stay out by construction.
+# _resume_kwargs() implementations must stay within this set.
+RESUME_KWARG_ALLOWLIST = frozenset({"backend_name", "device_arn"})
+
 POLL_INITIAL_SECONDS = 2.0
 POLL_FACTOR = 1.6
 POLL_MAX_SECONDS = 60.0
@@ -149,7 +156,9 @@ class LiveAdapterBase(AwaitResultMixin, ABC):
 
     def _resume_kwargs(self) -> dict[str, Any]:
         """Constructor kwargs needed to rebuild this adapter at resume time
-        (e.g. the backend name / device ARN)."""
+        (e.g. the backend name / device ARN). Keys must stay within
+        RESUME_KWARG_ALLOWLIST and values must be strings — the CLI refuses
+        handle files carrying anything else."""
         return {}
 
     def _auth_exception_types(self) -> tuple[type[BaseException], ...]:

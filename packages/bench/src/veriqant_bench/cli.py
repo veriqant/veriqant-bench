@@ -627,11 +627,34 @@ def jobs_resume(handle_file: Path, out: Path, timeout: float) -> None:
 
     Resuming polls and fetches results; it can never submit anything, so it
     needs credentials but not --live or the cost gate."""
-    document = json.loads(handle_file.read_text(encoding="utf-8"))
+    from veriqant_bench.live import RESUME_KWARG_ALLOWLIST
+
+    try:
+        document = json.loads(handle_file.read_text(encoding="utf-8"))
+    except (json.JSONDecodeError, UnicodeDecodeError) as exc:
+        raise click.ClickException(
+            f"{handle_file}: not a veriqant-bench handle file ({exc})"
+        ) from exc
+    if not isinstance(document, dict):
+        raise click.ClickException(f"{handle_file}: not a veriqant-bench handle file")
     adapter_name = document.get("adapter")
     if not isinstance(adapter_name, str):
         raise click.ClickException(f"{handle_file}: not a veriqant-bench handle file")
+    # A handle file is producer-controlled input: never splat its kwargs
+    # blindly into an adapter constructor (it could try allow_live=True or
+    # redirect limits/ledger/jobs_dir).
     kwargs = document.get("adapter_kwargs", {})
+    if not isinstance(kwargs, dict):
+        raise click.ClickException(f"{handle_file}: adapter_kwargs must be an object")
+    rejected = sorted(
+        key for key, value in kwargs.items()
+        if key not in RESUME_KWARG_ALLOWLIST or not isinstance(value, str)
+    )
+    if rejected:
+        raise click.ClickException(
+            f"{handle_file}: refusing adapter_kwargs {rejected}; a handle file may "
+            f"only carry {sorted(RESUME_KWARG_ALLOWLIST)} with string values"
+        )
     try:
         adapter = get_adapter(adapter_name, **kwargs)
     except AdapterUnavailableError as exc:

@@ -116,7 +116,12 @@ async def resume_run(
     """
     from .registry import get as get_benchmark
 
-    document = json.loads(handle_file.read_text(encoding="utf-8"))
+    try:
+        document = json.loads(handle_file.read_text(encoding="utf-8"))
+    except (json.JSONDecodeError, UnicodeDecodeError) as exc:
+        raise ResumeError(f"{handle_file}: not a veriqant-bench handle file ({exc})") from exc
+    if not isinstance(document, dict):
+        raise ResumeError(f"{handle_file}: not a veriqant-bench handle file")
     spec = document.get("spec", {})
     context = spec.get("metadata", {})
     if "benchmark" not in context:

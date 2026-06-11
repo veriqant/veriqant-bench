@@ -93,7 +93,9 @@ class DummyLiveAdapter(LiveAdapterBase):
         return "dummy-device"
 
     def _resume_kwargs(self) -> dict[str, Any]:
-        return {"flavor": "test"}
+        # Real adapters must stay within RESUME_KWARG_ALLOWLIST; this dummy
+        # does too, so the persisted handle files honor the same contract.
+        return {"backend_name": "dummy-device"}
 
     def _auth_exception_types(self) -> tuple[type[BaseException], ...]:
         return (DummyAuthError,)
@@ -212,7 +214,7 @@ async def test_submit_persists_a_resumable_handle_file(
     handle = await adapter.submit(SPEC)
     document = json.loads(adapter.handle_file(handle).read_text(encoding="utf-8"))
     assert document["adapter"] == "dummy_live"
-    assert document["adapter_kwargs"] == {"flavor": "test"}
+    assert document["adapter_kwargs"] == {"backend_name": "dummy-device"}
     assert document["spec"]["circuits"] == SPEC.circuits
     assert document["ledger_entry_id"]
     assert document["calibration_at_submit"]["data"] == {"t1_us": 100.0}
