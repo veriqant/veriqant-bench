@@ -58,7 +58,10 @@ class SpendLimits(BaseModel):
 
     monthly_monetary_cap: Decimal = Field(default=Decimal("0.00"), ge=0)
     currency: str = Field(default="USD", pattern="^[A-Z]{3}$")
-    monthly_qpu_seconds_cap: float = Field(default=0.0, ge=0.0)
+    # allow_inf_nan=False keeps the quota cap symmetric with the monetary
+    # Decimal (which rejects non-finite values): `inf` would silently
+    # disable the binding budget on monetarily-free plans.
+    monthly_qpu_seconds_cap: float = Field(default=0.0, ge=0.0, allow_inf_nan=False)
     allow_unknown_cost: bool = False
     """Permit submissions whose cost cannot be estimated. Dangerous: an
     unknown cost cannot be charged against any budget before it is incurred.

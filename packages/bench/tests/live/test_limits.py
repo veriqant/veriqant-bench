@@ -5,6 +5,7 @@ from __future__ import annotations
 from decimal import Decimal
 from pathlib import Path
 
+import pydantic
 import pytest
 
 from veriqant_bench.live import LimitsFileError, SpendLimits, load_limits
@@ -179,6 +180,32 @@ def test_negative_caps_rejected(isolated_user_config: Path, tmp_path: Path) -> N
     local.write_text("[budgets]\nmonthly_qpu_seconds_cap = -1.0\n", encoding="utf-8")
     with pytest.raises(LimitsFileError):
         load_limits(cwd=tmp_path)
+
+
+@pytest.mark.parametrize("literal", ["inf", "nan"])
+def test_non_finite_qpu_cap_in_a_limits_file_is_rejected(
+    isolated_user_config: Path, tmp_path: Path, literal: str
+) -> None:
+    # `monthly_qpu_seconds_cap = inf` would disable the quota budget — the
+    # binding budget on the monetarily-free IBM open plan.
+    isolated_user_config.parent.mkdir(parents=True)
+    isolated_user_config.write_text(
+        f"[budgets]\nmonthly_qpu_seconds_cap = {literal}\n", encoding="utf-8"
+    )
+    with pytest.raises(LimitsFileError, match="invalid \\[budgets\\]"):
+        load_limits(cwd=tmp_path)
+
+
+@pytest.mark.parametrize("value", [float("inf"), float("nan")])
+def test_non_finite_qpu_cap_rejected_at_the_model(value: float) -> None:
+    with pytest.raises(pydantic.ValidationError):
+        SpendLimits(monthly_qpu_seconds_cap=value)
+
+
+def test_non_finite_monetary_cap_rejected_at_the_model() -> None:
+    # The quota cap's finite enforcement must stay symmetric with money's.
+    with pytest.raises(pydantic.ValidationError):
+        SpendLimits(monthly_monetary_cap=Decimal("Infinity"))
 
 
 def test_limits_model_is_frozen() -> None:
