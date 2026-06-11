@@ -58,6 +58,11 @@ hashing is a major bump.
 
 - UTF-8 JSON. Producers MUST omit absent optional fields entirely — `null` is
   never serialized (the schema accepts absent fields, not null values).
+  Practical note for producers using the Python SDK: serialize with
+  `veriqant_bench.qpr.dumps_qpr()` / `to_json_dict()`. Pydantic's own
+  `model_dump_json()` emits `null` for absent optional fields and produces a
+  record that fails schema validation; the verifier recognizes this case and
+  says so (`hint.null_fields`).
 - Object keys not defined by the schema are rejected (`additionalProperties:
   false`) except inside designated free-form blobs (`benchmark.parameters`,
   `execution.transpilation.settings`, `device.calibration_snapshot`,

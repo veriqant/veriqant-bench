@@ -62,6 +62,8 @@ def verify_qpr_document(document: Mapping[str, Any]) -> VerificationReport:
         )
         return report
 
+    _check_no_nulls(document, report)
+
     try:
         record = QuantumPerformanceRecord.model_validate(document)
     except pydantic.ValidationError as exc:
@@ -93,6 +95,57 @@ def verify_qpr_file(path: Path | str) -> VerificationReport:
         report.add("error", "file.not_object", "top-level JSON value is not an object")
         return report
     return verify_qpr_document(document)
+
+
+# Free-form blobs where provider payloads may legitimately contain nulls.
+# Everywhere else the schema requires absent fields, never null.
+_FREE_FORM_PREFIXES: tuple[tuple[str, ...], ...] = (
+    ("benchmark", "parameters"),
+    ("execution", "transpilation", "settings"),
+    ("device", "calibration_snapshot"),
+    ("circuits", "*", "metadata"),
+    ("results", "analysis"),
+)
+
+
+def _in_free_form(path: tuple[str, ...]) -> bool:
+    return any(
+        len(path) >= len(prefix)
+        and all(part == "*" or part == path[i] for i, part in enumerate(prefix))
+        for prefix in _FREE_FORM_PREFIXES
+    )
+
+
+def _check_no_nulls(document: Mapping[str, Any], report: VerificationReport) -> None:
+    """JSON nulls outside the free-form blobs violate the spec (absent,
+    never null) even though the lenient generated models accept None — and
+    they break the seal, since the producer hashed the null-free form. The
+    classic cause is serializing with pydantic's model_dump_json(); name
+    the fix instead of leaving only a hash mismatch."""
+    null_paths: list[str] = []
+
+    def walk(value: Any, path: tuple[str, ...]) -> None:
+        if len(null_paths) >= 5 or _in_free_form(path):
+            return
+        if value is None:
+            null_paths.append(".".join(path) or "<root>")
+        elif isinstance(value, Mapping):
+            for key, item in value.items():
+                walk(item, (*path, str(key)))
+        elif isinstance(value, list):
+            for index, item in enumerate(value):
+                walk(item, (*path, str(index)))
+
+    walk(dict(document), ())
+    if null_paths:
+        report.add(
+            "error",
+            "schema.null_values",
+            f"JSON null at {', '.join(null_paths)}: the spec requires absent "
+            "optional fields, never null. If this record was produced with "
+            "pydantic's model_dump_json(), use veriqant_bench.qpr.dumps_qpr() "
+            "(or to_json_dict()) instead — see QPR-SPEC §Serialization",
+        )
 
 
 def _check_circuits(record: QuantumPerformanceRecord, report: VerificationReport) -> None:

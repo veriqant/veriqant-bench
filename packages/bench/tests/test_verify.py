@@ -155,3 +155,20 @@ def test_verify_file_not_object(tmp_path: Path) -> None:
 def test_issue_str_format(document: dict[str, Any]) -> None:
     report = verify_qpr_document(document)
     assert str(report.issues[0]) == "[warning] integrity.unsigned: record carries no signature"
+
+
+def test_model_dump_json_nulls_get_a_targeted_hint(record) -> None:
+    """The classic producer mistake: pydantic's model_dump_json() writes
+    nulls for absent optional fields. The verifier fails the record on
+    schema grounds AND names the fix (dumps_qpr / to_json_dict)."""
+    import json
+
+    from veriqant_bench.qpr import verify_qpr_document
+
+    document = json.loads(record.model_dump_json())  # nulls included
+    report = verify_qpr_document(document)
+    assert not report.ok
+    hints = [issue for issue in report.issues if issue.code == "schema.null_values"]
+    assert len(hints) == 1
+    assert "dumps_qpr" in hints[0].message
+    assert "model_dump_json" in hints[0].message
