@@ -45,9 +45,8 @@ def test_bootstrap_rng_is_fixed_seeded() -> None:
 def test_degrade_zero_width_ci() -> None:
     """Zero-width intervals are degenerate evidence: never reliable,
     machine-readably flagged, with existing issues preserved."""
-    from veriqant_bench.qpr._generated import MetricQuality
-
     from veriqant_bench.benchmarks.stats import ZERO_WIDTH_CI_ISSUE, degrade_zero_width_ci
+    from veriqant_bench.qpr._generated import MetricQuality
 
     # Non-degenerate intervals pass through untouched (including None).
     assert degrade_zero_width_ci(None, 0.1, 0.2) is None
