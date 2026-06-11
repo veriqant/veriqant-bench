@@ -206,6 +206,7 @@ class LiveAdapterBase(AwaitResultMixin, ABC):
             spec,
             submit_metadata,
             ledger_entry_id=ledger_entry_id,
+            estimate=estimate,
             calibration=calibration,
         )
         return handle
@@ -225,6 +226,16 @@ class LiveAdapterBase(AwaitResultMixin, ABC):
         actual_seconds = result.metadata.get("actual_qpu_seconds")
         if isinstance(ledger_entry_id, str) and actual_seconds is not None:
             self._ledger.record_actuals(ledger_entry_id, qpu_seconds=float(actual_seconds))
+        # Spend accountability into the result metadata; the runner promotes
+        # it to the structural execution.cost block of the sealed QPR. Read
+        # from the handle file, never from instance state, so a resumed run
+        # keeps its cross-reference.
+        cost_info = document.get("cost")
+        if isinstance(ledger_entry_id, str) and isinstance(cost_info, dict):
+            cost_block: dict[str, Any] = {"ledger_entry_id": ledger_entry_id, **cost_info}
+            if actual_seconds is not None:
+                cost_block["actual_qpu_seconds"] = float(actual_seconds)
+            result.metadata["cost"] = cost_block
         return result
 
     async def await_result(
@@ -286,6 +297,7 @@ class LiveAdapterBase(AwaitResultMixin, ABC):
         submit_metadata: dict[str, Any],
         *,
         ledger_entry_id: str,
+        estimate: CostEstimate,
         calibration: CalibrationSnapshot | None,
     ) -> None:
         self._jobs_dir.mkdir(parents=True, exist_ok=True)
@@ -296,6 +308,11 @@ class LiveAdapterBase(AwaitResultMixin, ABC):
             "spec": spec.model_dump(mode="json"),
             "submit_metadata": submit_metadata,
             "ledger_entry_id": ledger_entry_id,
+            "cost": {
+                "estimated_amount": str(estimate.amount),
+                "currency": estimate.currency,
+                "estimated_qpu_seconds": estimate.qpu_seconds or 0.0,
+            },
             "calibration_at_submit": (
                 None if calibration is None else calibration.model_dump(mode="json")
             ),

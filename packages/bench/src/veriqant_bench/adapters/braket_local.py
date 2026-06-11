@@ -58,13 +58,18 @@ _MEASURE_ONE_RE = re.compile(r"^\s*\w+\[(\d+)\]\s*=\s*measure\s+(\w+)\[(\d+)\]\s
 _DYNAMIC_RE = re.compile(r"^\s*(if|while|for|reset|def|return)\b")
 
 
-def convert_qasm3_to_braket(source: str) -> tuple[str, int]:
+def convert_qasm3_to_braket(
+    source: str, *, result_pragma: bool = True, emit_measure_all: bool = False
+) -> tuple[str, int]:
     """Convert an OpenQASM 3 circuit to Braket's dialect.
 
-    Returns (converted source with a probability result pragma, qubit count).
+    Returns (converted source, qubit count). By default the output carries a
+    probability result pragma for the local exact-probability path; live
+    device submission (braket_aws) instead re-emits an explicit final
+    measurement of all qubits (result_pragma=False, emit_measure_all=True).
     Raises SubmissionError for constructs the conversion cannot represent
-    faithfully — notably partial measurement, since the adapter samples the
-    distribution over *all* qubits.
+    faithfully — notably partial measurement, since both paths sample over
+    *all* qubits.
     """
     out_lines: list[str] = []
     num_qubits: int | None = None
@@ -118,7 +123,11 @@ def convert_qasm3_to_braket(source: str) -> tuple[str, int]:
             f"of {sorted(measured)} out of {num_qubits} qubits is not supported"
         )
 
-    out_lines.append("#pragma braket result probability")
+    if emit_measure_all:
+        out_lines.append(f"bit[{num_qubits}] result_bits;")
+        out_lines.append(f"result_bits = measure {register};")
+    if result_pragma:
+        out_lines.append("#pragma braket result probability")
     return "\n".join(out_lines) + "\n", num_qubits
 
 

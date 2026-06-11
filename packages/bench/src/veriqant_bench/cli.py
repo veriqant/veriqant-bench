@@ -15,10 +15,19 @@ import click
 import pydantic
 
 from . import __version__
-from .adapters import AdapterUnavailableError, JobSpec, NoiseSpec, QPUAdapter, list_adapters
+from .adapters import (
+    AdapterUnavailableError,
+    JobSpec,
+    LiveRefusedError,
+    NoiseSpec,
+    QPUAdapter,
+    list_adapters,
+)
 from .adapters import get as get_adapter
 from .benchmarks import (
     BenchmarkUnavailableError,
+    ResumeError,
+    resume_run,
     run_benchmark,
     write_verified_qpr,
 )
@@ -97,7 +106,9 @@ async def _smoke_run(adapter: QPUAdapter, shots: int) -> dict[str, int]:
     return result.counts[0]
 
 
-ADAPTER_ALIASES = {"aer": "aer_simulator", "braket": "braket_local"}
+ADAPTER_ALIASES = {"aer": "aer_simulator", "braket": "braket_local", "ibm": "ibm_runtime"}
+LIVE_ADAPTERS = {"ibm_runtime", "braket_aws"}
+LIVE_RUN_TIMEOUT_SECONDS = 14_400.0  # live queues run minutes-to-hours
 
 
 def _int_list(_ctx: click.Context, _param: click.Parameter, value: str) -> list[int]:
@@ -107,9 +118,59 @@ def _int_list(_ctx: click.Context, _param: click.Parameter, value: str) -> list[
         raise click.BadParameter(f"expected comma-separated integers, got {value!r}") from exc
 
 
-def _build_adapter(name: str, noise_file: Path | None) -> QPUAdapter:
+def _live_options(command: Any) -> Any:
+    """--live / --device on every run command. --live is the ONLY way the
+    CLI sets allow_live: no environment variable can enable live mode."""
+    command = click.option(
+        "--device",
+        default=None,
+        help="Live device: IBM backend name (omitted -> least busy) or Braket device ARN.",
+    )(command)
+    return click.option(
+        "--live",
+        is_flag=True,
+        default=False,
+        help="Enable live (paid/quota) execution; still requires credentials "
+        "and a passing cost gate. See docs/LIVE.md.",
+    )(command)
+
+
+def _build_adapter(
+    name: str,
+    noise_file: Path | None,
+    *,
+    live: bool = False,
+    device: str | None = None,
+    executing: bool = False,
+) -> QPUAdapter:
     resolved = ADAPTER_ALIASES.get(name, name)
     kwargs: dict[str, Any] = {}
+    if resolved in LIVE_ADAPTERS:
+        # Layer 1 of the live opt-in: only this flag sets allow_live; the
+        # adapter still demands credentials and a passing cost gate.
+        kwargs["allow_live"] = live
+        if executing and not live:
+            # Refuse before anything touches the network: a benchmark run on
+            # a live adapter without --live can never proceed.
+            raise click.ClickException(
+                f"refusing to run a benchmark on live adapter '{resolved}' without "
+                "--live (credentials and the cost gate still apply; see docs/LIVE.md)"
+            )
+        if resolved == "ibm_runtime":
+            kwargs["backend_name"] = device
+        if resolved == "braket_aws":
+            if device is None:
+                raise click.ClickException("braket_aws requires --device <device-arn>")
+            kwargs["device_arn"] = device
+    else:
+        if live:
+            raise click.ClickException(
+                f"--live has no meaning for the '{resolved}' adapter (it is local)"
+            )
+        if device is not None:
+            raise click.ClickException(
+                f"--device has no meaning for the '{resolved}' adapter (it is local)"
+            )
     if noise_file is not None:
         if resolved != "aer_simulator":
             raise click.ClickException(
@@ -121,7 +182,7 @@ def _build_adapter(name: str, noise_file: Path | None) -> QPUAdapter:
             raise click.ClickException(f"invalid noise spec {noise_file}: {exc}") from exc
     try:
         return get_adapter(resolved, **kwargs)
-    except AdapterUnavailableError as exc:
+    except (AdapterUnavailableError, LiveRefusedError) as exc:
         raise click.ClickException(str(exc)) from exc
 
 
@@ -139,6 +200,8 @@ def _execute_benchmark(
     seed: int,
     shots: int,
     out: Path,
+    *,
+    live: bool = False,
 ) -> None:
     try:
         benchmark = get_benchmark(benchmark_name)
@@ -148,7 +211,13 @@ def _execute_benchmark(
         validated = benchmark.params_model.model_validate(params)
     except pydantic.ValidationError as exc:
         raise click.ClickException(f"invalid parameters: {exc}") from exc
-    record = asyncio.run(run_benchmark(benchmark, adapter, validated, seed=seed, shots=shots))
+    timeout = LIVE_RUN_TIMEOUT_SECONDS if live else 600.0
+    try:
+        record = asyncio.run(
+            run_benchmark(benchmark, adapter, validated, seed=seed, shots=shots, timeout=timeout)
+        )
+    except LiveRefusedError as exc:
+        raise click.ClickException(str(exc)) from exc
     path = write_verified_qpr(record, out)
     click.echo(f"{path} {record.integrity.content_sha256}")
 
@@ -159,6 +228,7 @@ def run() -> None:
 
 
 @run.command("rb")
+@_live_options
 @click.option("--adapter", "adapter_name", default="aer_simulator", show_default=True)
 @click.option(
     "--qubits",
@@ -190,6 +260,8 @@ def run() -> None:
     "--out", default="results", show_default=True, type=click.Path(file_okay=False, path_type=Path)
 )
 def run_rb(
+    live: bool,
+    device: str | None,
     adapter_name: str,
     qubits: list[int],
     lengths: list[int],
@@ -200,7 +272,7 @@ def run_rb(
     out: Path,
 ) -> None:
     """Randomized benchmarking (1Q/2Q): error per Clifford with bootstrap CIs."""
-    adapter = _build_adapter(adapter_name, noise_file)
+    adapter = _build_adapter(adapter_name, noise_file, live=live, device=device, executing=True)
     _execute_benchmark(
         "rb",
         {"qubits": qubits, "lengths": lengths, "samples_per_length": samples},
@@ -208,10 +280,12 @@ def run_rb(
         _resolve_seed(seed),
         shots,
         out,
+        live=live,
     )
 
 
 @run.command("mirror")
+@_live_options
 @click.option("--adapter", "adapter_name", default="aer_simulator", show_default=True)
 @click.option("--qubits", default="0,1,2", callback=_int_list, show_default=True)
 @click.option(
@@ -237,6 +311,8 @@ def run_rb(
     "--out", default="results", show_default=True, type=click.Path(file_okay=False, path_type=Path)
 )
 def run_mirror(
+    live: bool,
+    device: str | None,
     adapter_name: str,
     qubits: list[int],
     depths: list[int],
@@ -247,7 +323,7 @@ def run_mirror(
     out: Path,
 ) -> None:
     """Randomized mirror circuits: success probability and polarization vs. depth."""
-    adapter = _build_adapter(adapter_name, noise_file)
+    adapter = _build_adapter(adapter_name, noise_file, live=live, device=device, executing=True)
     _execute_benchmark(
         "mirror",
         {"qubits": qubits, "depths": depths, "samples_per_depth": samples},
@@ -255,10 +331,12 @@ def run_mirror(
         _resolve_seed(seed),
         shots,
         out,
+        live=live,
     )
 
 
 @run.command("qv")
+@_live_options
 @click.option("--adapter", "adapter_name", default="aer_simulator", show_default=True)
 @click.option(
     "--widths",
@@ -288,6 +366,8 @@ def run_mirror(
     "--out", default="results", show_default=True, type=click.Path(file_okay=False, path_type=Path)
 )
 def run_qv(
+    live: bool,
+    device: str | None,
     adapter_name: str,
     widths: list[int],
     circuits: int,
@@ -297,7 +377,7 @@ def run_qv(
     out: Path,
 ) -> None:
     """Quantum volume: heavy-output probability per width, 2-sigma pass rule."""
-    adapter = _build_adapter(adapter_name, noise_file)
+    adapter = _build_adapter(adapter_name, noise_file, live=live, device=device, executing=True)
     _execute_benchmark(
         "qv",
         {"widths": widths, "circuits_per_width": circuits},
@@ -305,10 +385,12 @@ def run_qv(
         _resolve_seed(seed),
         shots,
         out,
+        live=live,
     )
 
 
 @run.command("throughput")
+@_live_options
 @click.option("--adapter", "adapter_name", default="aer_simulator", show_default=True)
 @click.option("--batches", default=5, show_default=True, help="Sequential timed batches (R).")
 @click.option("--batch-size", default=10, show_default=True, help="Circuits per batch (B).")
@@ -322,6 +404,8 @@ def run_qv(
     "--out", default="results", show_default=True, type=click.Path(file_okay=False, path_type=Path)
 )
 def run_throughput(
+    live: bool,
+    device: str | None,
     adapter_name: str,
     batches: int,
     batch_size: int,
@@ -334,8 +418,9 @@ def run_throughput(
     """Sequential batch throughput (NOT CLOPS — see docs/BENCHMARKS.md).
 
     On simulators the result measures the harness + host machine and is
-    flagged accordingly."""
-    adapter = _build_adapter(adapter_name, None)
+    flagged accordingly. Live throughput runs are not resumable (timed
+    batches do not survive interruption)."""
+    adapter = _build_adapter(adapter_name, None, live=live, device=device, executing=True)
     _execute_benchmark(
         "throughput",
         {"batches": batches, "batch_size": batch_size, "width": width, "depth": depth},
@@ -343,10 +428,12 @@ def run_throughput(
         _resolve_seed(seed),
         shots,
         out,
+        live=live,
     )
 
 
 @run.command("qec")
+@_live_options
 @click.option("--adapter", "adapter_name", default="aer_simulator", show_default=True)
 @click.option(
     "--code",
@@ -394,6 +481,8 @@ def run_throughput(
     "--out", default="results", show_default=True, type=click.Path(file_okay=False, path_type=Path)
 )
 def run_qec(
+    live: bool,
+    device: str | None,
     adapter_name: str,
     code: str,
     distances: list[int],
@@ -407,7 +496,7 @@ def run_qec(
 ) -> None:
     """QEC memory experiments (repetition / rotated d=3 surface code) with
     MWPM decoding and an optional logical-qubit criteria scorecard."""
-    adapter = _build_adapter(adapter_name, noise_file)
+    adapter = _build_adapter(adapter_name, noise_file, live=live, device=device, executing=True)
     if code == "repetition":
         params: dict[str, Any] = {
             "distances": distances,
@@ -416,7 +505,7 @@ def run_qec(
         }
     else:
         params = {"distance": distance, "rounds": rounds, "criteria": criteria_profile}
-    _execute_benchmark(f"qec_{code}", params, adapter, _resolve_seed(seed), shots, out)
+    _execute_benchmark(f"qec_{code}", params, adapter, _resolve_seed(seed), shots, out, live=live)
 
 
 @main.command("report")
@@ -457,24 +546,112 @@ def report(inputs: tuple[Path, ...], output: Path, generated_at: str | None) -> 
 @adapters.command("probe")
 @click.argument("name")
 @click.option("--shots", default=100, show_default=True, help="Shots for the smoke circuit.")
-def adapters_probe(name: str, shots: int) -> None:
+@click.option(
+    "--live",
+    is_flag=True,
+    default=False,
+    help="Allow the smoke circuit on a live adapter (credentials + cost gate still apply).",
+)
+@click.option("--device", default=None, help="Live device (IBM backend name / Braket ARN).")
+def adapters_probe(name: str, shots: int, live: bool, device: str | None) -> None:
     """Instantiate an adapter, print capabilities + calibration, and run a
-    1-qubit smoke circuit."""
+    1-qubit smoke circuit.
+
+    For live adapters the smoke circuit is skipped unless --live is passed:
+    a probe must never be the thing that spends quota."""
+    resolved = ADAPTER_ALIASES.get(name, name)
     try:
-        adapter = get_adapter(name)
+        adapter = _build_adapter(name, None, live=live, device=device)
+    except click.ClickException:
+        raise
     except AdapterUnavailableError as exc:
         click.echo(f"error: {exc}", err=True)
         sys.exit(1)
     click.echo(f"adapter: {adapter.name} (version {adapter.adapter_version})")
-    click.echo("capabilities:")
-    click.echo(json.dumps(adapter.capabilities().model_dump(mode="json"), indent=2))
-    calibration = adapter.calibration_snapshot()
+    try:
+        click.echo("capabilities:")
+        click.echo(json.dumps(adapter.capabilities().model_dump(mode="json"), indent=2))
+        calibration = adapter.calibration_snapshot()
+    except LiveRefusedError as exc:
+        raise click.ClickException(str(exc)) from exc
     click.echo("calibration_snapshot:")
     click.echo(
         "null" if calibration is None else json.dumps(calibration.model_dump(mode="json"), indent=2)
     )
+    if resolved in LIVE_ADAPTERS and not live:
+        click.echo("smoke circuit: skipped (live adapter; pass --live to submit one job)")
+        return
     start = time.perf_counter()
-    counts = asyncio.run(_smoke_run(adapter, shots))
+    try:
+        counts = asyncio.run(_smoke_run(adapter, shots))
+    except LiveRefusedError as exc:
+        raise click.ClickException(str(exc)) from exc
     elapsed_ms = (time.perf_counter() - start) * 1000
     click.echo(f"smoke circuit ({shots} shots): counts={json.dumps(counts)}")
     click.echo(f"round-trip time: {elapsed_ms:.1f} ms")
+
+
+@main.group()
+def jobs() -> None:
+    """Manage persisted live jobs."""
+
+
+@jobs.command("resume")
+@click.argument("handle_file", type=click.Path(exists=True, dir_okay=False, path_type=Path))
+@click.option(
+    "--out", default="results", show_default=True, type=click.Path(file_okay=False, path_type=Path)
+)
+@click.option(
+    "--timeout",
+    default=14_400.0,
+    show_default=True,
+    help="Seconds to keep polling before giving up (the handle stays resumable).",
+)
+def jobs_resume(handle_file: Path, out: Path, timeout: float) -> None:
+    """Resume an interrupted live run from its handle file into a sealed QPR.
+
+    Resuming polls and fetches results; it can never submit anything, so it
+    needs credentials but not --live or the cost gate."""
+    document = json.loads(handle_file.read_text(encoding="utf-8"))
+    adapter_name = document.get("adapter")
+    if not isinstance(adapter_name, str):
+        raise click.ClickException(f"{handle_file}: not a veriqant-bench handle file")
+    kwargs = document.get("adapter_kwargs", {})
+    try:
+        adapter = get_adapter(adapter_name, **kwargs)
+    except AdapterUnavailableError as exc:
+        raise click.ClickException(str(exc)) from exc
+    try:
+        record = asyncio.run(resume_run(handle_file, adapter, timeout=timeout))
+    except (ResumeError, LiveRefusedError) as exc:
+        raise click.ClickException(str(exc)) from exc
+    path = write_verified_qpr(record, out)
+    click.echo(f"{path} {record.integrity.content_sha256}")
+
+
+@main.group()
+def limits() -> None:
+    """Inspect live-execution spending limits and the local ledger."""
+
+
+@limits.command("show")
+def limits_show() -> None:
+    """Print the effective limits, their source, and month-to-date spend."""
+    from veriqant_bench.live import DEFAULT_LEDGER_PATH, SpendLedger, load_limits
+
+    effective = load_limits()
+    click.echo(f"limits source:        {effective.source}")
+    click.echo(
+        f"monetary cap:         {effective.monthly_monetary_cap} {effective.currency} / month"
+    )
+    click.echo(f"qpu-seconds cap:      {effective.monthly_qpu_seconds_cap:.1f} s / month")
+    click.echo(f"allow_unknown_cost:   {effective.allow_unknown_cost}")
+    ledger = SpendLedger()
+    click.echo(f"ledger:               {DEFAULT_LEDGER_PATH}")
+    totals = ledger.monthly_totals()
+    click.echo(
+        f"month to date:        {totals.monetary} {effective.currency}, "
+        f"{totals.qpu_seconds:.1f} qpu-seconds ({totals.entries} entries)"
+    )
+    click.echo("note: the ledger is advisory client-side bookkeeping; keep provider-side")
+    click.echo("billing alarms as the real backstop (docs/LIVE.md).")

@@ -21,6 +21,8 @@ ENTRY_POINT_GROUP = "veriqant_bench.adapters"
 _INSTALL_HINTS = {
     "aer_simulator": "pip install 'veriqant-bench[local]'",
     "braket_local": "pip install 'veriqant-bench[braket]'",
+    "ibm_runtime": "pip install 'veriqant-bench[ibm]'",
+    "braket_aws": "pip install 'veriqant-bench[braket]'",
 }
 
 

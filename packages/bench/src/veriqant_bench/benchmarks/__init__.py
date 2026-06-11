@@ -19,7 +19,13 @@ from .registry import (
     get,
     list_benchmarks,
 )
-from .runner import QprVerificationError, run_benchmark, write_verified_qpr
+from .runner import (
+    QprVerificationError,
+    ResumeError,
+    resume_run,
+    run_benchmark,
+    write_verified_qpr,
+)
 from .stats import BOOTSTRAP_SEED, bootstrap_mean_ci, bootstrap_rng, percentile_ci
 
 __all__ = [
@@ -33,11 +39,13 @@ __all__ = [
     "ExecutionOutcome",
     "GeneratedCircuit",
     "QprVerificationError",
+    "ResumeError",
     "bootstrap_mean_ci",
     "bootstrap_rng",
     "get",
     "list_benchmarks",
     "percentile_ci",
+    "resume_run",
     "run_benchmark",
     "write_verified_qpr",
 ]

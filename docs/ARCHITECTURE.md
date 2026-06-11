@@ -36,8 +36,15 @@ JSON documents that anyone can independently re-verify with
 │  │   ├─ braket_local.py BraketLocalAdapter (QASM3→Braket dialect)   │   │
 │  │   ├─ registry.py    entry-point discovery (third-party-able)     │   │
 │  │   ├─ conformance.py importable contract test suite               │   │
-│  │   └─ [next]         live adapters (IBM Runtime, Braket) with     │   │
-│  │                     cost guardrails                              │   │
+│  │   ├─ ibm.py         IBMRuntimeAdapter (live, open plan, [ibm])   │   │
+│  │   └─ braket_aws.py  BraketAdapter (live devices, [braket])       │   │
+│  │                                                                  │   │
+│  │   live/            "the guardrails" (provider-independent)       │   │
+│  │   ├─ limits.py      limits.toml: two budgets, default cap 0      │   │
+│  │   ├─ ledger.py      append-only, file-locked spend ledger        │   │
+│  │   ├─ gate.py        pre-submit cost gate (no bypass)             │   │
+│  │   └─ base.py        LiveAdapterBase: opt-in layers, backoff      │   │
+│  │                     polling, resumable handle files              │   │
 │  │                                                                  │   │
 │  │   benchmarks/      "the measurements"                            │   │
 │  │   ├─ base.py + runner.py  generate→execute→analyze→seal          │   │
@@ -65,7 +72,7 @@ JSON documents that anyone can independently re-verify with
 │  │                                                                      │
 │  │   report.py        sealed QPRs → self-contained HTML (no CDN)        │
 │  │   cli.py           run | verify | report | adapters | schema |       │
-│  │                    version                                           │
+│  │                    version | jobs resume | limits show               │
 │  │                                                                      │
 │  scripts/build_demo_site.py → GitHub Pages demo (simulator data,        │
 │                               watermarked, deliberately NOT a           │
@@ -272,7 +279,7 @@ internally sane. Tamper with one byte and verification fails.
 | Statistics | no point estimates without error bars; weak fits flagged | structurally mandatory sample size + CI in schema; quality gates (incl. unresolved-Λ rule: zero errors ≠ infinite suppression) |
 | Records | tamper-evidence, reproducibility | canonical JSON + SHA-256 seal + verifier; floats quantized in committed fixtures (documented platform caveat) |
 | Releases | artifact provably built from this repo | OIDC trusted publishing, environment tag rules, npm provenance, no stored tokens |
-| Spending (live adapters, planned) | accidental cost impossible | layered opt-in (--live + credentials + cost gate), caps in config file only, default cap 0, append-only ledger |
+| Spending (live adapters) | accidental cost impossible | layered opt-in (--live + credentials + cost gate), caps in config file only, default cap 0, append-only locked ledger |
 
 What a green CI does **not** prove: absence of security vulnerabilities,
 correctness against physics beyond the tested regimes, or that the
@@ -289,7 +296,7 @@ review are for.
 | 4 | Quantum volume + neutral throughput + HTML report | ✅ |
 | 5 | QEC diagnostics + criteria profiles (ab-lq-2026) | ✅ |
 | Release | PyPI + npm trusted publishing, GitHub Pages demo | ✅ |
-| Next | Live adapters (IBM Runtime, Braket) with cost guardrails | proposal stage |
+| Live | Live adapters (IBM Runtime, Braket) + cost guardrails (QPR 0.3.0) | ✅ code-complete; real-device conformance pending (manual) |
 
 ## 9. Development workflow
 

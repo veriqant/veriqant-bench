@@ -54,7 +54,15 @@ veriqant-bench run qec --code repetition --distances 3,5,7 --rounds 7 \
 - **Simulator-validated today.** Every benchmark runs end-to-end against
   local simulators (Qiskit Aer, Braket LocalSimulator) and is closed-loop
   validated — RB against analytic noise injection, QEC against Stim as an
-  independent oracle. Live hardware adapters are the next milestone.
+  independent oracle.
+- **Live hardware adapters are in.** IBM Quantum (Runtime, open plan) and
+  AWS Braket run behind layered guardrails: an explicit `--live` flag,
+  provider credentials, and a pre-submit cost gate with a default spend cap
+  of zero on both money and QPU-runtime quota — see
+  [docs/LIVE.md](docs/LIVE.md). The adapter paths are CI-tested against
+  fake/stub transports; conformance against real devices is a manual,
+  budgeted step (`pytest --live-conformance`), and no hardware-derived
+  records have been published yet.
 - **Simulated results are machine-flagged.** Timing metrics from simulators
   carry `timing.simulator_not_comparable_to_hardware`; criteria verdicts
   from simulated noise carry `simulated_noise_model_not_hardware`. No

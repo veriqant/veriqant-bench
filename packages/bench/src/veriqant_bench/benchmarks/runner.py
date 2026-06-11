@@ -1,17 +1,27 @@
-"""The shared benchmark driver: generate → execute → analyze → sealed QPR."""
+"""The shared benchmark driver: generate → execute → analyze → sealed QPR.
+
+Live runs are resumable: the live adapter persists every accepted submission
+(JobHandle + full JobSpec, which carries the benchmark context) to a handle
+file, and resume_run() reconstructs the benchmark deterministically from
+that file, fetches the provider result, and assembles the same sealed QPR a
+finished run would have produced. Resuming never submits anything — there is
+no code path from here to a provider submit call.
+"""
 
 from __future__ import annotations
 
+import json
 import platform
 from datetime import UTC, datetime
 from pathlib import Path
 from typing import Any
 from uuid import uuid4
 
+import pydantic
 from pydantic import BaseModel
 
 from veriqant_bench import __version__
-from veriqant_bench.adapters import QPUAdapter
+from veriqant_bench.adapters import CalibrationSnapshot, JobHandle, QPUAdapter
 from veriqant_bench.qpr import (
     QPR_VERSION,
     Circuit,
@@ -27,13 +37,22 @@ from veriqant_bench.qpr import (
     verify_qpr_file,
 )
 from veriqant_bench.qpr import Benchmark as QprBenchmark
-from veriqant_bench.qpr._generated import Execution, Transpilation
+from veriqant_bench.qpr._generated import (
+    Execution,
+    ExecutionCost,
+    ExecutionTiming,
+    Transpilation,
+)
 
-from .base import Benchmark, GeneratedCircuit
+from .base import Benchmark, ExecutedCircuitCounts, ExecutionOutcome, GeneratedCircuit
 
 
 class QprVerificationError(RuntimeError):
     """A freshly produced QPR failed its own verification self-check."""
+
+
+class ResumeError(RuntimeError):
+    """A handle file cannot be resumed into a sealed QPR."""
 
 
 async def run_benchmark(
@@ -47,8 +66,8 @@ async def run_benchmark(
 ) -> QuantumPerformanceRecord:
     """Run *benchmark* on *adapter* and return a sealed QPR.
 
-    Captures the adapter's capabilities and calibration snapshot at execution
-    time; everything that crosses the adapter boundary is OpenQASM 3.
+    Captures the adapter's capabilities and calibration snapshot before
+    submission; everything that crosses the adapter boundary is OpenQASM 3.
     """
     validated_params = benchmark.params_model.model_validate(
         params if isinstance(params, dict) else params.model_dump()
@@ -61,7 +80,106 @@ async def run_benchmark(
     outcome = await benchmark.execute(
         adapter, generated, validated_params, seed=seed, shots=shots, timeout=timeout
     )
+    return _assemble_record(
+        benchmark,
+        validated_params,
+        adapter,
+        generated,
+        outcome,
+        seed=seed,
+        shots=shots,
+        capabilities=capabilities,
+        calibration=calibration,
+    )
 
+
+async def resume_run(
+    handle_file: Path,
+    adapter: QPUAdapter,
+    *,
+    timeout: float = 14_400.0,
+) -> QuantumPerformanceRecord:
+    """Resume an interrupted live run from its persisted handle file.
+
+    Works because generation is deterministic: the benchmark context stored
+    in the JobSpec metadata reconstructs the exact circuit batch, which is
+    verified source-for-source against the submitted circuits before
+    anything is assembled. The device calibration recorded in the QPR is the
+    snapshot persisted at submit time — a resume-time re-fetch would
+    describe a machine state the job may not have run under.
+    """
+    from .registry import get as get_benchmark
+
+    document = json.loads(handle_file.read_text(encoding="utf-8"))
+    spec = document.get("spec", {})
+    context = spec.get("metadata", {})
+    if "benchmark" not in context:
+        raise ResumeError(
+            f"{handle_file}: no benchmark context in the job spec — runs of benchmarks "
+            "with custom execution protocols (e.g. throughput's timed batches) are "
+            "not resumable; their semantics do not survive interruption"
+        )
+    benchmark = get_benchmark(str(context["benchmark"]))
+    validated_params = benchmark.params_model.model_validate(context["params"])
+    seed = int(context["seed"])
+    shots = int(context["shots"])
+
+    generated = benchmark.generate(validated_params, seed)
+    if [circuit.qasm3 for circuit in generated] != spec.get("circuits"):
+        raise ResumeError(
+            f"{handle_file}: regenerated circuits do not match the submitted sources "
+            "(SDK or benchmark version drift since submission); refusing to assemble "
+            "a record that misdescribes the executed job"
+        )
+
+    handle = JobHandle.model_validate(document["handle"])
+    if handle.adapter != adapter.name:
+        raise ResumeError(
+            f"{handle_file}: handle belongs to adapter '{handle.adapter}', got '{adapter.name}'"
+        )
+
+    result = await adapter.await_result(handle, timeout=timeout)
+    metadata = dict(result.metadata)
+    submit_metadata = document.get("submit_metadata", {})
+    if "transpilation" not in metadata and "transpilation" in submit_metadata:
+        metadata["transpilation"] = submit_metadata["transpilation"]
+    outcome = ExecutionOutcome(
+        results=[
+            ExecutedCircuitCounts(circuit_index=index, counts=counts)
+            for index, counts in enumerate(result.counts)
+        ],
+        submitted_at=handle.submitted_at,
+        completed_at=result.completed_at,
+        metadata=metadata,
+    )
+
+    persisted = document.get("calibration_at_submit")
+    calibration = None if persisted is None else CalibrationSnapshot.model_validate(persisted)
+    return _assemble_record(
+        benchmark,
+        validated_params,
+        adapter,
+        generated,
+        outcome,
+        seed=seed,
+        shots=shots,
+        capabilities=adapter.capabilities(),
+        calibration=calibration,
+    )
+
+
+def _assemble_record(
+    benchmark: Benchmark[Any],
+    validated_params: BaseModel,
+    adapter: QPUAdapter,
+    generated: list[GeneratedCircuit],
+    outcome: ExecutionOutcome,
+    *,
+    seed: int,
+    shots: int,
+    capabilities: Any,
+    calibration: CalibrationSnapshot | None,
+) -> QuantumPerformanceRecord:
     analysis = benchmark.analyze(
         generated,
         [executed.counts for executed in outcome.results],
@@ -70,6 +188,7 @@ async def run_benchmark(
         outcome.metadata,
     )
 
+    job_ids = [str(job_id) for job_id in outcome.metadata.get("job_ids", [])]
     record = QuantumPerformanceRecord(
         qpr_version=QPR_VERSION,
         record_id=uuid4(),
@@ -89,6 +208,9 @@ async def run_benchmark(
             transpilation=_transpilation(adapter, outcome.metadata),
             submitted_at=outcome.submitted_at,
             completed_at=outcome.completed_at,
+            job_ids=job_ids or None,
+            timing=_execution_timing(outcome.metadata),
+            cost=_execution_cost(outcome.metadata),
         ),
         circuits=_qpr_circuits(generated),
         results=Results(
@@ -150,6 +272,34 @@ def _transpilation(adapter: QPUAdapter, metadata: dict[str, Any]) -> Transpilati
     )
 
 
+def _execution_timing(metadata: dict[str, Any]) -> ExecutionTiming | None:
+    """Promote adapter-reported queue/execution timing into the structural
+    execution.timing block. Only the documented shape is promoted; timing
+    dicts without a source (e.g. throughput's batch timings) stay in the
+    benchmark's own analysis."""
+    timing = metadata.get("timing")
+    if not isinstance(timing, dict) or "source" not in timing:
+        return None
+    fields = {
+        key: timing[key]
+        for key in ("queue_seconds", "execution_seconds", "source")
+        if key in timing
+    }
+    return ExecutionTiming.model_validate(fields)
+
+
+def _execution_cost(metadata: dict[str, Any]) -> ExecutionCost | None:
+    """Promote the live adapter's spend block (ledger cross-reference and
+    gated estimate) into the structural execution.cost block."""
+    cost = metadata.get("cost")
+    if cost is None:
+        return None
+    try:
+        return ExecutionCost.model_validate(cost)
+    except pydantic.ValidationError as exc:
+        raise QprVerificationError(f"adapter reported a malformed cost block: {exc}") from exc
+
+
 def _qpr_circuits(generated: list[GeneratedCircuit]) -> list[Circuit]:
     return [
         Circuit(
@@ -163,4 +313,10 @@ def _qpr_circuits(generated: list[GeneratedCircuit]) -> list[Circuit]:
     ]
 
 
-__all__ = ["QprVerificationError", "run_benchmark", "write_verified_qpr"]
+__all__ = [
+    "QprVerificationError",
+    "ResumeError",
+    "resume_run",
+    "run_benchmark",
+    "write_verified_qpr",
+]

@@ -102,7 +102,20 @@ class Benchmark[ParamsT: BaseModel](ABC):
         generated list. Benchmarks with a non-trivial execution protocol
         (e.g. timed repeated batches) override this.
         """
-        spec = JobSpec(circuits=[circuit.qasm3 for circuit in circuits], shots=shots, seed=seed)
+        spec = JobSpec(
+            circuits=[circuit.qasm3 for circuit in circuits],
+            shots=shots,
+            seed=seed,
+            # Benchmark context rides along so an interrupted live run can be
+            # resumed from its persisted handle file: generation is
+            # deterministic, so the circuits are reconstructible from this.
+            metadata={
+                "benchmark": self.name,
+                "params": params.model_dump(mode="json"),
+                "seed": seed,
+                "shots": shots,
+            },
+        )
         handle = await adapter.submit(spec)
         result = await adapter.await_result(handle, timeout=timeout)
         return ExecutionOutcome(

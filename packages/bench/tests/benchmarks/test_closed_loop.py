@@ -167,6 +167,10 @@ async def test_same_seed_reproduces_identical_measurement_content() -> None:
                 update={
                     "submitted_at": first.execution.submitted_at,
                     "completed_at": first.execution.completed_at,
+                    # Wall-clock measurement, unique per run by design (like
+                    # the timestamps above) since QPR 0.3.0 records it
+                    # structurally.
+                    "timing": first.execution.timing,
                 }
             ),
         }

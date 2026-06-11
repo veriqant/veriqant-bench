@@ -2342,6 +2342,7 @@ braket = [
 ibm = [
     { name = "qiskit" },
     { name = "qiskit-ibm-runtime" },
+    { name = "qiskit-qasm3-import" },
 ]
 local = [
     { name = "qiskit" },
@@ -2372,6 +2373,7 @@ dev = [
     { name = "pytest-xdist" },
     { name = "qiskit" },
     { name = "qiskit-aer" },
+    { name = "qiskit-ibm-runtime" },
     { name = "qiskit-qasm3-import" },
     { name = "ruff" },
     { name = "scipy" },
@@ -2390,6 +2392,7 @@ requires-dist = [
     { name = "qiskit", marker = "extra == 'local'", specifier = ">=1.4" },
     { name = "qiskit-aer", marker = "extra == 'local'", specifier = ">=0.15" },
     { name = "qiskit-ibm-runtime", marker = "extra == 'ibm'", specifier = ">=0.34" },
+    { name = "qiskit-qasm3-import", marker = "extra == 'ibm'", specifier = ">=0.5" },
     { name = "qiskit-qasm3-import", marker = "extra == 'local'", specifier = ">=0.5" },
     { name = "scipy", marker = "extra == 'local'", specifier = ">=1.11" },
     { name = "stim", marker = "extra == 'qec'", specifier = ">=1.13" },
@@ -2411,6 +2414,7 @@ dev = [
     { name = "pytest-xdist", specifier = ">=3.6" },
     { name = "qiskit", specifier = ">=1.4" },
     { name = "qiskit-aer", specifier = ">=0.15" },
+    { name = "qiskit-ibm-runtime", specifier = ">=0.34" },
     { name = "qiskit-qasm3-import", specifier = ">=0.5" },
     { name = "ruff", specifier = ">=0.8" },
     { name = "scipy", specifier = ">=1.11" },

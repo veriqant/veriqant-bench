@@ -32,7 +32,7 @@ dependencies = [
 # Local ideal/noisy simulation via Qiskit Aer — needs no provider account.
 # Also required by benchmark circuit generation (Clifford utilities, fitting).
 local = ["qiskit>=1.4", "qiskit-aer>=0.15", "qiskit-qasm3-import>=0.5", "scipy>=1.11"]
-ibm = ["qiskit>=1.4", "qiskit-ibm-runtime>=0.34"]
+ibm = ["qiskit>=1.4", "qiskit-ibm-runtime>=0.34", "qiskit-qasm3-import>=0.5"]
 # amazon-braket-sdk ships both LocalSimulator and the live client, so one
 # extra covers braket_local now and the future live adapter.
 braket = ["amazon-braket-sdk>=1.87"]
@@ -53,6 +53,8 @@ veriqant-bench = "veriqant_bench.cli:main"
 [project.entry-points."veriqant_bench.adapters"]
 aer_simulator = "veriqant_bench.adapters.aer:AerSimulatorAdapter"
 braket_local = "veriqant_bench.adapters.braket_local:BraketLocalAdapter"
+ibm_runtime = "veriqant_bench.adapters.ibm:IBMRuntimeAdapter"
+braket_aws = "veriqant_bench.adapters.braket_aws:BraketAdapter"
 
 [project.entry-points."veriqant_bench.benchmarks"]
 rb = "veriqant_bench.benchmarks.rb:RandomizedBenchmarking"
@@ -79,6 +81,7 @@ dev = [
     "pytest-timeout>=2.3",
     "pytest-xdist>=3.6",
     "qiskit>=1.4",
+    "qiskit-ibm-runtime>=0.34",
     "stim>=1.13",
     "qiskit-aer>=0.15",
     "qiskit-qasm3-import>=0.5",
@@ -94,6 +97,7 @@ testpaths = ["tests"]
 timeout = 60
 markers = [
     "slow: multi-second simulator executions",
+    "live_conformance: conformance against real devices (manual, needs --live-conformance; consumes provider quota/money)",
 ]
 asyncio_mode = "auto"
 asyncio_default_fixture_loop_scope = "function"
@@ -129,6 +133,9 @@ disable_error_code = ["valid-type"]
 module = [
     "qiskit.*",
     "qiskit_aer.*",
+    "qiskit_ibm_runtime.*",
+    "boto3.*",
+    "botocore.*",
     "qiskit_qasm3_import.*",
     "braket.*",
     "scipy.*",
