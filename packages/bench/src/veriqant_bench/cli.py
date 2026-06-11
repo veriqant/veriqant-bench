@@ -647,7 +647,8 @@ def jobs_resume(handle_file: Path, out: Path, timeout: float) -> None:
     if not isinstance(kwargs, dict):
         raise click.ClickException(f"{handle_file}: adapter_kwargs must be an object")
     rejected = sorted(
-        key for key, value in kwargs.items()
+        key
+        for key, value in kwargs.items()
         if key not in RESUME_KWARG_ALLOWLIST or not isinstance(value, str)
     )
     if rejected:
