@@ -136,7 +136,9 @@ async def test_dynamic_circuit_is_refused_with_circuit_index(tmp_path: Path) -> 
     adapter = make_braket_adapter(tmp_path)
     with pytest.raises(UnsupportedCircuitError, match="circuit 1"):
         await adapter.submit(JobSpec(circuits=[ASYMMETRIC_2Q, DYNAMIC], shots=10, seed=1))
-    assert adapter._ledger.monthly_totals().monetary == Decimal("0")  # released
+    # Conversion is validation: pre-gate, so the ledger is never touched.
+    assert adapter._ledger.monthly_totals().entries == 0
+    assert not adapter._ledger.path.exists()
 
 
 async def test_submitted_programs_measure_all_without_pragma(tmp_path: Path) -> None:

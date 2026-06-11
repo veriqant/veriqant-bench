@@ -69,6 +69,12 @@ async def run_benchmark(
     Captures the adapter's capabilities and calibration snapshot before
     submission; everything that crosses the adapter boundary is OpenQASM 3.
     """
+    # Cheap validation first — before any adapter contact and long before a
+    # live adapter's cost gate could reserve budget for a doomed run.
+    if shots < 1:
+        raise ValueError(f"shots must be >= 1, got {shots}")
+    if seed < 0:
+        raise ValueError(f"seed must be >= 0, got {seed}")
     validated_params = benchmark.params_model.model_validate(
         params if isinstance(params, dict) else params.model_dump()
     )

@@ -241,10 +241,12 @@ class BraketAdapter(LiveAdapterBase):
 
     # ---- provider hooks ------------------------------------------------------------
 
-    async def _do_submit(self, spec: JobSpec) -> tuple[str, dict[str, Any]]:
+    async def _prevalidate(self, spec: JobSpec) -> Any:
+        """Dialect conversion before the cost gate: a circuit the conversion
+        refuses (dynamic constructs, partial measurement) must never reserve
+        budget."""
         from braket.ir.openqasm import Program
 
-        device = self._resolve_device()
         programs = []
         qubit_counts = []
         for index, source in enumerate(spec.circuits):
@@ -256,6 +258,11 @@ class BraketAdapter(LiveAdapterBase):
                 raise type(exc)(f"circuit {index}: {exc}") from exc
             programs.append(Program(source=converted))
             qubit_counts.append(num_qubits)
+        return programs, qubit_counts
+
+    async def _do_submit(self, spec: JobSpec, prepared: Any) -> tuple[str, dict[str, Any]]:
+        device = self._resolve_device()
+        programs, qubit_counts = prepared
         run_kwargs: dict[str, Any] = {"shots": spec.shots}
         if self._s3_folder is not None:
             run_kwargs["s3_destination_folder"] = self._s3_folder

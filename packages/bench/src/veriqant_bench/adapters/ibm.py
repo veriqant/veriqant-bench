@@ -237,19 +237,26 @@ class IBMRuntimeAdapter(LiveAdapterBase):
 
     # ---- provider hooks -------------------------------------------------------
 
-    async def _do_submit(self, spec: JobSpec) -> tuple[str, dict[str, Any]]:
+    async def _prevalidate(self, spec: JobSpec) -> Any:
+        """Everything that can refuse without spending, before the cost
+        gate: plan classification, OpenQASM 3 parsing, and the (free, local)
+        ISA transpilation. A circuit qiskit cannot parse or transpile must
+        never reserve budget."""
         self._require_open_plan()
         backend = self._resolve_backend()
         from qiskit import qasm3, transpile
-        from qiskit_ibm_runtime import SamplerV2
 
         try:
             circuits = [qasm3.loads(source) for source in spec.circuits]
         except Exception as exc:
             raise SubmissionError(f"invalid OpenQASM 3: {exc}") from exc
-        isa_circuits = transpile(
-            circuits, backend=backend, optimization_level=1, seed_transpiler=spec.seed
-        )
+        return transpile(circuits, backend=backend, optimization_level=1, seed_transpiler=spec.seed)
+
+    async def _do_submit(self, spec: JobSpec, prepared: Any) -> tuple[str, dict[str, Any]]:
+        backend = self._resolve_backend()
+        from qiskit_ibm_runtime import SamplerV2
+
+        isa_circuits = prepared
         sampler = SamplerV2(mode=backend)
         # Local-mode fake backends sample; seed them for reproducible tests.
         # Real backends reject simulator options — suppression is deliberate.

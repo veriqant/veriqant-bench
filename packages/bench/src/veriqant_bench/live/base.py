@@ -116,10 +116,20 @@ class LiveAdapterBase(AwaitResultMixin, ABC):
     def _device_name(self) -> str:
         """Target device identifier for gating/ledger messages."""
 
+    async def _prevalidate(self, spec: JobSpec) -> Any:
+        """Everything that can fail WITHOUT spending: circuit parsing and
+        conversion, plan/account classification, local transpilation. Runs
+        after the opt-in layers but BEFORE the cost gate — budget is never
+        reserved for a run that validation would have refused anyway. Raise
+        typed errors (SubmissionError/UnsupportedCircuitError/
+        LiveRefusedError); the return value is handed to _do_submit."""
+        return None
+
     @abstractmethod
-    async def _do_submit(self, spec: JobSpec) -> tuple[str, dict[str, Any]]:
-        """Provider submission. Returns (job_id, submit_metadata). Never
-        called until every opt-in layer has passed; never retried. Raise
+    async def _do_submit(self, spec: JobSpec, prepared: Any) -> tuple[str, dict[str, Any]]:
+        """Provider submission of artifacts prevalidated by _prevalidate.
+        Returns (job_id, submit_metadata). Never called until every opt-in
+        layer AND the cost gate have passed; never retried. Raise
         SubmissionError for a definite synchronous rejection (the job never
         reached the queue — its budget charge is released); let transport
         errors propagate (ambiguous: the job MAY exist, the charge stays)."""
@@ -167,7 +177,11 @@ class LiveAdapterBase(AwaitResultMixin, ABC):
             )
 
     async def submit(self, spec: JobSpec) -> JobHandle:
+        # Order is load-bearing: layers -> cheap validation -> cost gate ->
+        # provider submit. A run that validation would refuse must never
+        # reserve budget, so _prevalidate runs strictly before the gate.
         self.require_live_layers()
+        prepared = await self._prevalidate(spec)
         estimate = self.estimate_cost(spec)
         ledger_entry_id = check_cost_gate(
             estimate,
@@ -178,7 +192,7 @@ class LiveAdapterBase(AwaitResultMixin, ABC):
         )
         calibration = self.calibration_snapshot()
         try:
-            job_id, submit_metadata = await self._do_submit(spec)
+            job_id, submit_metadata = await self._do_submit(spec, prepared)
         except SubmissionError as exc:
             # Definite synchronous rejection: the job never reached the
             # queue, so the charge goes back to the budget.

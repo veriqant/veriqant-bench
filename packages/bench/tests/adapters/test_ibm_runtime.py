@@ -76,11 +76,14 @@ def test_estimate_is_offline_conservative_and_named(tmp_path: Path) -> None:
 # ---- open-plan gating (fail closed) ----------------------------------------------
 
 
-async def test_premium_plan_is_refused_and_charge_released(tmp_path: Path) -> None:
+async def test_premium_plan_is_refused_before_the_gate(tmp_path: Path) -> None:
     adapter, _ = make_ibm_adapter(tmp_path, plan="premium")
     with pytest.raises(LiveRefusedError, match="premium billing not supported"):
         await adapter.submit(JobSpec(circuits=[ASYMMETRIC_2Q], shots=16, seed=1))
-    assert adapter._ledger.monthly_totals().qpu_seconds == 0.0  # released
+    # Plan classification is validation: it runs before the cost gate, so
+    # the ledger is never touched (no estimate, no released pair).
+    assert adapter._ledger.monthly_totals().entries == 0
+    assert not adapter._ledger.path.exists()
 
 
 async def test_undeterminable_plan_is_refused(tmp_path: Path) -> None:
@@ -120,7 +123,9 @@ async def test_invalid_qasm_is_a_typed_rejection(tmp_path: Path) -> None:
         await adapter.submit(
             JobSpec(circuits=["OPENQASM 3.0;\nnot a circuit ;;;\n"], shots=16, seed=0)
         )
-    assert adapter._ledger.monthly_totals().qpu_seconds == 0.0  # released
+    # Parsing is validation: pre-gate, so the ledger is never touched.
+    assert adapter._ledger.monthly_totals().entries == 0
+    assert not adapter._ledger.path.exists()
 
 
 # ---- result-shape and status drift (Q2) ----------------------------------------------

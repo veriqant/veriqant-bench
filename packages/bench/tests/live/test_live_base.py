@@ -50,6 +50,7 @@ class DummyLiveAdapter(LiveAdapterBase):
         *,
         statuses: list[JobStatus | Exception] | None = None,
         missing_credentials: str | None = None,
+        prevalidate_error: Exception | None = None,
         submit_error: Exception | None = None,
         result_metadata: dict[str, Any] | None = None,
         **live_kwargs: Any,
@@ -57,6 +58,7 @@ class DummyLiveAdapter(LiveAdapterBase):
         super().__init__(poll_initial=0.001, poll_max=0.002, retry_base=0.001, **live_kwargs)
         self._statuses = statuses if statuses is not None else [JobStatus.COMPLETED]
         self._missing = missing_credentials
+        self._prevalidate_error = prevalidate_error
         self._submit_error = submit_error
         self._result_metadata = result_metadata or {}
         self.submitted_specs: list[JobSpec] = []
@@ -96,7 +98,13 @@ class DummyLiveAdapter(LiveAdapterBase):
     def _auth_exception_types(self) -> tuple[type[BaseException], ...]:
         return (DummyAuthError,)
 
-    async def _do_submit(self, spec: JobSpec) -> tuple[str, dict[str, Any]]:
+    async def _prevalidate(self, spec: JobSpec) -> Any:
+        if self._prevalidate_error is not None:
+            raise self._prevalidate_error
+        return "prepared-artifacts"
+
+    async def _do_submit(self, spec: JobSpec, prepared: Any) -> tuple[str, dict[str, Any]]:
+        assert prepared == "prepared-artifacts"
         if self._submit_error is not None:
             raise self._submit_error
         self.submitted_specs.append(spec)
@@ -245,6 +253,43 @@ async def test_await_result_walks_states_with_backoff(
     handle = await adapter.submit(SPEC)
     result = await adapter.await_result(handle, timeout=5.0)
     assert result.shots == 10
+
+
+# ---- ordering: validation -> gate -> submit -----------------------------------
+
+
+async def test_prevalidation_failure_never_touches_the_ledger(
+    tmp_path: Path, permissive_limits: SpendLimits, ledger: SpendLedger
+) -> None:
+    # Rule: budget is never reserved for a run that validation refuses —
+    # not even as an estimate+released pair.
+    adapter = make_adapter(
+        tmp_path,
+        permissive_limits,
+        ledger,
+        prevalidate_error=SubmissionError("unparseable circuit"),
+    )
+    with pytest.raises(SubmissionError, match="unparseable circuit"):
+        await adapter.submit(SPEC)
+    assert not ledger.path.exists()
+    assert ledger.monthly_totals().entries == 0
+
+
+async def test_validation_error_wins_over_a_gate_refusal(
+    tmp_path: Path, ledger: SpendLedger
+) -> None:
+    # Zero-trust limits AND an invalid circuit: the user is told about the
+    # circuit (validation runs before the gate), and nothing is charged.
+    adapter = DummyLiveAdapter(
+        allow_live=True,
+        limits=SpendLimits(),
+        ledger=ledger,
+        jobs_dir=tmp_path / "jobs",
+        prevalidate_error=SubmissionError("unparseable circuit"),
+    )
+    with pytest.raises(SubmissionError, match="unparseable circuit"):
+        await adapter.submit(SPEC)
+    assert ledger.monthly_totals().entries == 0
 
 
 # ---- submit failure classification -------------------------------------------
