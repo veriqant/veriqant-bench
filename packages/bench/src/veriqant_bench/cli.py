@@ -245,7 +245,7 @@ def run() -> None:
     help="Comma-separated Clifford sequence lengths.",
 )
 @click.option("--samples", default=10, show_default=True, help="Random sequences per length.")
-@click.option("--shots", default=256, show_default=True)
+@click.option("--shots", default=256, show_default=True, type=click.IntRange(min=1))
 @click.option(
     "--seed", type=int, default=None, help="Master seed; generated and printed when omitted."
 )
@@ -296,7 +296,7 @@ def run_rb(
     help="Comma-separated half-circuit depths (layers).",
 )
 @click.option("--samples", default=10, show_default=True, help="Random circuits per depth.")
-@click.option("--shots", default=256, show_default=True)
+@click.option("--shots", default=256, show_default=True, type=click.IntRange(min=1))
 @click.option(
     "--seed", type=int, default=None, help="Master seed; generated and printed when omitted."
 )
@@ -351,7 +351,7 @@ def run_mirror(
     show_default=True,
     help="Random circuits per width (>=100 for publication-grade claims).",
 )
-@click.option("--shots", default=256, show_default=True)
+@click.option("--shots", default=256, show_default=True, type=click.IntRange(min=1))
 @click.option(
     "--seed", type=int, default=None, help="Master seed; generated and printed when omitted."
 )
@@ -396,7 +396,7 @@ def run_qv(
 @click.option("--batch-size", default=10, show_default=True, help="Circuits per batch (B).")
 @click.option("--width", default=2, show_default=True, help="Template circuit width.")
 @click.option("--depth", default=4, show_default=True, help="Template mirror half-depth.")
-@click.option("--shots", default=256, show_default=True)
+@click.option("--shots", default=256, show_default=True, type=click.IntRange(min=1))
 @click.option(
     "--seed", type=int, default=None, help="Master seed; generated and printed when omitted."
 )
@@ -466,7 +466,7 @@ def run_throughput(
     default=None,
     help="Criteria profile id (e.g. ab-lq-2026); omitted -> metrics only.",
 )
-@click.option("--shots", default=2000, show_default=True)
+@click.option("--shots", default=2000, show_default=True, type=click.IntRange(min=1))
 @click.option(
     "--seed", type=int, default=None, help="Master seed; generated and printed when omitted."
 )
@@ -545,7 +545,13 @@ def report(inputs: tuple[Path, ...], output: Path, generated_at: str | None) -> 
 
 @adapters.command("probe")
 @click.argument("name")
-@click.option("--shots", default=100, show_default=True, help="Shots for the smoke circuit.")
+@click.option(
+    "--shots",
+    default=100,
+    show_default=True,
+    type=click.IntRange(min=1),
+    help="Shots for the smoke circuit.",
+)
 @click.option(
     "--live",
     is_flag=True,

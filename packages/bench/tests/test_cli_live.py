@@ -140,3 +140,13 @@ def test_adapters_list_includes_the_live_adapters(runner: CliRunner) -> None:
     assert result.exit_code == 0
     assert "ibm_runtime" in result.output
     assert "braket_aws" in result.output
+
+
+@pytest.mark.parametrize("shots", ["0", "-5"])
+def test_invalid_shots_is_a_clean_cli_error(runner: CliRunner, shots: str) -> None:
+    # Cheap validation precedes everything: click rejects the value before
+    # an adapter is even constructed (no traceback, no network, no gate).
+    result = runner.invoke(main, ["run", "rb", "--shots", shots])
+    assert result.exit_code == 2
+    assert "Invalid value for '--shots'" in result.output
+    assert result.exception is None or isinstance(result.exception, SystemExit)
