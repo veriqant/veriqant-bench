@@ -91,6 +91,17 @@ def check_cost_gate(
             "refusing rather than guessing an exchange rate"
         )
     estimated_seconds = estimate.qpu_seconds or 0.0
+    # With no user-level limits file the caps are the all-zero defaults
+    # (a repo-local file can only tighten, so "defaults, tightened by ..."
+    # is the same situation): tell the user what to create, not to raise a
+    # cap in a file that does not exist.
+    if limits.source.startswith("defaults"):
+        cap_hint = (
+            "No user-level limits file is configured, and live runs require one: "
+            "create ~/.config/veriqant/limits.toml granting budget — see docs/LIVE.md."
+        )
+    else:
+        cap_hint = "Raise the cap in the limits file if intended."
     with ledger.lock():
         totals = ledger.monthly_totals(now)
         projected_monetary = totals.monetary + estimate.amount
@@ -100,7 +111,7 @@ def check_cost_gate(
                 f"bring this month's total to {projected_monetary} {limits.currency}, "
                 f"over the cap of {limits.monthly_monetary_cap} ({limits.source}; "
                 f"ledger: {ledger.path}, {totals.entries} entries this month). "
-                "Raise the cap in the limits file if intended."
+                f"{cap_hint}"
             )
         projected_seconds = totals.qpu_seconds + estimated_seconds
         if projected_seconds > limits.monthly_qpu_seconds_cap:
@@ -109,7 +120,7 @@ def check_cost_gate(
                 f"bring this month's total to {projected_seconds:.1f}s, over the "
                 f"quota cap of {limits.monthly_qpu_seconds_cap:.1f}s ({limits.source}; "
                 f"ledger: {ledger.path}, {totals.entries} entries this month). "
-                "Raise the cap in the limits file if intended."
+                f"{cap_hint}"
             )
         return ledger.record_estimate(
             adapter=adapter,

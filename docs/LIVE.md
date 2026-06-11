@@ -30,6 +30,24 @@ monthly_qpu_seconds_cap = 0.0     # e.g. 300.0 = half the IBM open quota
 allow_unknown_cost = false        # DANGEROUS — see below
 ```
 
+**A user-level limits file is required for live runs.** The out-of-the-box
+defaults are all-zero, and a repo-local file can only tighten them — it can
+never grant budget — so until *you* create
+`~/.config/veriqant/limits.toml`, every live submission is refused (the
+refusal message points back here). Copy-paste to get started on the IBM
+free tier, money still blocked:
+
+```bash
+mkdir -p ~/.config/veriqant
+cat > ~/.config/veriqant/limits.toml <<'EOF'
+[budgets]
+monthly_monetary_cap = 0.00       # keep money blocked
+currency = "USD"
+monthly_qpu_seconds_cap = 300.0   # half the IBM open-plan monthly quota
+allow_unknown_cost = false
+EOF
+```
+
 A repo-local `./veriqant-limits.toml` may additionally **tighten** the
 user-level limits for one project — lower a cap, or keep
 `allow_unknown_cost` off — but can never loosen them: caps it declares take

@@ -71,6 +71,35 @@ def test_refusal_commits_nothing_to_the_ledger(ledger: SpendLedger) -> None:
     assert ledger.monthly_totals(JUNE).entries == 0
 
 
+@pytest.mark.parametrize(
+    "source",
+    [
+        pytest.param("defaults", id="no-config-at-all"),
+        pytest.param("defaults, tightened by /repo/veriqant-limits.toml", id="repo-local-only"),
+    ],
+)
+def test_default_limits_refusal_names_the_required_user_file(
+    ledger: SpendLedger, source: str
+) -> None:
+    # No user-level limits file (including repo-local-only, which grants
+    # nothing): the refusal must say what to create and point at the docs,
+    # not just suggest raising a cap in a file that does not exist.
+    limits = SpendLimits(source=source)
+    with pytest.raises(CostGateError) as excinfo:
+        gate(quota_only(7.5), limits, ledger)
+    message = str(excinfo.value)
+    assert "limits.toml" in message
+    assert "docs/LIVE.md" in message
+
+
+def test_configured_limits_refusal_suggests_raising_the_cap(ledger: SpendLedger) -> None:
+    limits = SpendLimits(
+        monthly_qpu_seconds_cap=5.0, source="/home/user/.config/veriqant/limits.toml"
+    )
+    with pytest.raises(CostGateError, match="Raise the cap in the limits file"):
+        gate(quota_only(7.5), limits, ledger)
+
+
 # ---- rule a/b: unknown or vacuous estimates --------------------------------
 
 
