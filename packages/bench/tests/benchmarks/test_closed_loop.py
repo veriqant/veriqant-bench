@@ -91,7 +91,11 @@ async def test_rb_on_ideal_simulator_reports_near_zero_epc() -> None:
     assert_record_verifies(record)
     epc = next(m for m in record.results.metrics if m.name == "error_per_clifford")
     assert epc.value < 0.01
-    assert epc.quality is not None and epc.quality.reliable
+    # The QA rule this exists to pin: a noiseless run collapses the
+    # bootstrap to a zero-width CI, which must never be published reliable.
+    assert epc.statistics.ci_lower == epc.statistics.ci_upper
+    assert epc.quality is not None and not epc.quality.reliable
+    assert "statistics.zero_width_ci" in (epc.quality.issues or [])
 
 
 @pytest.mark.timeout(300)

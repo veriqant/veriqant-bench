@@ -46,7 +46,7 @@ from .base import (
     GeneratedCircuit,
 )
 from .mirror import MirrorCircuits, MirrorParams
-from .stats import bootstrap_rng, percentile_ci
+from .stats import bootstrap_rng, degrade_zero_width_ci, percentile_ci
 
 CONFIDENCE = 0.95
 SIMULATOR_TIMING_ISSUE = "timing.simulator_not_comparable_to_hardware"
@@ -77,7 +77,7 @@ class Throughput(Benchmark[ThroughputParams]):
     circuit batches (not CLOPS — see module docstring)."""
 
     name = "throughput"
-    version = "0.1.0"
+    version = "0.2.0"
     params_model = ThroughputParams
 
     def display_name(self, params: ThroughputParams) -> str:
@@ -187,6 +187,7 @@ class Throughput(Benchmark[ThroughputParams]):
         def metric(name: str, values: list[float], unit: str) -> Metric:
             value = float(np.median(values))
             lower, upper, std_error = self._bootstrap_median(values, params)
+            ci_lower, ci_upper = min(lower, value), max(upper, value)
             return Metric(
                 name=name,
                 value=value,
@@ -194,12 +195,12 @@ class Throughput(Benchmark[ThroughputParams]):
                 statistics=MetricStatistics(
                     sample_size=len(values),
                     confidence_level=CONFIDENCE,
-                    ci_lower=min(lower, value),
-                    ci_upper=max(upper, value),
+                    ci_lower=ci_lower,
+                    ci_upper=ci_upper,
                     std_error=std_error,
                     estimator="median_over_batches_bootstrap",
                 ),
-                quality=quality,
+                quality=degrade_zero_width_ci(quality, ci_lower, ci_upper),
             )
 
         quartile_1, quartile_3 = np.quantile(round_trips, [0.25, 0.75])

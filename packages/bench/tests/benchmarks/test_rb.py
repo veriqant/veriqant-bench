@@ -52,7 +52,11 @@ def test_known_decay_recovers_epc() -> None:
     epc = next(metric for metric in result.metrics if metric.name == "error_per_clifford")
     expected = epc_from_alpha(alpha, 2)  # 0.05
     assert abs(epc.value - expected) < 0.002
-    assert epc.quality is not None and epc.quality.reliable
+    # Synthetic counts carry zero between-sequence variance, so the
+    # bootstrap legitimately collapses: flagged, not hidden. (Reliability
+    # on real sampling noise is asserted by the closed-loop tests.)
+    assert epc.quality is not None and not epc.quality.reliable
+    assert "statistics.zero_width_ci" in (epc.quality.issues or [])
     assert epc.statistics.ci_lower <= epc.value <= epc.statistics.ci_upper
     assert epc.statistics.sample_size == len(params.lengths) * 5 * 100_000
 
@@ -74,12 +78,19 @@ def test_flat_floor_data_is_flagged_unreliable() -> None:
     assert "fit.amplitude_collapsed" in (epc.quality.issues or [])
 
 
-def test_perfect_survival_is_reliable_zero_epc() -> None:
+def test_perfect_survival_is_zero_epc_but_flagged_zero_width() -> None:
+    """An exactly-noiseless run collapses the bootstrap (every resample is
+    identical): the EPC is ~0, but a zero-width CI is degenerate evidence
+    and must never be published reliable."""
+    from veriqant_bench.benchmarks.stats import ZERO_WIDTH_CI_ISSUE
+
     params, circuits, counts = synthetic_rb_data(1.0, amplitude=0.5, baseline=0.5)
     result = RB.analyze(circuits, counts, 100_000, params)
     epc = next(metric for metric in result.metrics if metric.name == "error_per_clifford")
     assert epc.value < 0.005
-    assert epc.quality is not None and epc.quality.reliable
+    assert epc.statistics.ci_lower == epc.statistics.ci_upper
+    assert epc.quality is not None and not epc.quality.reliable
+    assert ZERO_WIDTH_CI_ISSUE in (epc.quality.issues or [])
 
 
 def test_failed_fit_reports_full_interval() -> None:

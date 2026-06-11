@@ -26,7 +26,7 @@ from qiskit.quantum_info import Statevector
 from veriqant_bench.qpr._generated import Metric, MetricStatistics
 
 from .base import AnalysisResult, Benchmark, GeneratedCircuit
-from .stats import bootstrap_mean_ci
+from .stats import bootstrap_mean_ci, degrade_zero_width_ci
 
 CONFIDENCE = 0.95
 
@@ -78,7 +78,7 @@ class MirrorCircuits(Benchmark[MirrorParams]):
     depth, with bootstrap confidence intervals."""
 
     name = "mirror"
-    version = "0.1.0"
+    version = "0.2.0"
     params_model = MirrorParams
 
     def qpr_benchmark_id(self, params: MirrorParams) -> str:
@@ -209,6 +209,7 @@ class MirrorCircuits(Benchmark[MirrorParams]):
         params: MirrorParams,
     ) -> Metric:
         lower, upper, std_error = ci
+        ci_lower, ci_upper = min(lower, value), max(upper, value)
         return Metric(
             name=name,
             value=value,
@@ -217,9 +218,10 @@ class MirrorCircuits(Benchmark[MirrorParams]):
             statistics=MetricStatistics(
                 sample_size=sample_size,
                 confidence_level=CONFIDENCE,
-                ci_lower=min(lower, value),
-                ci_upper=max(upper, value),
+                ci_lower=ci_lower,
+                ci_upper=ci_upper,
                 std_error=std_error,
                 estimator="mean_bootstrap_percentile",
             ),
+            quality=degrade_zero_width_ci(None, ci_lower, ci_upper),
         )

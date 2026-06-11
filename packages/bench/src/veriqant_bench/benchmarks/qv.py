@@ -38,7 +38,7 @@ from qiskit.quantum_info import Statevector, random_unitary
 from veriqant_bench.qpr._generated import Metric, MetricQuality, MetricStatistics
 
 from .base import AnalysisResult, Benchmark, GeneratedCircuit
-from .stats import bootstrap_mean_ci
+from .stats import bootstrap_mean_ci, degrade_zero_width_ci
 
 CONFIDENCE = 0.95
 HEAVY_THRESHOLD = 2.0 / 3.0
@@ -99,7 +99,7 @@ class QuantumVolume(Benchmark[QVParams]):
     2-sigma pass criterion."""
 
     name = "qv"
-    version = "0.1.0"
+    version = "0.2.0"
     params_model = QVParams
 
     def qpr_benchmark_id(self, params: QVParams) -> str:
@@ -186,6 +186,7 @@ class QuantumVolume(Benchmark[QVParams]):
                 issues=list(count_issues) or None,
             )
             sample_size = n * shots
+            ci_lower, ci_upper = min(lower, mean), max(upper, mean)
             width_metrics.append(
                 Metric(
                     name=f"heavy_output_probability.width_{width}",
@@ -194,12 +195,12 @@ class QuantumVolume(Benchmark[QVParams]):
                     statistics=MetricStatistics(
                         sample_size=sample_size,
                         confidence_level=CONFIDENCE,
-                        ci_lower=min(lower, mean),
-                        ci_upper=max(upper, mean),
+                        ci_lower=ci_lower,
+                        ci_upper=ci_upper,
                         std_error=std_error,
                         estimator="mean_bootstrap_percentile",
                     ),
-                    quality=quality,
+                    quality=degrade_zero_width_ci(quality, ci_lower, ci_upper),
                 )
             )
             width_metrics.append(

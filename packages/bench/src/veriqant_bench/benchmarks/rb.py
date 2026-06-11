@@ -29,7 +29,7 @@ from scipy.optimize import curve_fit
 from veriqant_bench.qpr._generated import Metric, MetricQuality, MetricStatistics
 
 from .base import AnalysisResult, Benchmark, GeneratedCircuit
-from .stats import bootstrap_rng, percentile_ci
+from .stats import bootstrap_rng, degrade_zero_width_ci, percentile_ci
 
 CONFIDENCE = 0.95
 R_SQUARED_THRESHOLD = 0.9
@@ -149,7 +149,7 @@ class RandomizedBenchmarking(Benchmark[RBParams]):
     bootstrap confidence intervals."""
 
     name = "rb"
-    version = "0.1.0"
+    version = "0.2.0"
     params_model = RBParams
 
     def qpr_benchmark_id(self, params: RBParams) -> str:
@@ -226,6 +226,7 @@ class RandomizedBenchmarking(Benchmark[RBParams]):
         estimator = "rb_exponential_fit_bootstrap"
 
         def metric(name: str, value: float, ci: tuple[float, float], std: float) -> Metric:
+            ci_lower, ci_upper = min(ci[0], value), max(ci[1], value)
             return Metric(
                 name=name,
                 value=value,
@@ -234,12 +235,12 @@ class RandomizedBenchmarking(Benchmark[RBParams]):
                 statistics=MetricStatistics(
                     sample_size=sample_size,
                     confidence_level=CONFIDENCE,
-                    ci_lower=min(ci[0], value),
-                    ci_upper=max(ci[1], value),
+                    ci_lower=ci_lower,
+                    ci_upper=ci_upper,
                     std_error=std,
                     estimator=estimator,
                 ),
-                quality=quality,
+                quality=degrade_zero_width_ci(quality, ci_lower, ci_upper),
             )
 
         return AnalysisResult(

@@ -12,7 +12,27 @@ from statistics import NormalDist
 
 import numpy as np
 
+from veriqant_bench.qpr._generated import MetricQuality
+
 BOOTSTRAP_SEED = 271828
+ZERO_WIDTH_CI_ISSUE = "statistics.zero_width_ci"
+
+
+def degrade_zero_width_ci(
+    quality: MetricQuality | None, ci_lower: float, ci_upper: float
+) -> MetricQuality | None:
+    """A zero-width interval from a resampling estimator is degenerate
+    evidence, not certainty: on an exactly-noiseless run every resample is
+    identical and the bootstrap collapses, saying nothing about the
+    estimator's real spread. Such a metric is never published reliable.
+    (Deliberately non-statistical metrics — pass flags, 2^m quantum-volume
+    values — do not go through this helper; their degenerate intervals are
+    by construction.)"""
+    if ci_lower != ci_upper:
+        return quality
+    issues = list(quality.issues or []) if quality is not None else []
+    issues.append(ZERO_WIDTH_CI_ISSUE)
+    return MetricQuality(reliable=False, issues=issues)
 
 
 def wilson_interval(successes: int, trials: int, confidence: float = 0.95) -> tuple[float, float]:

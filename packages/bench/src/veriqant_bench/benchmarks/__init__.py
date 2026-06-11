@@ -26,11 +26,19 @@ from .runner import (
     run_benchmark,
     write_verified_qpr,
 )
-from .stats import BOOTSTRAP_SEED, bootstrap_mean_ci, bootstrap_rng, percentile_ci
+from .stats import (
+    BOOTSTRAP_SEED,
+    ZERO_WIDTH_CI_ISSUE,
+    bootstrap_mean_ci,
+    bootstrap_rng,
+    degrade_zero_width_ci,
+    percentile_ci,
+)
 
 __all__ = [
     "BOOTSTRAP_SEED",
     "ENTRY_POINT_GROUP",
+    "ZERO_WIDTH_CI_ISSUE",
     "AnalysisResult",
     "Benchmark",
     "BenchmarkInfo",
@@ -42,6 +50,7 @@ __all__ = [
     "ResumeError",
     "bootstrap_mean_ci",
     "bootstrap_rng",
+    "degrade_zero_width_ci",
     "get",
     "list_benchmarks",
     "percentile_ci",
