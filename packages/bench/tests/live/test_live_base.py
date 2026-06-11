@@ -5,6 +5,7 @@ and backoff polling."""
 from __future__ import annotations
 
 import json
+import warnings
 from datetime import UTC, datetime
 from decimal import Decimal
 from pathlib import Path
@@ -53,6 +54,7 @@ class DummyLiveAdapter(LiveAdapterBase):
         prevalidate_error: Exception | None = None,
         submit_error: Exception | None = None,
         result_metadata: dict[str, Any] | None = None,
+        warn_messages: list[str] | None = None,
         **live_kwargs: Any,
     ) -> None:
         super().__init__(poll_initial=0.001, poll_max=0.002, retry_base=0.001, **live_kwargs)
@@ -61,6 +63,7 @@ class DummyLiveAdapter(LiveAdapterBase):
         self._prevalidate_error = prevalidate_error
         self._submit_error = submit_error
         self._result_metadata = result_metadata or {}
+        self._warn_messages = warn_messages or []
         self.submitted_specs: list[JobSpec] = []
 
     def capabilities(self) -> DeviceCapabilities:
@@ -99,6 +102,9 @@ class DummyLiveAdapter(LiveAdapterBase):
 
     def _auth_exception_types(self) -> tuple[type[BaseException], ...]:
         return (DummyAuthError,)
+
+    def submit_warnings(self, spec: JobSpec) -> list[str]:
+        return list(self._warn_messages)
 
     async def _prevalidate(self, spec: JobSpec) -> Any:
         if self._prevalidate_error is not None:
@@ -255,6 +261,39 @@ async def test_await_result_walks_states_with_backoff(
     handle = await adapter.submit(SPEC)
     result = await adapter.await_result(handle, timeout=5.0)
     assert result.shots == 10
+
+
+async def test_submit_warnings_are_emitted_at_the_point_of_action(
+    tmp_path: Path, permissive_limits: SpendLimits, ledger: SpendLedger
+) -> None:
+    # The "warns loudly" staleness tier and availability-window heads-up
+    # must actually reach the user, not just the handle-file metadata.
+    adapter = make_adapter(
+        tmp_path,
+        permissive_limits,
+        ledger,
+        warn_messages=["device window closes in 12 minutes"],
+    )
+    with pytest.warns(UserWarning, match="window closes in 12 minutes"):
+        await adapter.submit(SPEC)
+    assert adapter.submitted_specs  # warn, never block
+
+
+async def test_a_refused_submit_does_not_warn(tmp_path: Path, ledger: SpendLedger) -> None:
+    # Zero-trust limits: the gate refuses, so the warning never fires —
+    # warnings belong to submissions that actually happen.
+    adapter = DummyLiveAdapter(
+        allow_live=True,
+        limits=SpendLimits(),
+        ledger=ledger,
+        jobs_dir=tmp_path / "jobs",
+        warn_messages=["device window closes in 12 minutes"],
+    )
+    with warnings.catch_warnings(record=True) as caught:
+        warnings.simplefilter("always")
+        with pytest.raises(CostGateError):
+            await adapter.submit(SPEC)
+    assert caught == []
 
 
 # ---- ordering: validation -> gate -> submit -----------------------------------

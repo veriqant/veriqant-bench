@@ -23,6 +23,7 @@ import hashlib
 import json
 import random
 import re
+import warnings
 from abc import ABC, abstractmethod
 from datetime import UTC, datetime
 from pathlib import Path
@@ -199,6 +200,12 @@ class LiveAdapterBase(AwaitResultMixin, ABC):
             adapter=self.name,
             device=self._device_name(),
         )
+        # The gate has passed and the submit WILL happen: this is the point
+        # of action, so the non-fatal heads-ups (stale price table, device
+        # availability window) go to the user now. warnings.warn reaches
+        # stderr for CLI runs and is catchable/filterable for SDK callers.
+        for message in self.submit_warnings(spec):
+            warnings.warn(message, UserWarning, stacklevel=2)
         calibration = self.calibration_snapshot()
         try:
             job_id, submit_metadata = await self._do_submit(spec, prepared)
