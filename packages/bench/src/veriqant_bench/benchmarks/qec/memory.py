@@ -55,6 +55,15 @@ def error_per_round(p_total: float, rounds: int) -> float:
     return float(0.5 * (1.0 - (1.0 - 2.0 * capped) ** (1.0 / rounds)))
 
 
+def _require_criteria_profile(profile_id: str | None) -> None:
+    """Fail fast on an unknown criteria profile. generate() runs before any
+    execution (and before a live adapter's cost gate), so a typo'd profile
+    id can never spend shots or budget on a run whose analysis would refuse.
+    The resolved instance is discarded; analyze() re-resolves it."""
+    if profile_id is not None:
+        get_profile(profile_id)
+
+
 class _DistanceResult(BaseModel):
     model_config = ConfigDict(extra="forbid")
 
@@ -272,6 +281,7 @@ class RepetitionMemory(_QECMemoryBase[RepetitionParams]):
         return f"repetition-code memory (d={distances}, {params.rounds} rounds)"
 
     def generate(self, params: RepetitionParams, seed: int) -> list[GeneratedCircuit]:
+        _require_criteria_profile(params.criteria)
         circuits = []
         for distance in params.distances:
             schedule = repetition_memory(distance, params.rounds)
@@ -392,6 +402,7 @@ class SurfaceMemory(_QECMemoryBase[SurfaceParams]):
         )
 
     def generate(self, params: SurfaceParams, seed: int) -> list[GeneratedCircuit]:
+        _require_criteria_profile(params.criteria)
         return [
             GeneratedCircuit(
                 name=f"qec_surface_d3_{basis}_r{params.rounds}",

@@ -150,3 +150,10 @@ def test_invalid_shots_is_a_clean_cli_error(runner: CliRunner, shots: str) -> No
     assert result.exit_code == 2
     assert "Invalid value for '--shots'" in result.output
     assert result.exception is None or isinstance(result.exception, SystemExit)
+
+
+def test_unknown_criteria_profile_fails_before_any_run(runner: CliRunner) -> None:
+    result = runner.invoke(main, ["run", "qec", "--criteria", "no-such-profile"])
+    assert result.exit_code != 0
+    assert "unknown criteria profile 'no-such-profile'" in result.output
+    assert "ab-lq-2026" in result.output  # the registered ones are named

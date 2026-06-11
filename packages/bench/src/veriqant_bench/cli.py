@@ -496,6 +496,15 @@ def run_qec(
 ) -> None:
     """QEC memory experiments (repetition / rotated d=3 surface code) with
     MWPM decoding and an optional logical-qubit criteria scorecard."""
+    if criteria_profile is not None:
+        # Cheap validation first: a typo'd profile must fail here, not after
+        # the shots (and, on live hardware, the budget) are already spent.
+        from .benchmarks.qec.criteria.framework import ProfileUnavailableError, get_profile
+
+        try:
+            get_profile(criteria_profile)
+        except ProfileUnavailableError as exc:
+            raise click.ClickException(str(exc)) from exc
     adapter = _build_adapter(adapter_name, noise_file, live=live, device=device, executing=True)
     if code == "repetition":
         params: dict[str, Any] = {
