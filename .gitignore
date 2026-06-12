@@ -25,3 +25,6 @@ results/
 .DS_Store
 .idea/
 .vscode/
+
+# Internal session artifacts (build/triage/review reports) — never public
+docs/reviews/
