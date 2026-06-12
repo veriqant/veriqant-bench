@@ -289,6 +289,25 @@ class IBMRuntimeAdapter(LiveAdapterBase):
             heuristic=QUOTA_HEURISTIC,
         )
 
+    @staticmethod
+    def _accepts_simulator_options(backend: Any) -> bool:
+        """True only when the execution target positively simulates.
+
+        Fake-provider backends run in SamplerV2's local testing mode, which
+        honors simulator options regardless of the `simulator` flag in the
+        device snapshot they mimic (FakeManilaV2 copies the real Manila's
+        `simulator: False`) — so they are recognized by type first.
+        Everything else is trusted only if it declares itself a simulator
+        via the configuration flag (cloud simulators True, hardware False).
+        Uncertainty means False: a simulator option sent to a QPU fails the
+        whole job at validation (IBM error 3211), while a missing seed on a
+        simulator merely loses determinism."""
+        from qiskit_ibm_runtime.fake_provider.fake_backend import FakeBackendV2
+
+        if isinstance(backend, FakeBackendV2):
+            return True
+        return bool(getattr(backend, "simulator", False))
+
     # ---- provider hooks -------------------------------------------------------
 
     async def _prevalidate(self, spec: JobSpec) -> Any:
@@ -312,9 +331,11 @@ class IBMRuntimeAdapter(LiveAdapterBase):
 
         isa_circuits = prepared
         sampler = SamplerV2(mode=backend)
-        # Local-mode fake backends sample; seed them for reproducible tests.
-        # Real backends reject simulator options — suppression is deliberate.
-        with contextlib.suppress(Exception):
+        if self._accepts_simulator_options(backend):
+            # Deterministic sampling for simulated execution. Never sent to
+            # real hardware: a QPU fails the whole job at validation (IBM
+            # error 3211, observed on ibm_marrakesh at first light). No
+            # suppression — a simulator refusing its own seed should raise.
             sampler.options.simulator.seed_simulator = spec.seed
         job = sampler.run(isa_circuits, shots=spec.shots)
         job_id = str(job.job_id())

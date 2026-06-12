@@ -8,7 +8,7 @@ import json
 from datetime import UTC, datetime
 from pathlib import Path
 from types import SimpleNamespace
-from typing import Any
+from typing import Any, ClassVar
 
 import pytest
 from conftest import make_ibm_adapter
@@ -180,6 +180,91 @@ async def test_pinned_instance_not_listed_is_refused(tmp_path: Path) -> None:
     adapter, _ = make_ibm_adapter(tmp_path, pinned_crn="crn:fake:not-listed")
     with pytest.raises(LiveRefusedError, match="cannot determine the IBM plan"):
         await adapter.submit(JobSpec(circuits=[ASYMMETRIC_2Q], shots=16, seed=1))
+
+
+# ---- simulator options never reach real hardware (first-light regression) ----------
+
+
+class RecordingSampler:
+    """Stands in for SamplerV2 and records the options the adapter set —
+    the contract under test is what the adapter SENDS, not how qiskit
+    executes it."""
+
+    last: ClassVar[RecordingSampler | None] = None
+
+    def __init__(self, mode: Any) -> None:
+        self.mode = mode
+        self.options = SimpleNamespace(simulator=SimpleNamespace())
+        RecordingSampler.last = self
+
+    def run(self, circuits: Any, shots: int) -> Any:
+        return SimpleNamespace(job_id=lambda: "recorded-job-1")
+
+
+class HardwareLikeBackend:
+    """Reports itself as real hardware — simulator=False and NOT a
+    FakeBackendV2 — while delegating transpiler-facing attributes to a
+    FakeManilaV2 snapshot. This is the shape that failed first light on
+    ibm_marrakesh (IBM error 3211)."""
+
+    simulator = False
+
+    def __init__(self) -> None:
+        from qiskit_ibm_runtime.fake_provider import FakeManilaV2
+
+        self._inner = FakeManilaV2()
+
+    def __getattr__(self, name: str) -> Any:
+        return getattr(self._inner, name)
+
+
+class CloudSimulatorLikeBackend(HardwareLikeBackend):
+    """Not a fake-provider backend, but positively declares itself a
+    simulator (the retired-cloud-simulator shape)."""
+
+    simulator = True
+
+
+async def test_seed_simulator_is_never_sent_to_real_hardware(
+    tmp_path: Path, monkeypatch: pytest.MonkeyPatch
+) -> None:
+    # First-light regression: job d8lscijqv2lc7386trb0 on ibm_marrakesh was
+    # failed by IBM with error 3211 ("Options field seed_simulator is not
+    # valid for this backend") because the option was set unconditionally.
+    backend = HardwareLikeBackend()
+    adapter, _ = make_ibm_adapter(tmp_path, backend=backend)
+    monkeypatch.setattr("qiskit_ibm_runtime.SamplerV2", RecordingSampler)
+    handle = await adapter.submit(JobSpec(circuits=[ASYMMETRIC_2Q], shots=16, seed=7))
+    assert handle.job_id == "recorded-job-1"  # submit path completed, no raise
+    sampler = RecordingSampler.last
+    assert sampler is not None and sampler.mode is backend
+    assert not hasattr(sampler.options.simulator, "seed_simulator")
+
+
+async def test_seed_simulator_is_set_for_local_fake_backends(
+    tmp_path: Path, monkeypatch: pytest.MonkeyPatch
+) -> None:
+    # Fake backends execute in SamplerV2's local testing mode, which honors
+    # the seed — and they must keep getting it for test determinism, even
+    # though their device snapshot says simulator=False.
+    adapter, _ = make_ibm_adapter(tmp_path)  # FakeManilaV2
+    monkeypatch.setattr("qiskit_ibm_runtime.SamplerV2", RecordingSampler)
+    await adapter.submit(JobSpec(circuits=[ASYMMETRIC_2Q], shots=16, seed=7))
+    sampler = RecordingSampler.last
+    assert sampler is not None
+    assert sampler.options.simulator.seed_simulator == 7
+
+
+async def test_seed_simulator_is_set_for_self_declared_simulators(
+    tmp_path: Path, monkeypatch: pytest.MonkeyPatch
+) -> None:
+    backend = CloudSimulatorLikeBackend()
+    adapter, _ = make_ibm_adapter(tmp_path, backend=backend)
+    monkeypatch.setattr("qiskit_ibm_runtime.SamplerV2", RecordingSampler)
+    await adapter.submit(JobSpec(circuits=[ASYMMETRIC_2Q], shots=16, seed=9))
+    sampler = RecordingSampler.last
+    assert sampler is not None
+    assert sampler.options.simulator.seed_simulator == 9
 
 
 # ---- the full local-mode path ------------------------------------------------------
